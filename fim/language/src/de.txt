@@ -1,0 +1,105 @@
+de {
+   config.init.double { "\\Config::initialize() wurde bereits aufgerufen." }
+   config.init.wrongEntry { "Fehler in der Konfiguration: Die folgende Einstellung existiert nicht: {0}" }
+   config.init.wrongType { "Fehler in der Konfiguration: {0} muss vom Typ {1} sein." }
+   config.init.wrongValue { "Fehler in der Konfiguration: {0} muss einen der folgenden Werte annehmen: {1}." }
+   config.init.subdomainDepthBase { "Fehler in der Konfiguration: Wenn subdomainDepth != 0 ist, muss auch subdomainBase angegeben werden." }
+   config.init.subdomainErrorWithoutCheck { "Fehler in der Konfiguration: Wenn subdomainBaseError angegeben ist, muss auch subdomainBase angegeben werden." }
+   config.init.subdomainErrorNotFound { "Fehler in der Konfiguration: Die unter subdomainBaseError angegebene Datei wurde nicht gefunden." }
+   config.init.subdomainErrorBaseDir { "Fehler in der Konfiguration: Wenn subdomainDepth != 0 ist, muss der gesamte Inhalt direkt im DocumentRoot liegen." }
+   config.init.wrongSubdomainBase { "Fehler in der Konfiguration: Die angegebene subdomainBase passt nicht zur URL." }
+   config.init.doublePlugins { "Fehler in der Konfiguration: Das Plugin \"{0}\" wurde mehr als einmal registriert." }
+   config.set.readonly { "Fehler beim Setzen eines Konfigurationseintrags: Die Einstellung \"{0}\" kann nur in der Initialisierungsfunktion gesetzt werden." }
+   config.set.unknown { "Fehler beim Setzen eines Konfigurationseintrags: Die Einstellung \"{0}\" existiert nicht." }
+   executor.directorylisting.title { "Verzeichnisinhalt" }
+   executor.directorylisting.filename { "Name" }
+   executor.directorylisting.size { "Größe" }
+   executor.directorylisting.mtime { "Änderungsdatum" }
+   executor.directorylisting.creationTime { "Erstelldatum" }
+   executor.directorylisting.ctime { "Inode Änderungsdatum" }
+   executor.directorylisting.atime { "Zugriffsdatum" }
+   executor.directorylisting.directories { "Verzeichnisse" }
+   executor.directorylisting.files { "Dateien" }
+   executor.directorylisting.empty { "Das Verzeichnis ist leer." }
+   executor.error.log { "Es ist der Fehler {0,number} beim Aufruf der URI {1} {2, select, none {ausgelöst worden.} other { mit folgenden Zusatzangaben ausgelöst worden:\n{2}\n====}}{3, select, none {} other {\nFolgender Stacktrace liegt vor:\n{3}}}" }
+   executor.error.production { "Beim Verarbeiten der Anforderung ist Fehler {0,number} aufgetreten." }
+   i18n.setupWrong { "FIM wurde mit fehlerhaften Sprachdateien eingerichtet. Das Laden der Sprache \"{0}\" ist fehlgeschlagen. Stellen Sie sicher, dass die Hauptfallback-Sprache \"root\" genannt wird." }
+   i18n.init.double { "\\I18N::initialize() wurde bereits aufgerufen." }
+   i18n.get.notFound.internal { "Der interne Sprachschlüssel \"{0}\" wurde nicht gefunden." }
+   i18n.get.notFound { "Der Sprachschlüssel \"{0}\" wurde nicht gefunden." }
+   i18n.format.invalidDateFormat { "Das Format, das zur Formatierung eines Datums übergeben wurde, war ungültig." }
+   i18n.format.invalidTimeFormat { "Das Format, das zur Formatierung einer Zeit übergeben wurde, war ungültig." }
+   rules.filename.content { "Es wurde versucht, Regeln für die Datei \"{0}\" zu finden, welche außerhalb des content/-Verzeichnisses liegt." }
+   rules.filename.script { "Es wurde versucht, Regeln für die Datei \"{0}\" zu finden, welche außerhalb des script/-Verzeichnisses liegt." }
+   rules.cache.unlinkError.cache { "Das Löschen der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+   rules.cache.unlinkError.rules { "Das Löschen der Regeldatei \"{0}\" ist fehlgeschlagen." }
+   rules.cache.writeError { "Das Schreiben der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+   rules.cache.writeTimestampError { "Das Schreiben des Zeitstempels der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+   rules.cache.syntaxError { "Es wurde ein Syntaxfehler in der Regeldatei \"{0}\" gefunden. Zeileninhalt: {1}" }
+   rules.cache.syntaxError.matchC { "Es wurde ein Syntaxfehler in der Regeldatei \"{0}\" gefunden: Der match-Modifizierer erlaubt die Vergleichsmodi \"c\" und \"C\" nicht. Zeileninhalt: {1}" }
+   rules.cache.syntaxErrorHard { "Es wurde ein Syntaxfehler in der Regeldatei \"{0}\" gefunden, so dass eine ungültige Cache-Datei erzeugt wurde. Zu Debugzwecken kann die Cache-Datei \"{1}\" untersucht werden." }
+   rules.cache.invalidRegex { "Es wurde ein semantischer Fehler in der Regeldatei \"{0}\" gefunden: Ein regulärer Ausdruck war ungültig. Zeileninhalt: {1}" }
+   rules.cache.recursion { "Es wurde ein semantischer Fehler in der Regeldatei \"{0}\" gefunden: Die clone-Direktive wurde in der Sektion \"{1}\" so verwendet, dass sie zu einer endlosen Rekursion führt." }
+   rules.call.notFound { "Die Methode {0} einer Regelklasse wurde nicht gefunden." }
+   log.init.failed { "Das logs/-Verzeichnis konnte nicht erstellt werden. Bitte stellen Sie sicher, dass es ein Unterverzeichnis zum Framework mit dem Namen 'logs' gibt. Der empfohlene chmod-Wert ist 0700." }
+   log.mail.subject { "Fehlermeldung auf {0}" }
+   log.mail.internal { "Hinweis: Dies ist eine automatisch generierte Meldung.\nIn FIM trat ein interner Fehler auf. Bitte benachrichtigen Sie ggf. den Support. Die folgende Meldung wurde zurückgegeben:\n====\n{0}\n====\nSie können diesen Fehler auch im \"logs\"-Verzeichnis in der Datei \"error.log\" nachlesen.\nNachfolgend wird der Inhalt der _SERVER-Variable dargestellt:\n====\n{1}\n====Es liegt folgender Stack vor:\n====\n{2}" }
+   log.mail.custom { "Hinweis: Dies ist eine automatisch generierte Meldung.\nIn FIM trat ein Fehler auf, der durch Ihre Skripte hervorgerufen wurde. Die folgende Meldung wurde zurückgegeben:\n====\n{0}\n====\nSie können diesen Fehler auch im \"logs\"-Verzeichnis in der Datei \"customError.log\" nachlesen.\nNachfolgend wird der Inhalt der _SERVER-Variable dargestellt:\n====\n{1}\n====Es liegt folgender Stack vor:\n====\n{2}" }
+   log.mail.failed { "Interner Fehler in FIM: Es konnte keine automatische Fehlerbenachrichtigung per Mail gesendet werden. Fehlermeldung: {0}" }
+   log.message { "Es ist ein Fehler aufgetreten und die Ausführung wurde beendet. Bitte informieren Sie einen Administrator über Fehler #{0}." }
+   log.exception { "Es ist eine unbehandelte Exception vom Typ {0} aufgetreten. Details:\n{1}" }
+   response.negotiation.star { "\\Response::contentNegotiation() wurde ohne Alternativ-Eintrag aufgerufen." }
+   response.cliRedirect { "Bitte rufen Sie das Skript erneut mit der URL \"{0}\" auf." }
+   module.template.exception { "Es ist ein Templatefehler beim Verarbeiten der Datei \"{0}\" aufgetreten." }
+   module.template.url { "Im Template \"{1}\" wurde die URL-Funktion mit der Adresse \"{0}\" aufgerufen, die jedoch nicht von außen erreichbar ist." }
+   module.redirect.invalid { "Es wurde eine Weiterleitung auf die Adresse \"{0}\" ausgelöst, der jedoch keine URL zugeordnet werden konnte." }
+   database.filename.content { "Es wurde versucht, die Datenbankdatei \"{0}\" zu laden, welche außerhalb des content/-Verzeichnisses liegt." }
+   database.filename.script { "Es wurde versucht, die Datenbankdatei \"{0}\" zu laden, welche außerhalb des script/-Verzeichnisses liegt." }
+   database.cache.unlinkError.cache { "Das Löschen der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+   database.cache.unlinkError.rules { "Das Löschen der Verbindungsdatei \"{0}\" ist fehlgeschlagen." }
+   database.cache.writeError { "Das Schreiben der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+   database.cache.writeTimestampError { "Das Schreiben des Zeitstempels der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+   database.cache.syntaxErrorHard { "Es wurde ein Syntaxfehler in der Verbindungsdatei \"{0}\" gefunden, so dass eine ungültige Cache-Datei erzeugt wurde. Zu Debugzwecken kann die Cache-Datei \"{1}\" untersucht werden." }
+   database.cache.syntaxError { "Es wurde ein Syntaxfehler in der Verbindungsdatei \"{0}\" gefunden. Zeileninhalt: {1}" }
+   database.cache.doubleKey { "Es wurde ein semantischer Fehler in der Verbindungsdatei \"{0}\" gefunden: Der Schlüssel \"{1}\" kam mehr als einmal vor." }
+   database.cache.invalidValue { "Es wurde ein semantischer Fehler in der Verbindungsdatei \"{0}\" gefunden. Für den Schlüssel \"{1}\" sind nur die folgenden Werte zulässig: {2}. Zeileninhalt: {3}" }
+   database.cache.invalidKey { "Es wurde ein semantischer Fehler in der Verbindungsdatei \"{0}\" gefunden. Der Schlüssel \"{1}\" existiert nicht." }
+   database.data.invalid { "Es wurden ungültige Verbindungsinformationen gefunden. Der DSN-String in der Verbindungsdatei \"{0}\" war ungültig." }
+   database.data.missing { "Es wurden ungültige Verbindungsinformationen gefunden. Der Datenbanktreiber {0} erfordert das Feld \"{1}\". Die betroffene Verbindungsdatei war {2}." }
+   database.data.wrong.firebird { "Es wurden ungültige Verbindungsinformationen gefunden. Der Datenbanktreiber Firebird erfordert, dass bei Angabe eines Ports auch der zugehörige Host spezifiziert wird. Die betroffene Verbindungsdatei war {0}." }
+   database.data.wrong.oracle { "Es wurden ungültige Verbindungsinformationen gefunden. Der Datenbanktreiber Oracle erfordert, dass bei Angabe eines Ports auch der zugehörige Host spezifiziert wird. Die betroffene Verbindungsdatei war {0}." }
+   database.data.wrong.odbc { "Es wurden ungültige Verbindungsinformationen gefunden. Bei Verwendung des Datenbanktreibers ODBC muss der komplette DSN von Hand angegeben werden. Die betroffene Verbindungsdatei war {0}." }
+   database.data.driver { "Es wurden ungültige Verbindungsinformationen gefunden. Der Treiber \"{0}\" existiert nicht. Die betroffene Verbindungsdatei war {1}." }
+   database.connection.failed { "Es konnte keine Datenbankverbindung gemäß der Verbindungsdatei \"{0}\" aufgebaut werden. Folgender Fehler wurde zurückgegeben: {1}" }
+   database.connection.unestablished { "Es wurde Zugriff auf Datenbankfunktionen genommen, ohne dass die nötigen Verbindungsinformationen in Form einer Verbindungsdatei zur Verfügung gestellt wurden." }
+   database.sql.selectError { "Die Datenbankroutine select() konnte kein Ergebnis ermittlen." }
+   database.sql.updateError { "Die Datenbankroutine update() wurde mit fehlerhaften Parametern aufgerufen." }
+   table.definition.invalid { "Der Tabellenklasse \"{0}\" wurde die Eigenschaft $columns nicht zugewiesen." }
+   table.field.unknown { "Die Tabelle \"{0}\" besitzt kein Feld \"{1}\"." }
+   table.field.readOnly { "Das Feld \"{0}\" der Tabelle \"{1}\" gestattet keinen Schreibzugriff." }
+   table.deleted { "Es wurde versucht, auf einen bereits gelöschten Eintrag der Tabelle \"{0}\" zuzugreifen." }
+   table.serialize { "Es wurde versucht, ein Tabellenobjekt mit der PHP-Methode serialize() zu serialisieren. Hierfür muss fimSerialize() verwendet werden." }
+   table.unserialize { "Es wurde versucht, ein Tabellenobjekt mit der PHP-Methode unserialize() zu deserialisieren. Hierfür muss fimUnserialize() verwendet werden." }
+   primaryTable.definition.invalid { "Der Tabellenklasse \"{1}\" wurde eine fehlerhafte Definition des Feldes \"{0}\" übergeben." }
+   primaryTable.field.readOnly { "Das Schlüsselfeld \"{0}\" der Tabelle \"{1}\" gestattet keinen Schreibzugriff." }
+   primaryTable.field.invalid { "Dem Feld \"{0}\" der Tabelle \"{1}\" wurde ein ungültiger Wert zugewiesen." }
+   primaryTable.call.unknown { "Die Tabelle \"{0}\" besitzt keine Methode mit dem Namen \"{1}\"." }
+   primaryTable.unserialize { "Es wurde versucht, ein ungültiges PrimaryTable-Objekt wiederherzustellen." }
+   primaryTable.create.parameters { "Der Konstruktor eines PrimaryTable-Objekts wurde mit einer ungültigen Zahl von Parametern aufgerufen." }
+   primaryTable.create.failed { "Das Einfügen eines PrimaryTable-Objekts in die Datenbank ist fehlgeschlagen." }
+   primaryTable.create.noRepAI { "Es wurde versucht, ein virtuelles PrimaryTable-Objekt ohne AutoIncrement-Wert zu erstellen." }
+   primaryTable.translate.failed { "Der Funktion PrimaryTable::translateStatement wurde ein ungültiges Statement übergeben." }
+   unserialize.invalid { "Es wurde ein ungültiger String versucht zu deserialisieren." }
+   memcachedWrapper.sasl.unsupported { "Der FIM-Memcached-Wrapper kann keine SASL-Authentifizierung emulieren. Hierfür die die MemcacheD-Erweiterung unerlässlich." }
+   memcachedStandalone.invalidProtocol { "Der Memcached-Server arbeitet mit einer nicht unterstüzten Protokoll-Version." }
+   memcachedStandalone.sasl.unsupported { "Der FIM-Memcached-Standalone-Wrapper kann keine SASL-Authentifizierung emulieren. Hierfür die die MemcacheD-Erweiterung unerlässlich." }
+   dhp.setValue.unbound { "Es wurde versucht, auf ein DataHelper-Objekt zuzugreifen, das an keinen Tabelleneintrag (mehr) gebunden war." }
+   fileUtils.size { "Die fileUtils::fileSize-Routine wird verwendet, kann jedoch fehlerhafte Resultate liefern. Es ist die Funktionalität einer der Erweiterungen cURL oder COM (Windows) erforderlich oder die Funktion exec muss verfügbar sein." }
+   fileUtils.directoryIterator { "Der fimDirectoryIterator wird verwendet, kann jedoch fehlerhafte Resultate liefern. Es ist die Funktionalität der Erweiterung COM erforderlich oder die Funktion exec muss verfügbar sein." }
+   fileUtils.corruptHelper { "Die FIM-Hilfsanwendung FileHelper zur Ermittlung von Informationen über Dateien ist inkompatibel mit dieser Version von FIM oder konnte nicht gefunden werden." }
+   autoboxing.failed { "Autoboxing {0}->{1}(${2})" }
+   autoboxing.reflectionException { "Das Verarbeiten des Autoboxing-Types \"{0}\" der Funktion \"{1}\" in der Datei \"{2}\" ist fehlgeschlagen." }
+   autoboxing.invalidTypehint { "Auf die Funktion \"{0}\" der Datei \"{1}\" wurde durch Autoboxing zugegriffen. Der Parameter \"{2}\" darf den Typehint \"callable\" nicht verwenden und nicht per Referenz übergeben werden müssen." }
+   autoboxing.userDefined { "Auf die Funktion \"{0}\" kann nicht mit Autoboxing zugegriffen werden, da sie eine interne Funktion ist." }
+   session.cli { "Der Zugriff auf die Session-Funktionen ist im Kommandozeilenmodus nicht möglich." }
+}

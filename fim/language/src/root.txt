@@ -1,0 +1,105 @@
+root {
+   config.init.double { "\\Config::initialize() was already called." }
+   config.init.wrongEntry { "Error in the configuration: The following setting does not exist: {0}" }
+   config.init.wrongType { "Error in the configuration: {0} has to be of type {1}." }
+   config.init.wrongValue { "Error in the configuration: {0} has to be one of {1}." }
+   config.init.subdomainDepthBase { "Error in the configuration: If subdomainDepth != 0, subdomainBase is required." }
+   config.init.subdomainErrorWithoutCheck { "Error in the configuration: If subdomainBaseError is specified, subdomainBase is required as well." }
+   config.init.subdomainErrorNotFound { "Error in the configuration: The file specified by subdomainBaseError was not found." }
+   config.init.subdomainErrorBaseDir { "Error in the configuration: If subdomainDepth != 0, the content has to be located directly in the document root." }
+   config.init.wrongSubdomainBase { "Error in the configuration: The given subdomainBase did not match the URL." }
+   config.init.doublePlugins { "Error in the configuration: The Plugin \"{0}\" was registered more than once." }
+   config.set.readonly { "Error while setting a configuration entry: The property \"{0}\" can only be set in the initialization function." }
+   config.set.unknown { "Error while setting a configuration entry: The property \"{0}\" did not exist." }
+   executor.directorylisting.title { "Directory content" }
+   executor.directorylisting.filename { "Name" }
+   executor.directorylisting.size { "Size" }
+   executor.directorylisting.mtime { "Modification time" }
+   executor.directorylisting.creationTime { "Creation time" }
+   executor.directorylisting.ctime { "Inode change time" }
+   executor.directorylisting.atime { "Access time" }
+   executor.directorylisting.directories { "Directories" }
+   executor.directorylisting.files { "Files" }
+   executor.directorylisting.empty { "The directory is empty." }
+   executor.error.log { "The error {0,number} was triggered while invoking the URI {1}{2, select, none {.} other { with additional information:\n{2}\n====}}{3, select, none {} other {\nThe following stacktrace is given:\n{3}}}" }
+   executor.error.production { "The error {0,number} occurred while processing the request." }
+   i18n.setupWrong { "FIM was set up with invalid language files. Loading the language \"{0}\" failed. Please assure that the main fallback language is called \"root\"." }
+   i18n.init.double { "\\I18N::initialize() was already called." }
+   i18n.get.notFound.internal { "The internal language key \"{0}\" was not found." }
+   i18n.get.notFound { "The language key \"{0}\" was not found." }
+   i18n.format.invalidDateFormat { "The format that was given to format a date was invalid." }
+   i18n.format.invalidTimeFormat { "The format that was given to format a time was invalid." }
+   rules.filename.content { "An attempt was made to find rules for the file \"{0}\", which lies beyond the content/ directory." }
+   rules.filename.script { "An attempt was made to find rules for the file \"{0}\", which lies beyond the script/ directory." }
+   rules.cache.unlinkError.cache { "Deleting the cache file \"{0}\" failed." }
+   rules.cache.unlinkError.rules { "Deleting the rules file \"{0}\" failed." }
+   rules.cache.writeError { "Writing the cache file \"{0}\" failed." }
+   rules.cache.writeTimestampError { "Writing the timestamp of the cache file \"{0}\" failed." }
+   rules.cache.syntaxError { "There was a syntax error in the rules file \"{0}\". Line content: {1}" }
+   rules.cache.syntaxError.matchC { "There was a syntax error in the rules file \"{0}\": The match modifier does not allow the modes of comparison \"c\" and \"C\". Line content: {1}" }
+   rules.cache.syntaxErrorHard { "There was a syntax error in the rules file \"{0}\", which lead to an invalid cache file. For debugging purposes, the cache file \"{1}\" might be examined." }
+   rules.cache.invalidRegex { "There was a semantic error in the rules file \"{0}\": A regular expression was invalid. Line content: {1}" }
+   rules.cache.recursion { "There was a semantic error in the rules file \"{0}\": The clone directive in the section \"{1}\" was used in a manner that leads to infinite recursion." }
+   rules.call.notFound { "The method {0} of a rules class was not found." }
+   log.init.failed { "The logs/ directory could not be created. Please assure that a subdirectory of the framework named 'logs'. The recommended chmod value is 0700." }
+   log.mail.subject { "Error on {0}" }
+   log.mail.internal { "Hint: This is an auto-generated message.\nAn internal error occurred within FIM. Please notify the support if necessary. The following message was returned:\n====\n{0}\n====\nYou can review this error in the file \"error.log\" within the \"logs\" directory as well.\nThe content of the _SERVER variable was as follows:\n====\n{1}\n====The following stack is given:\n====\n{2}" }
+   log.mail.custom { "Hint: This is an auto-generated message.\nAn error occurred within FIM which was raised by your scripts. The following message was returned:\n====\n{0}\n====\nYou can review this error in the file \"customError.log\" within the \"logs\" directory as well.\nThe content of the _SERVEr variable was as follows:\n====\n{1}\n====The following stack is given:\n====\n{2}" }
+   log.mail.failed { "Internal error within FIM: Automatic error notification via mail failed. Error message: {0}" }
+   log.message { "An error occured and execution was halted. Please notify an administrator about error #{0}." }
+   log.exception { "An unhandled exception of type {0} was thrown. Details:\n{1}" }
+   response.negotiation.star { "\\Response::contentNegotiation() was called without an alternative entry." }
+   response.cliRedirect { "Please call the script once again with the URL \"{0}\"." }
+   module.template.exception { "A template error occurred while processing the file \"{0}\"." }
+   module.template.url { "The URL function was called with the address \"{0}\" by the template \"{1}\". However, this address is not available from the outside." }
+   module.redirect.invalid { "A redirect to the address \"{0}\" was triggered, but no url could be mapped to this address." }
+   database.filename.content { "An attempt was made to load the database file \"{0}\", which lies beyond the content/ directory." }
+   database.filename.script { "An attempt was made to load the database file \"{0}\", which lies beyond the script/ directory." }
+   database.cache.unlinkError.cache { "Deleting the cache file \"{0}\" failed." }
+   database.cache.unlinkError.rules { "Deleting the connection file \"{0}\" failed." }
+   database.cache.writeError { "Writing the cache file \"{0}\" failed." }
+   database.cache.writeTimestampError { "Writing the timestamp of the cache file \"{0}\" failed." }
+   database.cache.syntaxErrorHard { "There was a syntax error in the connection file \"{0}\", which lead to an invalid cache file. For debugging purposes, the cache file \"{1}\" might be examined." }
+   database.cache.syntaxError { "There was a syntax error in the connection file \"{0}\". Line content: {1}" }
+   database.cache.doubleKey { "There was a semantic error in the connection file \"{0}\": The key \"{1}\" appeared more than once." }
+   database.cache.invalidValue { "There was a semantic error in the connection file \"{0}\". The key \"{1}\" only allows these values: {2}. Line content: {3}" }
+   database.cache.invalidKey { "There was a semantic error in the connection file \"{0}\". The key \"{1}\" does not exist." }
+   database.data.invalid { "There were invalid connection information. The DSN string in the connection file \"{0}\" was invalid." }
+   database.data.missing { "There were invalid connection information. The database driver {0} requires the field \"{1}\". The involved connection file was {2}." }
+   database.data.wrong.firebird { "There were invalid connection information. The database driver Firebird requires a host if a port is given. The involved connection file was {0}." }
+   database.data.wrong.oracle { "There were invalid connection information. The database driver Oracle requires a host if a port is given. The involved connection file was {0}." }
+   database.data.wrong.odbc { "There were invalid connection information. The database driver ODBC requires entering the whole DSN manually. The involved connection file was {0}." }
+   database.data.driver { "There were invalid connection information. The database driver \"{0}\" does not exist. The involved connection file was {1}." }
+   database.connection.failed { "The database connection could not be established as given in the connectino file \"{0}\". The following error as returned: {1}" }
+   database.connection.unestablished { "Database functions were accessed without having specified the required connection information in a connection file." }
+   database.sql.selectError { "The database routine select() could not get a result." }
+   database.sql.updateError { "The database routine update() was called with erroneous parameters." }
+   table.definition.invalid { "The property $columns was not assigned to the table class \"{0}\"." }
+   table.field.unknown { "The table \"{0}\" does not contain the field \"{1}\"." }
+   table.field.readOnly { "The field \"{0}\" of the table \"{1}\" is read-only." }
+   table.deleted { "An attempt was made to access a deleted entry of the table \"{0}\"." }
+   table.serialize { "An attempt was made to serialize a table object with help of the PHP method serialize(). It is required to use fimSerialize() instead." }
+   table.unserialize { "An attempt was made to deserialize a table object with help of the PHP method unserialize(). It is required to use fimUnserialize() instead." }
+   primaryTable.definition.invalid { "An invalid specification of the field \"{0}\" was given in the table class \"{1}\"." }
+   primaryTable.field.readOnly { "The key field \"{0}\" of the table \"{1}\" is read-only." }
+   primaryTable.field.invalid { "An invalid value was assigned to the field \"{0}\" of the table." }
+   primaryTable.call.unknown { "The table \"{0}\" does not contain a method named \"{1}\"." }
+   primaryTable.unserialize { "An attempt was made to deserialize an invalid PrimaryTable object." }
+   primaryTable.create.parameters { "The constructor of a PrimaryTable object was called with an invalid count of parameters." }
+   primaryTable.create.failed { "Inserting a PrimaryTable object into the database failed." }
+   primaryTable.create.noRepAI { "An attempt was made to create a virtual PrimaryTable object without AutoIncrement value." }
+   primaryTable.translate.failed { "An invalid statement was passed to the function PrimaryTable::translateStatement." }
+   unserialize.invalid { "An attempt was made to deserialize an invalid string." }
+   memcachedWrapper.sasl.unsupported { "The FIM memcached wrapper cannot emulate SASL authentification. The MemcacheD extension is required for this purpose." }
+   memcachedStandalone.invalidProtocol { "The Memcached server works with an unsupported protocol version." }
+   memcachedStandalone.sasl.unsupported { "The FIM memcached standalone wrapper cannot emulate SASL authentification. The MemcacheD extension is required for this purpose." }
+   dhp.setValue.unbound { "An attempt was made to access a DataHelper object which was not bound to a table entry (any more)." }
+   fileUtils.size { "The fileUtils::fileSize routine is used but might return wrong results. One of the extensions cURL or COM (Windows) is required or the function 'exec' has to be available." }
+   fileUtils.directoryIterator { "The fimDirectoryIterator is used but might return wrong results. The extension COM is required or the function 'exec' has to be available." }
+   fileUtils.corruptHelper { "The FIM helper application FileHelper for gathering file information is not compatible with this version of FIM or is not available." }
+   autoboxing.failed { "Autoboxing {0}->{1}(${2})" }
+   autoboxing.reflectionException { "Processing the autoboxing type \"{0}\" of the function \"{1}\" in the file \"{2}\" failed." }
+   autoboxing.invalidTypehint { "The function \"{0}\" in the file \"{1}\" was accessed via autoboxing. The parameter \"{2}\" must not use the type hint \"callable\" and must not be passed by reference." }
+   autoboxing.userDefined { "The function \"{0}\" cannot be accessed with autoboxing, as it is an internal function." }
+   session.cli { "Accessing session functions is not possible in command line mode." }
+}
