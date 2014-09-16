@@ -27,6 +27,7 @@ de {
    i18n.init.double { "\\I18N::initialize() wurde bereits aufgerufen." }
    i18n.get.notFound.internal { "Der interne Sprachschlüssel \"{0}\" wurde nicht gefunden." }
    i18n.get.notFound { "Der Sprachschlüssel \"{0}\" wurde nicht gefunden." }
+   i18n.get.noLanguage { "Es wurde keine Sprachdateien gefunden; dennoch wurde versucht, auf den Sprachschlüssel \"{0}\" zuzugreifen." }
    i18n.format.invalidDateFormat { "Das Format, das zur Formatierung eines Datums übergeben wurde, war ungültig." }
    i18n.format.invalidTimeFormat { "Das Format, das zur Formatierung einer Zeit übergeben wurde, war ungültig." }
    rules.filename.content { "Es wurde versucht, Regeln für die Datei \"{0}\" zu finden, welche außerhalb des content/-Verzeichnisses liegt." }
