@@ -131,37 +131,34 @@ namespace {
    /**
     * This is the base class for all table rows which belong to PrimaryTables.
     * It should be inherited from instead of the plain Table
+    * @internal Structure of required protected static $columns:
+    *    Associative array: ('fieldName' => 'fieldType')<br />
+    *    Any column that is a primary key has to be marked with * at the
+    *    beginning of the fieldType; if it is an autoincrement value, it has to
+    *    start with + instead - there might only be one autoincrement value per
+    *    table!<br />
+    *    Any column that might be null has to be marked with 0 at the beginning
+    *    of the fieldType. Any null column cannot be a primary key.
+    *    Valid types are:
+    *    - string
+    *    - int
+    *    - double
+    *    - bool
+    *    - blob (in PHP as a large string)
+    *    - a class name of a class that implements the DataHelper interface
+    *      (null is not possible in this case)
+    *    - any other value is treated a a class name of a class that implements
+    *      the fimSerializable interface.
     */
    abstract class PrimaryTable extends Table implements Autoboxable {
 
-      /**
-       * Hint for protected static $columns:
-       * Associative array: ('fieldName' => 'fieldType')<br />
-       * Any column that is a primary key has to be marked with * at the
-       * beginning of the fieldType; if it is an autoincrement value, it has to
-       * start with + instead - there might only be one autoincrement value per
-       * table!<br />
-       * Any column that might be null has to be marked with 0 at the beginning
-       * of the fieldType. Any null column cannot be a primary key.
-       * Valid types are:
-       * - string
-       * - int
-       * - double
-       * - bool
-       * - blob (in PHP as a large string)
-       * - a class name of a class that implements the DataHelper interface
-       *   (null is not possible in this case)
-       * - any other value is treated a a class name of a class that implements the
-       *   fimSerializable interface.
-       * @var array $columns
-       */
       private static $rands = [];
 
       /**
-       * @var bool $noDBRep Defines whether an object does not exist within the
-       *    database.
+       * Defines whether an object does not exist within the database
+       * @var bool
        */
-      protected $noDBRep = false;
+      protected $virtual = false;
 
       /**
        * Initializes the static storage. In this storage, all details as the table
@@ -230,7 +227,7 @@ namespace {
 
       private function update($name, $value, $fieldValue = null) {
          $data = static::getStaticStorage();
-         if(!$this->noDBRep)
+         if(!$this->virtual)
             Database::getActiveConnection()->update($data['tableName'],
                array($name => $value),
                array_intersect_key($this->fields, $data['keys']));
@@ -369,7 +366,7 @@ namespace {
          if(!isset($this->fields))
             return serialize(null);
          $data = static::getStaticStorage();
-         if($this->noDBRep) {
+         if($this->virtual) {
             $fields = $this->fields;
             unset($fields[$data['autoIncrement']]);
          }else
@@ -404,7 +401,7 @@ namespace {
             return reset($return);
          }elseif(count($fields + $data['cols']) === count($data['cols'])) {
             $return = new static;
-            $return->noDBRep = true;
+            $return->virtual = true;
             $return->fields = $fields;
             unset($fields);
             $return->generateNoDBKey();
@@ -444,7 +441,7 @@ namespace {
        * @return static
        */
       protected function makeDBRepresentation() {
-         if(!$this->noDBRep)
+         if(!$this->virtual)
             return $this;# Already non-virtual
          $data = static::getStaticStorage();
          if(!isset($this->fields))
@@ -476,7 +473,7 @@ namespace {
          if($data['autoIncrement'] !== null)
             $this->fields[$data['autoIncrement']] = $conn->lastInsertId($data['tableName'],
                $data['autoIncrement']);
-         $this->noDBRep = false;
+         $this->virtual = false;
          return static::singleton($this->getSingletonKey(), $this);
       }
 
@@ -486,7 +483,7 @@ namespace {
          $data = static::getStaticStorage();
          foreach($data['dataHelpers'] as $key => $true)
             $this->fields[$key]->unbind();
-         if(!$this->noDBRep)
+         if(!$this->virtual)
             Database::getActiveConnection()->delete($data['tableName'],
                array_intersect_key($this->fields, $data['keys']));
          $this->singleton($this->getSingletonKey(), null);
@@ -565,7 +562,7 @@ namespace {
          }
          $new = new static;
          $new->fields = $fields;
-         if(($new->noDBRep = $noDBRep))
+         if(($new->virtual = $noDBRep))
             $new->generateNoDBKey();
          static::singleton($new->getSingletonKey(), $new);
          foreach($data['dataHelpers'] as $key => $true)
@@ -732,7 +729,7 @@ namespace fim {
       $helper->bind($to, $key, $value,
          \Closure::bind(function() use ($key, $helper) {
             $data = static::getStaticStorage();
-            if(!$this->noDBRep)
+            if(!$this->virtual)
                \Database::getActiveConnection()->update($data['tableName'],
                   array($key => $helper->getStorageValue()),
                   array_intersect_key($this->fields, $data['keys']));

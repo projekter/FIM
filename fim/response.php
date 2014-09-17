@@ -1077,7 +1077,7 @@ abstract class Response {
 
    /**
     * Set this to the value that will be echoed after having sent the headers.
-    * @var string $responseText
+    * @var string
     */
    public static $responseText = '';
 
