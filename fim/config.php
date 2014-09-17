@@ -23,7 +23,7 @@ if(@FrameworkPath === 'FrameworkPath')
  */
 abstract class Config {
 
-   private static $config;
+   private static $config = null;
    private static $configDefaults = [
       'autoEscape' => true,
       'cliServer' => 'CLI',
@@ -64,7 +64,7 @@ abstract class Config {
    const XSENDFILE_NGINX = 'nginx';
 
    public static final function initialize(array $config) {
-      if(isset(self::$config))
+      if(self::$config !== null)
          throw new ConfigurationException(I18N::getInternalLanguage()->get('config.init.double'));
       register_shutdown_function(function() {
          foreach(self::$shutdownFunctions as $f)

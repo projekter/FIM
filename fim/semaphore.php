@@ -26,8 +26,7 @@ if(@FrameworkPath === 'FrameworkPath')
  */
 final class Semaphore {
 
-   private static $multiServerMethod;
-   private static $singleServerMethod;
+   private static $multiServerMethod = null, $singleServerMethod = null;
    private $data;
    private $multiServer;
    private $locked = false;
@@ -53,13 +52,13 @@ final class Semaphore {
       $this->data = "fimSemaphore$name";
       $this->multiServer = $multiServer;
       if($multiServer) {
-         if(!isset(self::$multiServerMethod))
+         if(self::$multiServerMethod === null)
             if(isset(Session::$redis))
                self::$multiServerMethod = self::METHOD_REDIS;
             else
                self::$multiServerMethod = self::METHOD_MEMCACHED;
       }else{
-         if(!isset(self::$singleServerMethod))
+         if(self::$singleServerMethod === null)
             if(function_exists('sem_acquire')) {
                self::$singleServerMethod = self::METHOD_SEMAPHORE;
             }elseif(function_exists('wincache_lock'))

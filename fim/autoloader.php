@@ -68,8 +68,8 @@ spl_autoload_register(function($class) {
    }elseif(($lower = strtolower($class)) === 'phpmailer' || $lower === 'pop3' || $lower === 'smtp')
       require (FrameworkPath . "PHPMailer/class.$lower.php");
    else{
-      static $plugins;
-      if(!isset($plugins))
+      static $plugins = null;
+      if($plugins === null)
          $plugins = \Config::get('plugins');
       if(isset($plugins[$lower]))
          require (CodeDir . $plugins[$lower]);

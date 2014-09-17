@@ -52,7 +52,7 @@ final class DatabaseConnection {
       $this->connectionFile = $connectionFile;
       if($parentFile !== null) {
          static $loadConnectionFile = null;
-         if(!isset($loadConnectionFile)) {
+         if($loadConnectionFile === null) {
             $loadConnectionFile = Closure::bind(function($fileName) {
                   return self::loadConnectionFile($fileName);
                }, null, 'Database');
@@ -271,7 +271,7 @@ final class DatabaseConnection {
    }
 
    // </editor-fold>
-   // <editor-fold desc="Database function" defaultstate="collapsed">
+   // <editor-fold desc="Database functions" defaultstate="collapsed">
    private $transactions = 0;
 
    /**

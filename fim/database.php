@@ -20,7 +20,7 @@ if(@FrameworkPath === 'FrameworkPath')
 abstract class Database {
 
    private static $connections = [];
-   private static $activeConnection;
+   private static $activeConnection = null;
 
    /**
     * Parses a connection file and returns a valid DatabaseConnection instance
@@ -197,7 +197,7 @@ Cache;
     * @throws DatabaseException
     */
    public static final function getActiveConnection($require = true) {
-      if(!isset(self::$activeConnection)) {
+      if(self::$activeConnection === null) {
          if($require)
             throw new DatabaseException(I18N::getInternalLanguage()->get('database.connection.unestablished'));
       }else

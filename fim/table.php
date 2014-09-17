@@ -132,8 +132,9 @@ abstract class Table implements fimSerializable {
    protected static final function getStaticStorage($singleValue = null) {
       static $storage = null;
       if($storage === null) {
+         # Access by reference will suppress the error if the key does not exist
          $storage = &self::$staticStorage[get_called_class()];
-         if(!isset($storage)) {
+         if($storage === null) {
             $storage = [];
             static::initializeStaticStorage($storage);
          }

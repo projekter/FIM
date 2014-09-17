@@ -110,7 +110,7 @@ abstract class Router {
          }
          if(CLI || $subdomainFolder !== CurrentSubdomain) {
             static $subdomainDefault = null;
-            if(!isset($subdomainDefault))
+            if($subdomainDefault === null)
                $subdomainDefault = Config::get('subdomainDefault');
             if($subdomainFolder === $subdomainDefault)
                $subdomainArray = [];
@@ -125,13 +125,13 @@ abstract class Router {
             }
             $subdomainFolder = empty($subdomainArray) ? '' : implode('.',
                   array_reverse($subdomainArray)) . '.';
-            static $https;
-            if(!isset($https))
+            static $https = null;
+            if($https === null)
                $https = Request::isHTTPS();
             if($allServers) {
                $prefix = ($https ? 'https://' : 'http://') . $subdomainFolder;
                static $multipleBases = null;
-               if(!isset($multipleBases))
+               if($multipleBases === null)
                   $multipleBases = count(Config::get('subdomainBase')) > 1;
                if($multipleBases)
                   $result = [$prefix];

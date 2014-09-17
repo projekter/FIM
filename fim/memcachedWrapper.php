@@ -481,7 +481,7 @@ class Memcached {
    private $persistent;
    private $status;
    private $servers;
-   private static $casSupport;
+   private static $casSupport = null;
 
    /**
     * @param string $persistent_id
@@ -491,7 +491,7 @@ class Memcached {
       # stores objects without serialization. Everything else would be a waste
       $this->memcache = new Memcache();
       $this->persistent = isset($persistent_id);
-      if(!isset(self::$casSupport))
+      if(self::$casSupport === null)
          self::$casSupport = method_exists($this->memcache, 'cas');
    }
 

@@ -27,12 +27,12 @@ namespace {
       /**
        * @var I18N
        */
-      private static $activeLanguage;
+      private static $activeLanguage = null;
 
       /**
        * @var I18N
        */
-      private static $internalLanguage;
+      private static $internalLanguage = null;
 
       /**
        * @var ResourceBundle
@@ -56,7 +56,7 @@ namespace {
          if($bundle === null) {
             $this->bundle = new \fim\noLanguage();
             # So let's issue a warning
-            if(isset(self::$internalLanguage))
+            if(self::$internalLanguage !== null)
                Log::reportError(self::$internalLanguage->get('i18n.setupWrong',
                      [$name]));
             else
@@ -129,7 +129,7 @@ namespace {
        * @throws I18NException
        */
       public static final function initialize($locale) {
-         if(isset(self::$internalLanguage))
+         if(self::$internalLanguage !== null)
             throw new I18NException(self::$internalLanguage->get('i18n.init.double'));
          $rbi = new ResourceBundle($locale, FrameworkPath . 'language', true);
          if($rbi === null)
@@ -168,8 +168,8 @@ namespace {
       public final function get($key, array $args = []) {
          $val = $this->bundle->get($key);
          if($val === null) {
-            static $fallback;
-            if(!isset($fallback))
+            static $fallback = null;
+            if($fallback === null)
                $fallback = Config::get('languageCodedFallback');
             if($fallback)
                $val = $key;
@@ -337,8 +337,8 @@ namespace {
        */
       public final function translatePath($path) {
          $fullPath = Router::normalize($path, false, false);
-         static $localeParts;
-         if(!isset($localeParts))
+         static $localeParts = null;
+         if($localeParts === null)
             $localeParts = Locale::parseLocale($this->locale);
          $usedLocale = $localeParts;
          while(!empty($usedLocale)) {
@@ -349,8 +349,8 @@ namespace {
             else
                array_pop($usedLocale);
          }
-         static $defaultLocale;
-         if(!isset($defaultLocale))
+         static $defaultLocale = null;
+         if($defaultLocale === null)
             $defaultLocale = Locale::parseLocale(Locale::getDefault());
          if($defaultLocale !== $localeParts) {
             $usedLocale = $defaultLocale;

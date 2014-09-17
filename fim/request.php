@@ -22,7 +22,7 @@ if(@FrameworkPath === 'FrameworkPath')
  */
 abstract class Request {
 
-   private static $browser, $https;
+   private static $browser = null, $https = null;
 
    private final function __construct() {
 
@@ -353,7 +353,7 @@ abstract class Request {
    public static final function isHTTPS() {
       # This function is called very early in FIM's initialization process. We
       # can rely on self::$https having a value in any other function
-      if(!isset(self::$https))
+      if(self::$https === null)
          self::$https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
       return self::$https;
    }
@@ -421,7 +421,7 @@ abstract class Request {
     *                'platform' => 'Android|Linux|Mac|Windows|Contiki|DOS']
     */
    public static final function getBrowser() {
-      if(isset(self::$browser))
+      if(self::$browser !== null)
          return self::$browser;
       if(CLI)
          return self::$browser = ['userAgent' => null, 'name' => null, 'version' => php_uname('v'),

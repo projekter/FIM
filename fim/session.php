@@ -38,6 +38,14 @@ namespace {
           */
          public static $memcached;
 
+         /**
+          * Holds a redis object (or predis, if you use the PHP library) which
+          * is connected as specified in the redisConnection configuration.
+          * Null, if there is no redisConnection given.
+          * @var RedisArray|Predis
+          */
+         public static $redis;
+
          private final function __construct() {
 
          }

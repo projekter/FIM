@@ -28,6 +28,8 @@ abstract class fileUtils {
 
    }
 
+   private static $hasExec = null, $hasCOM = null, $hasCURL = null;
+
    /**
     * Returns information about the given file or directory by calling the
     * helper application delivered with FIM. This is done either with COM or
@@ -37,22 +39,20 @@ abstract class fileUtils {
     *    helper application was not available
     */
    private static function getFileDetails($fileName) {
-      static $hasExec = null;
-      if(!isset($hasExec))
-         $hasExec = function_exists('exec');
+      if(self::$hasExec === null)
+         self::$hasExec = function_exists('exec');
       $commandLine = FrameworkPath . 'FileHelper.exe ' . base64_encode($fileName) .
          ' ' . base64_encode(getcwd());
-      if($hasExec)
+      if(self::$hasExec)
          exec($commandLine, $return);
       else{
-         static $com = null;
-         if(!isset($com))
-            $com = class_exists('COM') ? new COM('WScript.Shell') : false;
+         if(self::$hasCOM === null)
+            self::$hasCOM = class_exists('COM') ? new COM('WScript.Shell') : false;
          # Scripting.FileSystemObject would be an alternative, but it would then
          # not be possible to resolve symlinks. As we want constistent
          # behaviour, regardless which background implementation is relied on,
          # we will always call our helper.
-         if($com === false)
+         if(self::$hasCOM === false)
             return null;
          $return = explode("\r\n",
             trim((string)$com->Exec($commandLine)->StdOut->ReadAll()));
@@ -119,10 +119,9 @@ abstract class fileUtils {
        * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
        * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
        */
-      static $hasCURL = null;
-      if(!isset($hasCURL))
-         $hasCURL = function_exists('curl_init');
-      if($hasCURL && ($cURL = curl_init('file:///' . rawurlencode($fileName))) !== false) {
+      if(self::$hasCURL === null)
+         self::$hasCURL = function_exists('curl_init');
+      if(self::$hasCURL && ($cURL = curl_init('file:///' . rawurlencode($fileName))) !== false) {
          if(curl_setopt_array($cURL,
                [CURLOPT_NOBODY => true,
                CURLOPT_RETURNTRANSFER => true,
@@ -166,10 +165,9 @@ abstract class fileUtils {
          # resolve them.
          while(($newFN = @readlink($fileName)) !== false && $newFN !== $fileName)
             $fileName = $newFN;
-         static $hasExec = null;
-         if(!isset($hasExec))
-            $hasExec = function_exists('exec');
-         if($hasExec) {
+         if(self::$hasExec === null)
+            self::$hasExec = function_exists('exec');
+         if(self::$hasExec) {
             $size = trim(exec('stat -Lc%s ' . escapeshellarg($fileName)));
             if($size && ctype_digit($size))
                return (string)$size;
@@ -259,7 +257,7 @@ abstract class fileUtils {
     * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     */
 
-   private static $codepage, $reverseCodepage;
+   private static $codepage = null, $reverseCodepage;
 
    /**
     * This function initializes the internal CodePage table. As some
@@ -331,7 +329,7 @@ abstract class fileUtils {
       # any of the conversions or CodePage stuff
       if(preg_match("/[\x80-\xff]/", $utf8Filename) === 0)
          return $utf8Filename;
-      if(!isset(self::$codepage))
+      if(self::$codepage === null)
          self::initCodepage();
       if(($codepage = self::$codepage) === false)
          return $utf8Filename;
@@ -378,7 +376,7 @@ abstract class fileUtils {
       # any of the conversions or CodePage stuff
       if(preg_match("/[\x80-\xff]/", $codepageFilename) === 0)
          return $codepageFilename;
-      if(!isset(self::$codepage))
+      if(self::$codepage === null)
          self::initCodepage();
       if(($codepage = self::$reverseCodepage) === false)
          return $codepageFilename;
