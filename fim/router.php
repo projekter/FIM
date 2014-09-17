@@ -31,7 +31,7 @@ abstract class Router {
     * @return string[]
     */
    private static function arrayize($path) {
-      if($path === '')
+      if($path == '')
          $path = '.';
       else
          $path = str_replace('\\', '/', $path);

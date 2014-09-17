@@ -307,7 +307,7 @@ abstract class Request {
             $params = empty($params) ? '' : ' ' . implode(' ', $params);
          }else
             $params = '';
-         if($path === '')
+         if($path == '')
             return "/$params";
          elseif($path[0] !== '/')
             return "/$path$params";

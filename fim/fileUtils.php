@@ -215,6 +215,20 @@ abstract class fileUtils {
       return true;
    }
 
+   /**
+    * Checks whether a file or directory exists even for files that are greater
+    * than four GB.
+    * @param string $fileName
+    */
+   public static function fileExists($fileName) {
+      if(@file_exists($fileName))
+         return true;
+      if(($handle = @fopen($fileName, 'r')) === false)
+         return false;
+      fclose($handle);
+      return true;
+   }
+
    # Important parts of the CodePage encoding are destilled and improved from
    # phplint. The original copyright of these parts is:
    /**

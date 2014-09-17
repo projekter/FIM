@@ -177,7 +177,7 @@ namespace {
          $autoIncrement = null;
          $nullable = $keys = $dataHelpers = [];
          foreach($cols as $name => &$type) {
-            if($type === '')
+            if($type === '' || !is_string($type))
                throw new PrimaryTableException(I18N::getInternalLanguage()->get('primaryTable.definition.invalid',
                   [$name, $storage['tableName']]));
             if(($type[0] === '*') || ($type[0] === '+')) {

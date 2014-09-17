@@ -326,12 +326,12 @@ namespace {
          # many named parameters and at least one unnamed, we cannot fully rely
          # on the given parent function.
          $parameters = [];
-         $nofilter = false;
+         $escape = $compiler->smarty->escape_html;
          foreach($args as $mixed) {
             # shorthand?
             if(!is_array($mixed)) {
                if(trim($mixed, '\'"') === 'nofilter')
-                  $nofilter = true;
+                  $escape = false;
                elseif(!isset($path))
                   $path = $mixed;
                else
@@ -341,10 +341,10 @@ namespace {
                if(isset($mixed['nofilter']))
                   if(is_string($mixed['nofilter']) && in_array(trim($mixed['nofilter'],
                            '\'"'), ['true', 'false']))
-                     $nofilter = trim($mixed['nofilter'], '\'"') === 'true';
+                     $escape &= trim($mixed['nofilter'], '\'"') !== 'true';
                   elseif(is_numeric($mixed['nofilter']) && in_array($mixed['nofilter'],
                         [0, 1]))
-                     $nofilter = $mixed['nofilter'] == 1;
+                     $escape &= $mixed['nofilter'] != 1;
                   else
                      $compiler->trigger_template_error("illegal value of option flag \"nofilter\"",
                         $compiler->lex->taglineno);
@@ -366,8 +366,8 @@ namespace {
             # executed. $smarty->_current_file serves as a hint: It contains
             # either an absolute path (relative to /) or a relative path to cwd.
             # As the maximum level of "absoluteness" we work with in FIM is
-            # CodeDir, we will first have to cut of everything that goes beyond
-            # CodeDir
+            # CodeDir, we will first have to cut off everything that goes beyond
+            # CodeDir.
             static $cdl = null;
             if(!isset($cdl))
                $cdl = strlen(CodeDir);
@@ -409,7 +409,7 @@ namespace {
             $return = '<?php $oldDir=getcwd();chdir(' .
                var_export($dirCaches[$_current_file], true) .
                ');echo ';
-            if(!$nofilter)
+            if($escape)
                $return .= 'htmlspecialchars(';
             $return .= "Router::mapPathToURL(fim\\parsePath($path)";
             if(!empty($parameters)) {
@@ -418,7 +418,7 @@ namespace {
                   $return .= var_export($key, true) . "=>$param,";
                $return .= ']';
             }
-            if(!$nofilter)
+            if($escape)
                $return .= "), ENT_QUOTES, '" . addcslashes(Smarty::$_CHARSET,
                      "\\'") . "'";
             $return .= ');chdir($oldDir);unset($oldDir);?>';
@@ -441,10 +441,10 @@ namespace {
             # parsed, static path, but at least one of our parameters is
             # dynamic. We therefore do not need to do a chdir in the template,
             # as we already know the whole path.
-            if($nofilter)
-               $return = '<?php echo Router::mapPathToURL(';
-            else
+            if($escape)
                $return = '<?php echo htmlspecialchars(Router::mapPathToURL(';
+            else
+               $return = '<?php echo Router::mapPathToURL(';
             $return .= var_export('/' . Router::normalize($path), true);
             if(!empty($parameters)) {
                $return .= ',[';
@@ -453,8 +453,8 @@ namespace {
                $return .= ']';
             }
             chdir($oldDir);
-            return $nofilter ? "$return);?>" : ("$return), ENT_QUOTES, '" .
-               addcslashes(Smarty::$_CHARSET, "\\'") . "');?>");
+            return $escape ? ("$return), ENT_QUOTES, '" .
+               addcslashes(Smarty::$_CHARSET, "\\'") . "');?>") : "$return);?>";
          }
          # Although this might not happen very often, we can also have urls that
          # are completely static and the url function is only used for
@@ -464,16 +464,16 @@ namespace {
          if(!$noRouting) {
             # We cannot assure that our path will never change, so we cannot fully
             # cache the url.
-            if($noRouting)
-               $return = '<?php echo Router::mapPathToURL(';
-            else
+            if($escape)
                $return = '<?php echo htmlspecialchars(Router::mapPathToURL(';
+            else
+               $return = '<?php echo Router::mapPathToURL(';
             $return .= var_export('/' . Router::normalize($path), true);
             if(!empty($parsedParameters))
                $return .= ',' . var_export($parsedParameters, true);
             chdir($oldDir);
-            return $nofilter ? "$return);?>" : ("$return), ENT_QUOTES, '" .
-               addcslashes(Smarty::$_CHARSET, "\\'") . "');?>");
+            return $escape ? ("$return), ENT_QUOTES, '" .
+               addcslashes(Smarty::$_CHARSET, "\\'") . "');?>") : "$return);?>";
          }
          # Caching gets even better. We now know that our routing will never
          # change, so we can really use the routing's result.
@@ -485,16 +485,169 @@ namespace {
                   [$path, $_current_file]));
             return '';
          }elseif(is_string($urls))
-            if($compiler->smarty->escape_html && !$nofilter)
+            if($escape)
                return htmlspecialchars($urls, ENT_QUOTES, Smarty::$_CHARSET);
             else
                return $urls;
-         elseif($compiler->smarty->escape_html && !$nofilter)
+         elseif($escape)
             return htmlspecialchars($urls[0], ENT_QUOTES, Smarty::$_CHARSET) .
                '<?php echo ServerEncoded;?>' .
                htmlspecialchars($urls[1], ENT_QUOTES, Smarty::$_CHARSET);
          else
-            return "{$urls[0]}<?php echo Server; ?>{$urls[1]}";
+            return "{$urls[0]}<?php echo Server;?>{$urls[1]}";
+      }
+
+   }
+
+   # This class does mostly the same as the URL one, but takes special care of
+   # language-dependent URLs
+   class Smarty_Internal_Compile_LURL extends Smarty_Internal_CompileBase {
+
+      public function compile($args, $compiler) {
+         # copy pieces of the getAttribute() behavior. As we want to allow as
+         # many named parameters and at least one unnamed, we cannot fully rely
+         # on the given parent function.
+         $parameters = [];
+         $escape = $compiler->smarty->escape_html;
+         foreach($args as $mixed) {
+            # shorthand?
+            if(!is_array($mixed)) {
+               if(trim($mixed, '\'"') === 'nofilter')
+                  $escape = false;
+               elseif(!isset($path))
+                  $path = $mixed;
+               else
+                  $compiler->trigger_template_error('too many shorthand attributes',
+                     $compiler->lex->taglineno);
+            }else{
+               if(isset($mixed['nofilter']))
+                  if(is_string($mixed['nofilter']) && in_array(trim($mixed['nofilter'],
+                           '\'"'), ['true', 'false']))
+                     $escape &= trim($mixed['nofilter'], '\'"') !== 'true';
+                  elseif(is_numeric($mixed['nofilter']) && in_array($mixed['nofilter'],
+                        [0, 1]))
+                     $escape &= $mixed['nofilter'] != 1;
+                  else
+                     $compiler->trigger_template_error("illegal value of option flag \"nofilter\"",
+                        $compiler->lex->taglineno);
+               else{ // named attribute
+                  $attr = each($mixed);
+                  $parameters[$attr['key']] = $attr['value'];
+               }
+            }
+         }
+         unset($mixed);
+         if(!isset($path))
+            $compiler->trigger_template_error("missing url attribute",
+               $compiler->lex->taglineno);
+         $_current_file = $compiler->smarty->_current_file;
+         $oldDir = getcwd();
+         static $dirCaches = [];
+         if(!isset($dirCaches[$_current_file])) {
+            # We need to get the file name of the template that is actually
+            # executed. $smarty->_current_file serves as a hint: It contains
+            # either an absolute path (relative to /) or a relative path to cwd.
+            # As the maximum level of "absoluteness" we work with in FIM is
+            # CodeDir, we will first have to cut off everything that goes beyond
+            # CodeDir
+            static $cdl = null;
+            if(!isset($cdl))
+               $cdl = strlen(CodeDir);
+            $currentFile = str_replace('\\', '/', $_current_file);
+            if(substr($currentFile, 0, $cdl) === CodeDir)
+               $currentFile = substr($currentFile, $cdl - 1);# Keep trailing /
+            $currentFile = Router::normalize($currentFile, false, false);
+            $dirCaches[$_current_file] = dirname($currentFile);
+            # This is not very performant, but remember we only have to do it
+            # once while the template is being compiled.
+         }
+         chdir($dirCaches[$_current_file]);
+         # Now our cwd is assured to be the template's directory.
+         # This function depends on the current language, so we can never output
+         # static content. However, the path itself should be static, containing
+         # the replacement <L>.
+         try {
+            $tokens = token_get_all("<?php $path");
+            static $validTokens = [T_OPEN_TAG => true, T_CONSTANT_ENCAPSED_STRING => true,
+               T_ENCAPSED_AND_WHITESPACE => true, T_WHITESPACE => true];
+            foreach($tokens as $token)
+               if($token !== '.' && is_array($token))
+                  if(!isset($validTokens[$token[0]]))
+                     goto invalid;
+            $path = @eval("return $path;");
+            if($path !== '' && $path[0] === '/')
+               if(@$path[1] === '/')
+                  $path = substr($path, 1);
+               else
+                  $path = '/' . ResourceDir . $path;
+         }catch(Exception $e) {
+            invalid:
+            # This is supposed not to happen very often. While parameters will
+            # most likely be dynamic, the path itself should be static; so let's
+            # accept this performance drawback here.
+            $return = '<?php $oldDir=getcwd();chdir(' .
+               var_export($dirCaches[$_current_file], true) .
+               ');echo ';
+            if($escape)
+               $return .= 'htmlspecialchars(';
+            $return .= "Router::mapPathToURL(\$l->translatePath(fim\\parsePath($path))";
+            if(!empty($parameters)) {
+               $return .= ', [';
+               foreach($parameters as $key => $param)
+                  $return .= var_export($key, true) . "=>$param,";
+               $return .= ']';
+            }
+            if($escape)
+               $return .= "), ENT_QUOTES, '" . addcslashes(Smarty::$_CHARSET,
+                     "\\'") . "'";
+            $return .= ');chdir($oldDir);unset($oldDir);?>';
+            chdir($oldDir);
+            return $return;
+         }
+         try {
+            $parsedParameters = [];
+            foreach($parameters as $key => $param) {
+               $tokens = token_get_all($param);
+               foreach($tokens as $token)
+                  if($token !== '.' && is_array($token))
+                     if(!isset($validTokens[$token[0]]))
+                        goto invalid2;
+               $parsedParameters[$key] = @eval("return $param;");
+            }
+         }catch(Exception $e) {
+            invalid2:
+            # This is supposed to be the most likely case. We already have a
+            # parsed, static path, but at least one of our parameters is
+            # dynamic. We therefore do not need to do a chdir in the template,
+            # as we already know the whole path.
+            if($escape)
+               $return = '<?php echo htmlspecialchars(Router::mapPathToURL($l->translatePath(';
+            else
+               $return = '<?php echo Router::mapPathToURL($l->translatePath(';
+            $return .= var_export('/' . Router::normalize($path), true) . ')';
+            if(!empty($parameters)) {
+               $return .= ',[';
+               foreach($parameters as $key => $param)
+                  $return .= var_export($key, true) . '=>' . $param . ',';
+               $return .= ']';
+            }
+            chdir($oldDir);
+            return $escape ? ("$return), ENT_QUOTES, '" .
+               addcslashes(Smarty::$_CHARSET, "\\'") . "');?>") : "$return);?>";
+         }
+         # We cannot apply routings now, as the translatePath function only
+         # works for paths, not for urls. So everything is left to the runtime
+         # without further caching.
+         if($escape)
+            $return = '<?php echo htmlspecialchars(Router::mapPathToURL($l->translatePath(';
+         else
+            $return = '<?php echo Router::mapPathToURL($l->translatePath(';
+         $return .= var_export('/' . Router::normalize($path), true) . ')';
+         if(!empty($parsedParameters))
+            $return .= ',' . var_export($parsedParameters, true);
+         chdir($oldDir);
+         return $escape ? ("$return), ENT_QUOTES, '" .
+            addcslashes(Smarty::$_CHARSET, "\\'") . "');?>") : "$return);?>";
       }
 
    }
@@ -506,22 +659,22 @@ namespace {
          # many named or unnamed parameters (at least one), we cannot fully rely
          # on the given parent function.
          $_attr = [];
-         $nofilter = false;
+         $escape = $compiler->smarty->escape_html;
          foreach($args as $mixed) {
             # shorthand?
             if(!is_array($mixed)) {
                if(trim($mixed, '\'"') === 'nofilter')
-                  $nofilter = true;
+                  $escape = false;
                else
                   $_attr[] = $mixed;
             }else{
                if(isset($mixed['nofilter']))
                   if(is_string($mixed['nofilter']) && in_array(trim($mixed['nofilter'],
                            '\'"'), ['true', 'false']))
-                     $nofilter = trim($mixed['nofilter'], '\'"') === 'true';
+                     $escape &= trim($mixed['nofilter'], '\'"') !== 'true';
                   elseif(is_numeric($mixed['nofilter']) && in_array($mixed['nofilter'],
                         [0, 1]))
-                     $nofilter = $mixed['nofilter'] == 1;
+                     $escape &= $mixed['nofilter'] != 1;
                   else
                      $compiler->trigger_template_error("illegal value of option flag \"nofilter\"",
                         $compiler->lex->taglineno);
@@ -536,7 +689,7 @@ namespace {
          array_shift($_attr);
          if(!empty($_attr))
             $str .= ', [' . implode(', ', $_attr) . ']';
-         if($compiler->smarty->escape_html && !$nofilter)
+         if($escape)
             return "<?php echo htmlspecialchars($str), ENT_QUOTES, '" . addcslashes(Smarty::$_CHARSET,
                   "\\'") . "');?>";
          else

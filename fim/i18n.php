@@ -38,7 +38,7 @@ namespace {
        * @var ResourceBundle
        */
       private $bundle;
-      private $name;
+      private $locale;
       private $numberFormatters = [];
       private $dateFormatters = [];
 
@@ -120,7 +120,7 @@ namespace {
             if(isset($code) && isset($defaultRegions[$code]))
                $name = $defaultRegions[$code];
          }
-         $this->name = $name;
+         $this->locale = $name;
       }
 
       /**
@@ -161,8 +161,8 @@ namespace {
        * Formats a language key.
        * @param string $key The language key identifier
        * @param array $args Parameters that will be passed to
-       *    MessageFormatter::formatMessage
-       * @return string
+       *    MessageFormatter::formatMessage if the returned value was a string
+       * @return int|string|array|ResourceBundle
        * @see MessageFormatter
        */
       public final function get($key, array $args = []) {
@@ -187,10 +187,18 @@ namespace {
                return empty($args) ? $key : "$key: " . implode('|', $args);
             }
          }
-         if(empty($args))
+         if(empty($args) || !is_string($val))
             return $val;
          else
-            return MessageFormatter::formatMessage($this->name, $val, $args);
+            return MessageFormatter::formatMessage($this->locale, $val, $args);
+      }
+
+      /**
+       * Returns the locale of this language
+       * @return string
+       */
+      public final function getLocale() {
+         return $this->locale;
       }
 
       /**
@@ -228,7 +236,7 @@ namespace {
          $format = NumberFormatter::DECIMAL,
          $type = NumberFormatter::TYPE_DEFAULT) {
          if(!isset($this->numberFormatters[$format]))
-            $this->numberFormatters[$format] = new NumberFormatter($this->name,
+            $this->numberFormatters[$format] = new NumberFormatter($this->locale,
                $format);
          return $this->numberFormatters[$format]->format($number, $type);
       }
@@ -241,7 +249,7 @@ namespace {
        */
       public final function formatCurrency($currency, $type = 'USD') {
          if(!isset($this->numberFormatters[NumberFormatter::CURRENCY]))
-            $this->numberFormatters[NumberFormatter::CURRENCY] = new NumberFormatter($this->name,
+            $this->numberFormatters[NumberFormatter::CURRENCY] = new NumberFormatter($this->locale,
                NumberFormatter::CURRENCY);
          return $this->numberFormatters[NumberFormatter::CURRENCY]->formatCurrency($currency,
                $type);
@@ -263,7 +271,7 @@ namespace {
             throw new I18NException(self::$internalLanguage->get('i18n.format.invalidDateFormat'));
          $hash = "{$format}_" . IntlDateFormatter::NONE;
          if(!isset($this->dateFormatters[$hash]))
-            $this->dateFormatters[$hash] = new IntlDateFormatter($this->name,
+            $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
                $format, IntlDateFormatter::NONE, $this->timeZone,
                $this->calendar);
          return $this->dateFormatters[$hash]->format($timestamp);
@@ -285,7 +293,7 @@ namespace {
             throw new I18NException(self::$internalLanguage->get('i18n.format.invalidTimeFormat'));
          $hash = IntlDateFormatter::NONE . "_$format";
          if(!isset($this->dateFormatters[$hash]))
-            $this->dateFormatters[$hash] = new IntlDateFormatter($this->name,
+            $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
                IntlDateFormatter::NONE, $format, $this->timeZone,
                $this->calendar);
          return $this->dateFormatters[$hash]->format($timestamp);
@@ -316,9 +324,52 @@ namespace {
             throw new I18NException(self::$internalLanguage->get('i18n.format.invalidTimeFormat'));
          $hash = "{$dateFormat}_$timeFormat";
          if(!isset($this->dateFormatters[$hash]))
-            $this->dateFormatters[$hash] = new IntlDateFormatter($this->name,
+            $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
                $dateFormat, $timeFormat, $this->timeZone, $this->calendar);
          return $this->dateFormatters[$hash]->format($timestamp);
+      }
+
+      /**
+       * Translates a file path by replacing the placeholder &lt;L&gt; with the
+       * best-fit locale
+       * @param string $path
+       * @return string|false
+       */
+      public final function translatePath($path) {
+         $fullPath = Router::normalize($path, false, false);
+         static $localeParts;
+         if(!isset($localeParts))
+            $localeParts = Locale::parseLocale($this->locale);
+         $usedLocale = $localeParts;
+         while(!empty($usedLocale)) {
+            $composedLocale = Locale::composeLocale($usedLocale);
+            if(fileUtils::fileExists(str_replace('<L>', $composedLocale,
+                     $fullPath)))
+               return str_replace('<L>', $composedLocale, $path);
+            else
+               array_pop($usedLocale);
+         }
+         static $defaultLocale;
+         if(!isset($defaultLocale))
+            $defaultLocale = Locale::parseLocale(Locale::getDefault());
+         if($defaultLocale !== $localeParts) {
+            $usedLocale = $defaultLocale;
+            while(!empty($usedLocale)) {
+               $composedLocale = Locale::composeLocale($usedLocale);
+               if(fileUtils::fileExists(str_replace('<L>', $composedLocale,
+                        $fullPath)))
+                  return str_replace('<L>', $composedLocale, $path);
+               else
+                  array_pop($usedLocale);
+            }
+         }
+         if(fileUtils::fileExists(str_replace('<L>', 'root', $fullPath)))
+            return str_replace('<L>', 'root', $path);
+         else{
+            Log::reportError(self::$internalLanguage->get('i18n.translatePath.notFound',
+                  ['/' . Router::normalize($path)]), true);
+            return false;
+         }
       }
 
       /**
@@ -332,7 +383,7 @@ namespace {
          $format = NumberFormatter::DECIMAL,
          $type = NumberFormatter::TYPE_DOUBLE) {
          if(!isset($this->numberFormatters[$format]))
-            $this->numberFormatters[$format] = new NumberFormatter($this->name,
+            $this->numberFormatters[$format] = new NumberFormatter($this->locale,
                $format);
          return $this->numberFormatters[$format]->parse($number, $type);
       }
@@ -345,7 +396,7 @@ namespace {
        */
       public final function parseCurrency($currency, &$type) {
          if(!isset($this->numberFormatters[NumberFormatter::CURRENCY]))
-            $this->numberFormatters[NumberFormatter::CURRENCY] = new NumberFormatter($this->name,
+            $this->numberFormatters[NumberFormatter::CURRENCY] = new NumberFormatter($this->locale,
                NumberFormatter::CURRENCY);
          return $this->numberFormatters[NumberFormatter::CURRENCY]->parseCurrency(str_replace("\x20",
                   "\xC2\xA0", $currency), $type);
@@ -367,7 +418,7 @@ namespace {
             throw new I18NException(self::$internalLanguage->get('i18n.format.invalidDateFormat'));
          $hash = "{$format}_" . IntlDateFormatter::NONE;
          if(!isset($this->dateFormatters[$hash]))
-            $this->dateFormatters[$hash] = new IntlDateFormatter($this->name,
+            $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
                $format, IntlDateFormatter::NONE, $this->timeZone,
                $this->calendar);
          return $this->dateFormatters[$hash]->parse($date);
@@ -388,7 +439,7 @@ namespace {
             throw new I18NException(self::$internalLanguage->get('i18n.format.invalidTimeFormat'));
          $hash = IntlDateFormatter::NONE . "_$format";
          if(!isset($this->dateFormatters[$hash]))
-            $this->dateFormatters[$hash] = new IntlDateFormatter($this->name,
+            $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
                IntlDateFormatter::NONE, $format, $this->timeZone,
                $this->calendar);
          return $this->dateFormatters[$hash]->parse($time);
@@ -418,7 +469,7 @@ namespace {
             throw new I18NException(self::$internalLanguage->get('i18n.format.invalidTimeFormat'));
          $hash = "{$dateFormat}_$timeFormat";
          if(!isset($this->dateFormatters[$hash]))
-            $this->dateFormatters[$hash] = new IntlDateFormatter($this->name,
+            $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
                $dateFormat, $timeFormat, $this->timeZone, $this->calendar);
          return $this->dateFormatters[$hash]->parse($dateTime);
       }
@@ -434,7 +485,7 @@ namespace {
        */
       public final function getTimeZone() {
          if(!isset($this->timeZone)) {
-            $timezones = IntlTimeZone::createEnumeration(Locale::getRegion($this->name));
+            $timezones = IntlTimeZone::createEnumeration(Locale::getRegion($this->locale));
             if(($timezone = $timezones->current()) === null)
                $timezone = 'GMT';
             $this->timeZone = IntlTimeZone::createTimeZone($timezone);
@@ -465,7 +516,7 @@ namespace {
       public final function getCalendar() {
          if(!isset($this->calendar))
             $this->calendar = IntlCalendar::createInstance($this->getTimeZone(),
-                  $this->name);
+                  $this->locale);
          return $this->calendar;
       }
 
@@ -521,17 +572,23 @@ namespace {
 
 namespace fim {
 
+   /**
+    * This helper class is set as default for uninitialized languages.
+    */
    class noLanguage {
 
       private static $logged = false;
 
-      public function get($key) {
+      public function __call($name, $arguments) {
          if(!self::$logged) {
             self::$logged = true;
-            Log::reportError(self::$internalLanguage->get('i18n.get.noLanguage',
-                  [$key]), true);
+            \Log::reportError(\I18N::getInternalLanguage()->get('i18n.get.noLanguage'),
+               true);
          }
-         return $key;
+         if($name === 'get')
+            return reset($arguments);
+         else
+            return false;
       }
 
    }

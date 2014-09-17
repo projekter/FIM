@@ -27,7 +27,8 @@ root {
    i18n.init.double { "\\I18N::initialize() was already called." }
    i18n.get.notFound.internal { "The internal language key \"{0}\" was not found." }
    i18n.get.notFound { "The language key \"{0}\" was not found." }
-   i18n.get.noLanguage { "No language files were found, but an attempt was made to get the language key \"{0}\"." }
+   i18n.get.noLanguage { "No language files were found, but an attempt was made to use localization functions." }
+   i18n.translatePath.notFound { "No translation of the path \"{0}\" could be found." }
    i18n.format.invalidDateFormat { "The format that was given to format a date was invalid." }
    i18n.format.invalidTimeFormat { "The format that was given to format a time was invalid." }
    rules.filename.content { "An attempt was made to find rules for the file \"{0}\", which lies beyond the content/ directory." }
