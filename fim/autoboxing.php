@@ -427,7 +427,7 @@ abstract class {$class->getShortName()} {
                               $val = "\$$name";
                            $parseTypeHint = false;
                         }catch(\ReflectionException $E) {
-                           \Log::reportError(\I18N::getInternalLanguage()->get('autoboxing.reflectionException',
+                           \Log::reportInternalError(\I18N::getInternalLanguage()->get('autoboxing.reflectionException',
                                  [$types[$name], $m->getFileName(), $m->name]));
                         }
                   }else
@@ -438,7 +438,7 @@ abstract class {$class->getShortName()} {
                            $parseTypeHint = false;
                         }
                      }catch(\ReflectionException $E) {
-                        \Log::reportError(\I18N::getInternalLanguage()->get('autoboxing.reflectionException',
+                        \Log::reportInternalError(\I18N::getInternalLanguage()->get('autoboxing.reflectionException',
                               [$types[$name], $m->getFileName(), $m->name]));
                      }
             }

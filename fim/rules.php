@@ -380,10 +380,10 @@ Cache;
          if(isset($rulesContent[0]) && strcasecmp(trim($rulesContent[0]),
                'delete') === 0) {
             if(is_file($fileName) && !@unlink($fileName))
-               Log::reportError(I18N::getInternalLanguage()->get('rules.cache.unlinkError.cache',
+               Log::reportInternalError(I18N::getInternalLanguage()->get('rules.cache.unlinkError.cache',
                      [$fileName]));
             if(!@unlink($rulesFile))
-               Log::reportError(I18N::getInternalLanguage()->get('rules.cache.unlinkError.rules',
+               Log::reportInternalError(I18N::getInternalLanguage()->get('rules.cache.unlinkError.rules',
                      [$rulesFile]));
             return null;
          }

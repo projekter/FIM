@@ -23,11 +23,10 @@ de {
    executor.directorylisting.empty { "Das Verzeichnis ist leer." }
    executor.error.log { "Es ist der Fehler {0,number} beim Aufruf der URI {1} {2, select, none {ausgelöst worden.} other { mit folgenden Zusatzangaben ausgelöst worden:\n{2}\n====}}{3, select, none {} other {\nFolgender Stacktrace liegt vor:\n{3}}}" }
    executor.error.production { "Beim Verarbeiten der Anforderung ist Fehler {0,number} aufgetreten." }
-   i18n.setupWrong { "FIM wurde mit fehlerhaften Sprachdateien eingerichtet. Das Laden der Sprache \"{0}\" ist fehlgeschlagen. Stellen Sie sicher, dass die Hauptfallback-Sprache \"root\" genannt wird." }
    i18n.init.double { "\\I18N::initialize() wurde bereits aufgerufen." }
    i18n.get.notFound.internal { "Der interne Sprachschlüssel \"{0}\" wurde nicht gefunden." }
    i18n.get.notFound { "Der Sprachschlüssel \"{0}\" wurde nicht gefunden." }
-   i18n.get.noLanguage { "Es wurde keine Sprachdateien gefunden; dennoch wurde versucht, die Lokalisierungsfunktionen zu verwenden." }
+   i18n.get.noLanguage { "Es wurde keine Sprachdateien gefunden; dennoch wurde versucht, auf den Sprachschlüssel \"{0}\" zuzugreifen." }
    i18n.translatePath.notFound { "Für den Pfad \"{0}\" wurde keine Entsprechung gefunden." }
    i18n.format.invalidDateFormat { "Das Format, das zur Formatierung eines Datums übergeben wurde, war ungültig." }
    i18n.format.invalidTimeFormat { "Das Format, das zur Formatierung einer Zeit übergeben wurde, war ungültig." }
@@ -45,8 +44,9 @@ de {
    rules.call.notFound { "Die Methode {0} einer Regelklasse wurde nicht gefunden." }
    log.init.failed { "Das logs/-Verzeichnis konnte nicht erstellt werden. Bitte stellen Sie sicher, dass es ein Unterverzeichnis zum Framework mit dem Namen 'logs' gibt. Der empfohlene chmod-Wert ist 0700." }
    log.mail.subject { "Fehlermeldung auf {0}" }
-   log.mail.internal { "Hinweis: Dies ist eine automatisch generierte Meldung.\nIn FIM trat ein interner Fehler auf. Bitte benachrichtigen Sie ggf. den Support. Die folgende Meldung wurde zurückgegeben:\n====\n{0}\n====\nSie können diesen Fehler auch im \"logs\"-Verzeichnis in der Datei \"error.log\" nachlesen.\nNachfolgend wird der Inhalt der _SERVER-Variable dargestellt:\n====\n{1}\n====Es liegt folgender Stack vor:\n====\n{2}" }
-   log.mail.custom { "Hinweis: Dies ist eine automatisch generierte Meldung.\nIn FIM trat ein Fehler auf, der durch Ihre Skripte hervorgerufen wurde. Die folgende Meldung wurde zurückgegeben:\n====\n{0}\n====\nSie können diesen Fehler auch im \"logs\"-Verzeichnis in der Datei \"customError.log\" nachlesen.\nNachfolgend wird der Inhalt der _SERVER-Variable dargestellt:\n====\n{1}\n====Es liegt folgender Stack vor:\n====\n{2}" }
+   log.mail.internal { "Hinweis: Dies ist eine automatisch generierte Meldung.\nIn FIM trat ein interner Fehler auf. Bitte benachrichtigen Sie ggf. den Support. Die folgende Meldung wurde zurückgegeben:\n====\n{0}\n====\nSie können diesen Fehler auch im \"logs\"-Verzeichnis in der Datei \"internalError.log\" nachlesen.\nNachfolgend wird der Inhalt der _SERVER-Variable dargestellt:\n====\n{1}\n====Es liegt folgender Stack vor:\n====\n{2}" }
+   log.mail.error { "Hinweis: Dies ist eine automatisch generierte Meldung.\nIn FIM trat ein unkritischer Fehler auf, der durch Konfigurationsmängel hervorgerufen wurde. Die folgende Meldung wurde zurückgegeben:\n====\n{0}\n====\nSie können diesen Fehler auch im \"logs\"-Verzeichnis in der Datei \"error.log\" nachlesen.\nNachfolgend wird der Inhalt der _SERVER-Variable dargestellt:\n====\n{1}\n====Es liegt folgender Stack vor:\n====\n{2}" }
+   log.mail.custom { "Hinweis: Dies ist eine automatisch generierte Meldung.\nIn FIM wurde manuell eine Fehlermeldung erzeugt. Die folgende Meldung wurde zurückgegeben:\n====\n{0}\n====\nSie können diesen Fehler auch im \"logs\"-Verzeichnis in der Datei \"customError.log\" nachlesen.\nNachfolgend wird der Inhalt der _SERVER-Variable dargestellt:\n====\n{1}\n====Es liegt folgender Stack vor:\n====\n{2}" }
    log.mail.failed { "Interner Fehler in FIM: Es konnte keine automatische Fehlerbenachrichtigung per Mail gesendet werden. Fehlermeldung: {0}" }
    log.message { "Es ist ein Fehler aufgetreten und die Ausführung wurde beendet. Bitte informieren Sie einen Administrator über Fehler #{0}." }
    log.exception { "Es ist eine unbehandelte Exception vom Typ {0} aufgetreten. Details:\n{1}" }

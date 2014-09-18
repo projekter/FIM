@@ -23,11 +23,10 @@ root {
    executor.directorylisting.empty { "The directory is empty." }
    executor.error.log { "The error {0,number} was triggered while invoking the URI {1}{2, select, none {.} other { with additional information:\n{2}\n====}}{3, select, none {} other {\nThe following stacktrace is given:\n{3}}}" }
    executor.error.production { "The error {0,number} occurred while processing the request." }
-   i18n.setupWrong { "FIM was set up with invalid language files. Loading the language \"{0}\" failed. Please assure that the main fallback language is called \"root\"." }
    i18n.init.double { "\\I18N::initialize() was already called." }
    i18n.get.notFound.internal { "The internal language key \"{0}\" was not found." }
    i18n.get.notFound { "The language key \"{0}\" was not found." }
-   i18n.get.noLanguage { "No language files were found, but an attempt was made to use localization functions." }
+   i18n.get.noLanguage { "No language files were found, but an attempt was made to get the language key \"{0}\"." }
    i18n.translatePath.notFound { "No translation of the path \"{0}\" could be found." }
    i18n.format.invalidDateFormat { "The format that was given to format a date was invalid." }
    i18n.format.invalidTimeFormat { "The format that was given to format a time was invalid." }
@@ -45,8 +44,9 @@ root {
    rules.call.notFound { "The method {0} of a rules class was not found." }
    log.init.failed { "The logs/ directory could not be created. Please assure that a subdirectory of the framework named 'logs'. The recommended chmod value is 0700." }
    log.mail.subject { "Error on {0}" }
-   log.mail.internal { "Hint: This is an auto-generated message.\nAn internal error occurred within FIM. Please notify the support if necessary. The following message was returned:\n====\n{0}\n====\nYou can review this error in the file \"error.log\" within the \"logs\" directory as well.\nThe content of the _SERVER variable was as follows:\n====\n{1}\n====The following stack is given:\n====\n{2}" }
-   log.mail.custom { "Hint: This is an auto-generated message.\nAn error occurred within FIM which was raised by your scripts. The following message was returned:\n====\n{0}\n====\nYou can review this error in the file \"customError.log\" within the \"logs\" directory as well.\nThe content of the _SERVEr variable was as follows:\n====\n{1}\n====The following stack is given:\n====\n{2}" }
+   log.mail.internal { "Hint: This is an auto-generated message.\nAn internal error occurred within FIM. Please notify the support if necessary. The following message was returned:\n====\n{0}\n====\nYou can review this error in the file \"internalError.log\" within the \"logs\" directory as well.\nThe content of the _SERVER variable was as follows:\n====\n{1}\n====The following stack is given:\n====\n{2}" }
+   log.mail.error { "Hint: This is an auto-generated message.\nAn uncritical error occurred within FIM due to configuration issues. The following message was returned:\n====\n{0}\n====\nYou can review this error in the file \"error.log\" within the \"logs\" directory as well.\nThe content of the _SERVER variable was as follows:\n====\n{1}\n====The following stack is given:\n====\n{2}" }
+   log.mail.custom { "Hint: This is an auto-generated message.\nAn error message was raised manually. The following message was returned:\n====\n{0}\n====\nYou can review this error in the file \"customError.log\" within the \"logs\" directory as well.\nThe content of the _SERVEr variable was as follows:\n====\n{1}\n====The following stack is given:\n====\n{2}" }
    log.mail.failed { "Internal error within FIM: Automatic error notification via mail failed. Error message: {0}" }
    log.message { "An error occured and execution was halted. Please notify an administrator about error #{0}." }
    log.exception { "An unhandled exception of type {0} was thrown. Details:\n{1}" }

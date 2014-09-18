@@ -718,7 +718,7 @@ listing;
             }else
                return false;
          })) {
-         # No handler found; change the status code and echo a the error or a
+         # No handler found; change the status code and echo the error or a
          # generic phrase if in production.
          \Response::$responseCode = (\Response::translateHTTPCode($errno) !== null)
                ? $errno : 500;
@@ -739,7 +739,7 @@ listing;
             echo $language->get('executor.error.production', [$errno]);
          else
             echo $logStr;
-         \Log::reportCustomError($logStr, true);
+         \Log::reportError($logStr, true);
       }
    }
 

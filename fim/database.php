@@ -79,10 +79,10 @@ abstract class Database {
       if(isset($connectionContent[0]) && strcasecmp(trim($connectionContent[0]),
             'delete') === 0) {
          if(is_file($fileName) && !@unlink($fileName))
-            Log::reportError(I18N::getInternalLanguage()->get('database.cache.unlinkError.cache',
+            Log::reportInternalError(I18N::getInternalLanguage()->get('database.cache.unlinkError.cache',
                   [$fileName]));
          if(!@unlink($connectionFile))
-            Log::reportError(I18N::getInternalLanguage()->get('database.cache.unlinkError.rules',
+            Log::reportInternalError(I18N::getInternalLanguage()->get('database.cache.unlinkError.rules',
                   [$connectionFile]));
          return false;
       }
@@ -115,7 +115,7 @@ Cache;
       # If there is a parsing error, make use of the shutdown function which
       # will write this error to the log
       $shutdownKey = Config::registerShutdownFunction(function() use ($fileName, $connectionFile) {
-            Log::reportError(I18N::getInternalLanguage()->get('database.cache.syntaxErrorHard',
+            Log::reportInternalError(I18N::getInternalLanguage()->get('database.cache.syntaxErrorHard',
                   [$connectionFile, $fileName]));
          });
       try {

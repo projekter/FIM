@@ -55,12 +55,10 @@ namespace {
       private function __construct($name, ResourceBundle $bundle = null) {
          if($bundle === null) {
             $this->bundle = new \fim\noLanguage();
-            # So let's issue a warning
-            if(self::$internalLanguage !== null)
-               Log::reportError(self::$internalLanguage->get('i18n.setupWrong',
-                     [$name]));
-            else
-               Log::reportError("FIM was set up with incorrect language files. The loading of the language \"$name\" did not succeed. Make sure your main fallback language is named \"root\".");
+            # So let's issue a warning if the failing was the internal language.
+            # The application may not make use of our language handling.
+            if(self::$internalLanguage === null)
+               Log::reportInternalError("FIM could not load its internal language data.");
          }else
             $this->bundle = $bundle;
          $name = Locale::canonicalize($name);
@@ -136,7 +134,7 @@ namespace {
             throw new I18NException("The internal language $locale did not exist. FIM could not be initialized.");
          self::$internalLanguage = new I18N($locale, $rbi);
          $rbc = new ResourceBundle($locale, CodeDir . 'language', true);
-         self::$activeLanguage = ($rbc !== null) ? new I18N($locale, $rbc) : new \fim\noLanguage();
+         self::$activeLanguage = new I18N($locale, $rbc);
       }
 
       /**
@@ -176,10 +174,10 @@ namespace {
             else{
                if($this === self::$internalLanguage)
                   if($key !== 'i18n.get.notFound.internal')
-                     Log::reportError(self::$internalLanguage->get('i18n.get.notFound.internal',
+                     Log::reportInternalError(self::$internalLanguage->get('i18n.get.notFound.internal',
                            [$key]), true);
                   else
-                     Log::reportError("The internal language key \"$key\" was not found.",
+                     Log::reportInternalError("The internal language key \"$key\" was not found.",
                         true);
                else
                   Log::reportError(self::$internalLanguage->get('i18n.get.notFound',
@@ -573,22 +571,20 @@ namespace {
 namespace fim {
 
    /**
-    * This helper class is set as default for uninitialized languages.
+    * This helper class is set as default for uninitialized languages. It is
+    * placeholder for a ResourceBundle
     */
    class noLanguage {
 
       private static $logged = false;
 
-      public function __call($name, $arguments) {
+      public function get($key) {
          if(!self::$logged) {
             self::$logged = true;
-            \Log::reportError(\I18N::getInternalLanguage()->get('i18n.get.noLanguage'),
-               true);
+            Log::reportCustomError(self::$internalLanguage->get('i18n.get.noLanguage',
+                  [$key]), true);
          }
-         if($name === 'get')
-            return reset($arguments);
-         else
-            return false;
+         return $key;
       }
 
    }

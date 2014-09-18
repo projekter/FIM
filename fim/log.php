@@ -23,7 +23,8 @@ if(@FrameworkPath === 'FrameworkPath')
  */
 abstract class Log {
 
-   private static $systemErrors = null, $customErrors = null, $inMail = false;
+   private static $internalErrors = null, $errors = null, $customErrors = null,
+      $inMail = false;
 
    private final function __construct() {
 
@@ -33,7 +34,8 @@ abstract class Log {
       $dir = CodeDir . 'logs';
       if(!(is_dir($dir) || mkdir($dir, 0700)))
          throw new LoggerException(I18N::getInternalLanguage()->get('log.init.failed'));
-      self::$systemErrors = fopen("$dir/error.log", 'a+');
+      self::$internalErrors = fopen("$dir/internalError.log", 'a+');
+      self::$errors = fopen("$dir/error.log", 'a+');
       self::$customErrors = fopen("$dir/customError.log", 'a+');
    }
 
@@ -51,27 +53,28 @@ abstract class Log {
          self::errorHandler($e['type'], $e['message'], $e['file'], $e['line'],
             null, true);
       }
-      if(self::$systemErrors !== null) {
-         fclose(self::$systemErrors);
+      if(self::$internalErrors !== null) {
+         fclose(self::$internalErrors);
+         fclose(self::$errors);
          fclose(self::$customErrors);
-         self::$systemErrors = self::$customErrors = null;
+         self::$internalErrors = self::$errors = self::$customErrors = null;
       }
    }
 
    /**
-    * Adds an error message to the error log of the framework
+    * Adds an error message to the internal error log of the framework
     * @param string $message
     * @param bool $noMail Do not send a mail notification for this error
     */
-   public static final function reportError($message, $noMail = false) {
-      if(self::$systemErrors === null)
+   public static final function reportInternalError($message, $noMail = false) {
+      if(self::$internalErrors === null)
          self::createLogHandles();
       if(self::$inMail) {
-         @fwrite(self::$systemErrors,
+         @fwrite(self::$internalErrors,
                I18N::getInternalLanguage()->get('log.mail.failed', [$message]));
          return;
       }
-      @fwrite(self::$systemErrors, "$message\r\n");
+      @fwrite(self::$internalErrors, "$message\r\n");
       # If an error occurs while sending a mail, we will get endless recursion.
       # So we introduce a global flag to prevent this.
       self::$inMail = true;
@@ -93,10 +96,29 @@ abstract class Log {
                         true)]));
          }
       }catch(Exception $e) {
-         @fwrite(self::$systemErrors,
+         @fwrite(self::$internalErrors,
                I18N::getInternalLanguage()->get('log.mail.failed', [(string)$e]));
       }# finally (but we need to support PHP 5.4
       self::$inMail = false;
+   }
+
+   /**
+    * Adds an error message to the default error log
+    * @param string $message
+    * @param bool $noMail Do not send a mail notification for this error
+    */
+   public static final function reportError($message, $noMail = false) {
+      if(self::$internalErrors === null)
+         self::createLogHandles();
+      @fwrite(self::$errors, "$message\r\n");
+      if(!$noMail && (($mailError = Config::get('mailErrorsTo')) !== false)) {
+         $language = I18N::getInternalLanguage();
+         Response::mail($mailError,
+            $language->get('log.mail.subject', [Request::getFullURL()]),
+            $language->get('log.mail.error',
+               [$message, print_r($_SERVER, true), print_r(debug_backtrace(),
+                  true)]));
+      }
    }
 
    /**
@@ -105,7 +127,7 @@ abstract class Log {
     * @param bool $noMail Do not send a mail notification for this error
     */
    public static final function reportCustomError($message, $noMail = false) {
-      if(self::$systemErrors === null)
+      if(self::$internalErrors === null)
          self::createLogHandles();
       @fwrite(self::$customErrors, "$message\r\n");
       if(!$noMail && (($mailError = Config::get('mailErrorsTo')) !== false)) {
@@ -156,7 +178,7 @@ abstract class Log {
          E_DEPRECATED => 'E_DEPRECATED',
          E_USER_DEPRECATED => 'E_USER_DEPRECATED'];
       $errtype = isset($errorCodes[$errno]) ? $errorCodes[$errno] : '(unknown error type)';
-      self::reportError("[$errid] $errtype: $errstr\r\n   -> $errfile : $errline\r\n");
+      self::reportInternalError("[$errid] $errtype: $errstr\r\n   -> $errfile : $errline\r\n");
       if(Config::get('production')) {
          switch($errno) {
             case E_ERROR:
@@ -184,16 +206,16 @@ abstract class Log {
       if(($l = I18N::getInternalLanguage()) === null) {
          # Language is not set up. This is only possible in a very early state
          # of FIM's initialization.
-         self::reportError("[$errid] An unhandled exception of type " .
+         self::reportInternalError("[$errid] An unhandled exception of type " .
             get_class($E) . " has occured. Details:\n$E");
          echo "An error has occured and the execution was halted. Please inform an administrator of error $errid.";
          return;
       }
       if($E instanceof FIMException)
-         self::reportError("[$errid] " . $l->get('log.exception',
+         self::reportInternalError("[$errid] " . $l->get('log.exception',
                [get_class($E), (string)$E]));
       else
-         self::reportCustomError("[$errid] " . $l->get('log.exception',
+         self::reportError("[$errid] " . $l->get('log.exception',
                [get_class($E), (string)$E]));
       if(Config::get('production'))
          echo $l->get('log.message', [$errid]);

@@ -529,7 +529,7 @@ class Memcached {
          $header);
       if($header['Magic'] !== 0x81) {
          $this->status = self::RES_PROTOCOL_ERROR;
-         Log::reportError(I18N::getInternalLanguage()->get('memcachedStandalone.invalidProtocol'));
+         Log::reportInternalError(I18N::getInternalLanguage()->get('memcachedStandalone.invalidProtocol'), true);
          return false;
       }
       $extra = ($header['ExtraLen'] > 0) ? @fread($this->sock,
@@ -547,7 +547,7 @@ class Memcached {
          return false;
       if($return['opcode'] !== $opcode) {
          $this->status = self::RES_PROTOCOL_ERROR;
-         Log::reportError(I18N::getInternalLanguage()->get('memcachedStandalone.invalidProtocol'));
+         Log::reportInternalError(I18N::getInternalLanguage()->get('memcachedStandalone.invalidProtocol'), true);
          return false;
       }
       switch($return['status']) {
@@ -580,7 +580,7 @@ class Memcached {
             return false;
          default:
             $this->status = self::RES_PROTOCOL_ERROR;
-            Log::reportError(I18N::getInternalLanguage()->get('memcachedStandalone.invalidProtocol'));
+            Log::reportInternalError(I18N::getInternalLanguage()->get('memcachedStandalone.invalidProtocol'), true);
             return false;
       }
    }
