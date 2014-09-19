@@ -106,7 +106,7 @@ namespace {
                   ->fetch(CodeDir . $templateFile);
          }catch(SmartyException $E) {
             chdir(CodeDir . $this->modulePath);
-            throw new ModuleException(I18N::getInternalLanguage()->get('module.template.exception',
+            throw new ModuleException(I18N::getInternalLanguage()->get(['module', 'template', 'exception'],
                [$templateFile]), 0, $E);
          }
          chdir(CodeDir . $this->modulePath);
@@ -287,7 +287,7 @@ namespace {
        */
       protected final function redirect($to, array $parameters = []) {
          if(($to = Router::mapPathToURL(fim\parsePath($to), $parameters)) === false)
-            throw new ModuleException(I18N::getInternalLanguage()->get('module.redirect.invalid',
+            throw new ModuleException(I18N::getInternalLanguage()->get(['module', 'redirectInvalid'],
                [$to]));
          Response::set('Location', $to);
          throw new ForwardException();
@@ -497,7 +497,7 @@ namespace {
          # relative paths in templates without referencing them by "./".
          # $urls now is either a string (output directly) or an array
          if($urls === false) {
-            Log::reportError(I18N::getInternalLanguage()->get('module.template.url',
+            Log::reportError(I18N::getInternalLanguage()->get(['module', 'template', 'url'],
                   [$path, $_current_file]));
             return '';
          }elseif(is_string($urls))

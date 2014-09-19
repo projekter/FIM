@@ -33,24 +33,24 @@ abstract class Table implements fimSerializable {
 
    protected function __construct() {
       if(!isset(static::$columns))
-         throw new TableException(I18N::getInternalLanguage()->get('table.definition.invalid',
+         throw new TableException(I18N::getInternalLanguage()->get(['table', 'definitionInvalid'],
             [get_class($this)]));
    }
 
    public final function __get($name) {
       if(!isset($this->fields))
-         throw new TableException(I18N::getInternalLanguage()->get('table.deleted',
+         throw new TableException(I18N::getInternalLanguage()->get(['table', 'deleted'],
             [static::getStaticStorage('tableName')]));
       if(isset($this->fields[$name]) || @array_key_exists($name, $this->fields))
          return $this->fields[$name];
       else
-         throw new TableException(I18N::getInternalLanguage()->get('table.field.unknown',
+         throw new TableException(I18N::getInternalLanguage()->get(['table', 'field', 'unknown'],
             [static::getStaticStorage('tableName'), $name]));
    }
 
    public function __set($name, $value) {
       if(!isset($this->fields))
-         throw new TableException(I18N::getInternalLanguage()->get('table.deleted',
+         throw new TableException(I18N::getInternalLanguage()->get(['table', 'deleted'],
             [static::getStaticStorage('tableName')]));
       if(isset($this->fields[$name]) || @array_key_exists($name, $this->fields)) {
          $method = "set$name";
@@ -58,26 +58,26 @@ abstract class Table implements fimSerializable {
             if($this->$method($value) !== false)
                $this->fields[$name] = $value;
          }else
-            throw new TableException(I18N::getInternalLanguage()->get('table.field.readOnly',
+            throw new TableException(I18N::getInternalLanguage()->get(['table', 'field', 'readOnly'],
                [$name, static::getStaticStorage('tableName')]));
       }else
-         throw new TableException(I18N::getInternalLanguage()->get('table.field.unknown',
+         throw new TableException(I18N::getInternalLanguage()->get(['table', 'field', 'unknown'],
             [static::getStaticStorage('tableName'), $name]));
    }
 
    public final function __isset($name) {
       if(!isset($this->fields))
-         throw new TableException(I18N::getInternalLanguage()->get('table.deleted',
+         throw new TableException(I18N::getInternalLanguage()->get(['table', 'deleted'],
             [static::getStaticStorage('tableName')]));
       return isset($this->fields[$name]);
    }
 
    public final function __sleep() {
-      throw new TableException(I18N::getInternalLanguage()->get('table.serialize'));
+      throw new TableException(I18N::getInternalLanguage()->get(['table', 'serialize']));
    }
 
    public final function __wakeup() {
-      throw new TableException(I18N::getInternalLanguage()->get('table.unserialize'));
+      throw new TableException(I18N::getInternalLanguage()->get(['table', 'unserialize']));
    }
 
    /**

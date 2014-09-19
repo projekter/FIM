@@ -97,8 +97,8 @@ namespace {
                $closure = $this->checkListing;
                break;
             default:
-               throw new RulesException(I18N::getInternalLanguage()->get('rules.call.notFound',
-                  [$name]));
+               throw new RulesException(I18N::getInternalLanguage()->get(['rules',
+                  'callNotFound'], [$name]));
          }
          return isset($closure) ? \fim\Autoboxing::callFunction($closure,
                ['fileName' => $arguments[0], 'fullName' => $arguments[1]]) : null;
@@ -255,8 +255,8 @@ namespace {
       public static final function check($fileName, $checkFor) {
          $hierarchy = Router::normalize($fileName, true);
          if(empty($hierarchy) || $hierarchy[0] !== ResourceDir)
-            throw new RulesException(I18N::getInternalLanguage()->get(CLI ? 'rules.filename.script'
-                     : 'rules.filename.content', [$fileName]));
+            throw new RulesException(I18N::getInternalLanguage()->get(['rules', 'invalidFilenameScope'],
+               [$fileName, CLI ? 'script' : 'content']));
          $folder = ResourceDir;
          $oldDir = getcwd();
          chdir(CodeDir);
@@ -320,8 +320,8 @@ namespace {
       public static final function checkFilterExistence($fileName) {
          $hierarchy = Router::normalize($fileName, true);
          if(empty($hierarchy) || $hierarchy[0] !== ResourceDir)
-            throw new RulesException(I18N::getInternalLanguage()->get(CLI ? 'rules.filename.script'
-                     : 'rules.filename.content', [$fileName]));
+            throw new RulesException(I18N::getInternalLanguage()->get(['rules', 'invalidFilenameScope'],
+               [$fileName, CLI ? 'script' : 'content']));
          $folder = CodeDir . ResourceDir;
          array_shift($hierarchy);
          if(is_dir($fileName))
@@ -380,11 +380,11 @@ Cache;
          if(isset($rulesContent[0]) && strcasecmp(trim($rulesContent[0]),
                'delete') === 0) {
             if(is_file($fileName) && !@unlink($fileName))
-               Log::reportInternalError(I18N::getInternalLanguage()->get('rules.cache.unlinkError.cache',
-                     [$fileName]));
+               Log::reportInternalError(I18N::getInternalLanguage()->get(['rules',
+                     'cache', 'unlinkError', 'cache'], [$fileName]));
             if(!@unlink($rulesFile))
-               Log::reportInternalError(I18N::getInternalLanguage()->get('rules.cache.unlinkError.rules',
-                     [$rulesFile]));
+               Log::reportInternalError(I18N::getInternalLanguage()->get(['rules',
+                     'cache', 'unlinkError', 'rules'], [$rulesFile]));
             return null;
          }
          static $sections = ['Existence', 'Reading', 'Listing'];
@@ -404,19 +404,19 @@ Cache;
          $cacheContent .= "
    $directory);";
          if(file_put_contents($fileName, $cacheContent) === false)
-            throw new RulesException(I18N::getInternalLanguage()->get('rules.cache.writeError',
-               [$fileName]));
+            throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules', 'cache',
+               'writeError', 'content'], [$fileName]));
          if(!touch($fileName, $rulesTimestamp))
-            throw new RulesException(I18N::getInternalLanguage()->get('rules.cache.writeTimestampError',
-               [$fileName]));
+            throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules', 'cache',
+               'writeError', 'timestamp'], [$fileName]));
          # Now try to call all three functions to see whether there is a regex
          # error or something similar. An exception will be thrown. If there is a
          # parsing error, make use of the shutdown function which will write this
          # error to the log
          $shutdownKey = Config::registerShutdownFunction(function() use ($fileName, $rulesFile) {
                Log::errorHandler(E_ERROR,
-                  I18N::getInternalLanguage()->get('rules.cache.syntaxErrorHard',
-                     [$rulesFile, $fileName]), $fileName, 0, null, true);
+                  I18N::getInternalLanguage()->get(['rules', 'cache', 'syntaxError',
+                     'hard'], [$rulesFile, $fileName]), $fileName, 0, null, true);
             });
          try {
             $obj = fim\requireClosure($fileName);
@@ -436,7 +436,8 @@ Cache;
       private static function parseRulesSection(array $fullContent, $sectionName) {
          if(isset(self::$parsingCache[$lowerName = strtolower($sectionName)]))
             if(self::$parsingCache[$lowerName] === true)
-               throw new RulesException(I18N::getInternalLanguage()->get('rules.cache.recursion',
+               throw new RulesException(I18N::getInternalLanguage()->get(['rules',
+                  'cache', 'semanticError', 'recursion'],
                   [self::$currentFileName, $lowerName]));
             else
                return self::$parsingCache[$lowerName];
@@ -477,7 +478,8 @@ Cache;
                   case 'c':
                   case 'C':
                      if($isMatch)
-                        throw new RulesException(I18N::getInternalLanguage()->get('rules.cache.syntaxError.matchC',
+                        throw new RulesException(I18N::getInternalLanguage()->get(['rules',
+                           'cache', 'syntaxError', 'matchC'],
                            [self::$currentFileName, $line]));
                      $result .= "
       if($cmpTo === $cmp)";
@@ -485,7 +487,8 @@ Cache;
                   case 'r':
                   case 'R':
                      if(@preg_match(trim($group[3]), '') === false)
-                        throw new RulesException(I18N::getInternalLanguage()->get('rules.cache.invalidRegex',
+                        throw new RulesException(I18N::getInternalLanguage()->get(['rules',
+                           'cache', 'semanticError', 'invalidRegex'],
                            [self::$currentFileName, $line]));
                      $result .= "
       if(preg_match($cmp, $cmpTo" . ($isMatch ? ', $match' : '') . ') === 1)';
@@ -523,7 +526,8 @@ Cache;
                   $line, $group) === 1) {
                $result .= self::parseRulesSection($fullContent, $group[1]);
             }else{
-               throw new RulesException(I18N::getInternalLanguage()->get('rules.cache.syntaxError',
+               throw new RulesException(I18N::getInternalLanguage()->get(['rules',
+                  'cache', 'syntaxError', 'general'],
                   [self::$currentFileName, $line]));
             }
          }

@@ -246,16 +246,14 @@ abstract class Executor {
             $resultFile[$fn] = $str;
       }
       if(CLI) {
-         $result = $intLanguage->get('executor.directorylisting.title');
+         $result = $intLanguage->get(['executor', 'directoryListing', 'title']);
          if($details) {
             $result .= "\r\n\r\n";
-            $captions = [$intLanguage->get('executor.directorylisting.filename'),
-               $intLanguage->get('executor.directorylisting.size'),
-               $intLanguage->get('executor.directorylisting.mtime'),
-               (OS === 'Windows') ? $intLanguage->get('executor.directorylisting.creationTime')
-                     :
-                  $intLanguage->get('executor.directorylisting.ctime'),
-               $intLanguage->get('executor.directorylisting.atime')];
+            $captions = [$intLanguage->get(['executor', 'directoryListing', 'filename']),
+               $intLanguage->get(['executor', 'directoryListing', 'size']),
+               $intLanguage->get(['executor', 'directoryListing', 'mtime']),
+               $intLanguage->get(['executor', 'directoryListing', OS === 'Windows' ? 'creationTime' : 'ctime']),
+               $intLanguage->get(['executor', 'directoryListing', 'atime'])];
             foreach($captions as $idx => $txt) {
                if(($newLen = strlen($txt)) > $maxLength[$idx])
                   $maxLength[$idx] = $newLen;
@@ -264,7 +262,7 @@ abstract class Executor {
             }
          }
          if(!empty($resultDir)) {
-            $str = $intLanguage->get('executor.directorylisting.directories');
+            $str = $intLanguage->get(['executor', 'directoryListing', 'directories']);
             $result .= "\r\n\r\n$str\r\n" . str_repeat('=', strlen($str));
             if($details)
                foreach($resultDir as $dir) {
@@ -278,7 +276,7 @@ abstract class Executor {
                   $result .= "\r\n$dir";
          }
          if(!empty($resultFile)) {
-            $str = $intLanguage->get('executor.directorylisting.files');
+            $str = $intLanguage->get(['executor', 'directoryListing', 'files']);
             $result .= "\r\n\r\n$str\r\n" . str_repeat('=', strlen($str));
             if($details)
                foreach($resultFile as $dir) {
@@ -290,25 +288,24 @@ abstract class Executor {
                foreach($resultFile as $dir)
                   $result .= "\r\n$dir";
          }elseif(empty($resultDir))
-            $result .= "\r\n\r\n" . $intLanguage->get('executor.directorylisting.empty');
+            $result .= "\r\n\r\n" . $intLanguage->get(['executor', 'directoryListing', 'empty']);
          \Response::$responseText = $result;
       }else{
          header('Content-Type: text/html');
          $result = implode('', $resultDir) . implode('', $resultFile);
          if($result === '')
-            $result = '<tr><td colspan="5">' . $intLanguage->get('executor.directorylisting.empty') . '</td></tr>';
+            $result = '<tr><td colspan="5">' . $intLanguage->get(['executor', 'directoryListing', 'empty']) . '</td></tr>';
          if($details)
             $result = '<table><thead><tr><th>' .
-               htmlspecialchars($intLanguage->get('executor.directorylisting.filename')) . '</th><td>' .
-               htmlspecialchars($intLanguage->get('executor.directorylisting.size')) . '</td><td>' .
-               htmlspecialchars($intLanguage->get('executor.directorylisting.mtime')) . '</td><td>' .
-               htmlspecialchars((OS === 'Windows') ? $intLanguage->get('executor.directorylisting.creationTime')
-                        : $intLanguage->get('executor.directorylisting.ctime')) . '</td><td>' .
-               htmlspecialchars($intLanguage->get('executor.directorylisting.atime')) .
+               htmlspecialchars($intLanguage->get(['executor', 'directoryListing', 'filename'])) . '</th><td>' .
+               htmlspecialchars($intLanguage->get(['executor', 'directoryListing', 'size'])) . '</td><td>' .
+               htmlspecialchars($intLanguage->get(['executor', 'directoryListing', 'mtime'])) . '</td><td>' .
+               htmlspecialchars($intLanguage->get(['executor', 'directoryListing', OS === 'Windows' ? 'creationTime' : 'ctime'])) . '</td><td>' .
+               htmlspecialchars($intLanguage->get(['executor', 'directoryListing', 'atime'])) .
                "</td></thead><tbody>$result</tbody></table>";
          else
             $result = "<ul>$result</ul>";
-         $title = htmlspecialchars($intLanguage->get('executor.directorylisting.title'));
+         $title = htmlspecialchars($intLanguage->get(['executor', 'directoryListing', 'title']));
          \Response::$responseText .= // <editor-fold desc="Directory Listing code" defaultstate="collapsed">
             <<<listing
 <!DOCTYPE html>
@@ -724,19 +721,19 @@ listing;
                ? $errno : 500;
          \Response::set('Content-Type', 'text/plain');
          $language = \I18N::getInternalLanguage();
-         $logStr = $language->get('executor.error.log',
+         $logStr = $language->get(['executor', 'error', 'log'],
             [$errno, \Request::getFullURL(),
             empty($details) ? 'none' : implode(', ', $details),
             isset(\FIMErrorException::$last) ?
                \FIMErrorException::$last->getTraceAsString() : 'none']);
          if(ob_get_level() === 0)
             if(!\Config::get('production'))
-               \Response::$responseText .= $language->get('executor.error.production',
+               \Response::$responseText .= $language->get(['executor', 'error', 'production'],
                   [$errno]);
             else
                \Response::$responseText .= $logStr;
          elseif(!\Config::get('production'))
-            echo $language->get('executor.error.production', [$errno]);
+            echo $language->get(['executor', 'error', 'production'], [$errno]);
          else
             echo $logStr;
          \Log::reportError($logStr, true);

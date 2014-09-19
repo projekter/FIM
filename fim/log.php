@@ -33,7 +33,7 @@ abstract class Log {
    private static function createLogHandles() {
       $dir = CodeDir . 'logs';
       if(!(is_dir($dir) || mkdir($dir, 0700)))
-         throw new LoggerException(I18N::getInternalLanguage()->get('log.init.failed'));
+         throw new FIMInternalException(I18N::getInternalLanguage()->get(['log', 'initFailed']));
       self::$internalErrors = fopen("$dir/internalError.log", 'a+');
       self::$errors = fopen("$dir/error.log", 'a+');
       self::$customErrors = fopen("$dir/customError.log", 'a+');
@@ -71,7 +71,7 @@ abstract class Log {
          self::createLogHandles();
       if(self::$inMail) {
          @fwrite(self::$internalErrors,
-               I18N::getInternalLanguage()->get('log.mail.failed', [$message]));
+               I18N::getInternalLanguage()->get(['log', 'mail', 'failed'], [$message]));
          return;
       }
       @fwrite(self::$internalErrors, "$message\r\n");
@@ -90,14 +90,14 @@ abstract class Log {
                      true));
             else
                Response::mail($mailError,
-                  $language->get('log.mail.subject', [Request::getFullURL()]),
-                  $language->get('log.mail.internal',
+                  $language->get(['log', 'mail', 'subject'], [Request::getFullURL()]),
+                  $language->get(['log', 'mail', 'internal'],
                      [$message, print_r($_SERVER, true), print_r(debug_backtrace(),
                         true)]));
          }
       }catch(Exception $e) {
          @fwrite(self::$internalErrors,
-               I18N::getInternalLanguage()->get('log.mail.failed', [(string)$e]));
+               I18N::getInternalLanguage()->get(['log', 'mail', 'failed'], [(string)$e]));
       }# finally (but we need to support PHP 5.4
       self::$inMail = false;
    }
@@ -114,8 +114,8 @@ abstract class Log {
       if(!$noMail && (($mailError = Config::get('mailErrorsTo')) !== false)) {
          $language = I18N::getInternalLanguage();
          Response::mail($mailError,
-            $language->get('log.mail.subject', [Request::getFullURL()]),
-            $language->get('log.mail.error',
+            $language->get(['log', 'mail', 'subject'], [Request::getFullURL()]),
+            $language->get(['log', 'mail', 'error'],
                [$message, print_r($_SERVER, true), print_r(debug_backtrace(),
                   true)]));
       }
@@ -133,8 +133,8 @@ abstract class Log {
       if(!$noMail && (($mailError = Config::get('mailErrorsTo')) !== false)) {
          $language = I18N::getInternalLanguage();
          Response::mail($mailError,
-            $language->get('log.mail.subject', [Request::getFullURL()]),
-            $language->get('log.mail.custom',
+            $language->get(['log', 'mail', 'subject'], [Request::getFullURL()]),
+            $language->get(['log', 'mail', 'custom'],
                [$message, print_r($_SERVER, true), print_r(debug_backtrace(),
                   true)]));
       }
@@ -187,7 +187,7 @@ abstract class Log {
             case E_COMPILE_ERROR:
             case E_USER_ERROR:
             case E_RECOVERABLE_ERROR:
-               echo I18N::getInternalLanguage()->get('log.message', [$errid]);
+               echo I18N::getInternalLanguage()->get(['log', 'message'], [$errid]);
                if(!$shutdown)
                   exit;
          }
@@ -211,20 +211,20 @@ abstract class Log {
          echo "An error has occured and the execution was halted. Please inform an administrator of error $errid.";
          return;
       }
-      if($E instanceof FIMException)
-         self::reportInternalError("[$errid] " . $l->get('log.exception',
+      if($E instanceof FIMInternalException)
+         self::reportInternalError("[$errid] " . $l->get(['log', 'exception'],
                [get_class($E), (string)$E]));
       else
-         self::reportError("[$errid] " . $l->get('log.exception',
+         self::reportError("[$errid] " . $l->get(['log', 'exception'],
                [get_class($E), (string)$E]));
       if(Config::get('production'))
-         echo $l->get('log.message', [$errid]);
+         echo $l->get(['log', 'message'], [$errid]);
       else{
          echo (CLI ? '! ' : "
 <br />
 <font size='1'><table class='xdebug-error xe-uncaught-exception' dir='ltr' border='1' cellspacing='0' cellpadding='1'>
 <tr><th align='left' bgcolor='#f57900' colspan=\"5\"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> "),
-         $l->get('log.exception', [get_class($E), $E->getMessage()]), CLI ? "\r\n"
+         $l->get(['log', 'exception'], [get_class($E), $E->getMessage()]), CLI ? "\r\n"
                : '</th></tr>';
          $xvd = function_exists('xdebug_var_dump');
          do {

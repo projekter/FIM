@@ -82,7 +82,7 @@ final class DatabaseConnection {
       if(!empty($data['dsn'])) {
          $computed['dsn'] = $data['dsn'];
          if(preg_match('#^[^:]+#', $data['dsn'], $matches) !== 1)
-            throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.invalid',
+            throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'invalid'],
                [$this->connectionFile]));
          switch($this->driver = strtolower(trim($matches[0]))) {
             case 'mysql':
@@ -112,7 +112,7 @@ final class DatabaseConnection {
                break;
             case 'firebird':
                if(empty($data['database']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['Firebird', 'database', $this->connectionFile]));
                $dsn = 'firebird:charset=UTF-8;dbname=';
                if(!empty($data['host'])) {
@@ -121,14 +121,14 @@ final class DatabaseConnection {
                      $dsn .= "/{$data['port']}";
                   $dsn .= ':';
                }elseif(!empty($data['port']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.wrong.firebird',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'wrong', 'firebird'],
                      [$this->connectionFile]));
                $dsn .= $data['database'];
                $this->initStmt = 'SET SQL DIALECT 3';
                break;
             case 'pgsql':
                if(empty($data['database']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['PostgreSQL', 'database', $this->connectionFile]));
                $dsn = "pgsql:host={$data['host']};" .
                   (empty($data['port']) ? '' : "port={$data['port']};") .
@@ -136,16 +136,16 @@ final class DatabaseConnection {
                break;
             case 'sqlite':
                if(empty($data['database']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['SQLite', 'database', $this->connectionFile]));
                $dsn = "sqlite:{$data['database']}";
                break;
             case 'odbc':
-               throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.wrong.odbc',
+               throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'wrong', 'odbc'],
                   [$this->connectionFile]));
             case 'oracle':
                if(empty($data['database']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['Oracle', 'database', $this->connectionFile]));
                $dsn = 'oci:charset=utf8;dbname=';
                if(!empty($data['host'])) {
@@ -154,18 +154,18 @@ final class DatabaseConnection {
                      $dsn .= ":{$data['port']}";
                   $dsn .= '/';
                }elseif(!empty($data['port']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.wrong.oracle',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'wrong', 'oracle'],
                      [$this->connectionFile]));
                $dsn .= $data['database'];
                break;
             case 'sqlsrv':
                if(empty($data['host']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['MSSQL/Azure', 'host', $this->connectionFile]));
                if(!empty($data['port']))
                   $data['port'] = ",{$data['port']}";
                if(empty($data['database']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['MSSQL/Azure', 'database', $this->connectionFile]));
                $dsn = "sqlsrv:APP=FIM;Database={$data['database']};Server={$data['host']}{$data['port']}";
                $this->initStmt = 'SET QUOTED_IDENTIFIED ON';
@@ -180,14 +180,14 @@ final class DatabaseConnection {
                if(!empty($data['port']) && $data['driver'] === 'dblib')
                   $data['port'] = ":{$data['port']}";
                if(empty($data['database']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['MSSQL/Azure', 'database', $this->connectionFile]));
                $dsn = "{$data['driver']}:appname=FIM;charset=UTF-8;dbname={$data['database']};host={$data['host']}{$data['port']}";
                $this->initStmt = 'SET QUOTED_IDENTIFIER ON';
                break;
             case '4d':
                if(empty($data['host']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['4D', 'host', $this->connectionFile]));
                $dsn = "4D:host={$data['host']};charset=UTF-8";
                if(!empty($data['port']))
@@ -195,42 +195,42 @@ final class DatabaseConnection {
                break;
             case 'ibm':
                if(empty($data['host']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['IBM', 'host', $this->connectionFile]));
                if(empty($data['port']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['IBM', 'port', $this->connectionFile]));
                if(empty($data['database']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['IBM', 'database', $this->connectionFile]));
                $dsn = "ibm:DRIVER={IBM DB2 ODBC DRIVER};DATABASE={$data['database']};HOSTNAME={$data['host']};PORT={$data['port']};PROTOCOL=TCPIP";
                break;
             case 'cubrid':
                if(empty($data['host']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['CUBRID', 'host', $this->connectionFile]));
                if(empty($data['port']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['CUBRID', 'port', $this->connectionFile]));
                if(empty($data['database']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['CUBRID', 'database', $this->connectionFile]));
                $dsn = "cubrid:host={$data['host']};port={$data['port']};dbname={$data['database']}";
                break;
             case 'informix':
                if(empty($data['host']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['Informix', 'host', $this->connectionFile]));
                if(empty($data['port']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['Informix', 'port', $this->connectionFile]));
                if(empty($data['database']))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.missing',
+                  throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'missing'],
                      ['Informix', 'database', $this->connectionFile]));
                $dsn = "informix:host={$data['host']};service={$data['port']};database={$data['database']};DELIMIDENT=y";
                break;
             default:
-               throw new DatabaseException(I18N::getInternalLanguage()->get('database.data.driver',
+               throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'data', 'wrong', 'driver'],
                   [$data['driver'], $this->connectionFile]));
          }
          $computed['dsn'] = $dsn;
@@ -258,7 +258,7 @@ final class DatabaseConnection {
             $this->connection->exec($this->initStmt);
          return $this->connection;
       }catch(PDOException $E) {
-         throw new DatabaseException(I18N::getInternalLanguage()->get('database.connection.failed',
+         throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'connectionFailed'],
             [$this->connectionFile, $E->getMessage()]), $E->getCode(), $E);
       }
    }
@@ -339,10 +339,10 @@ final class DatabaseConnection {
                      $stmt->bindValue($associative ? $key : $key + 1,
                         (string)$value, PDO::PARAM_STR);
                   }catch(Exception $E) {
-                     throw new DatabaseException(I18N::getInternalLanguage()->get('database.bind.object'));
+                     throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'bindError', 'object']));
                   }
             else
-               throw new DatabaseException(I18N::getInternalLanguage()->get('database.bind.unknown'));
+               throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'bindError', 'unknown']));
          }
       }
       return $stmt->execute();
@@ -400,7 +400,7 @@ final class DatabaseConnection {
          $sql .= " LIMIT $limit";
       $statement = $this->connection->prepare($sql);
       if(!$this->execute($statement, $bind))
-         throw new DatabaseException(I18N::getInternalLanguage()->get('database.sql.selectError'));
+         throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'sql', 'selectError']));
       if(($force_statement) || (($num = $statement->rowCount()) > 1))
          return $statement;
       elseif($num === 0)
@@ -498,7 +498,7 @@ final class DatabaseConnection {
             if($diff > 0)
                array_splice($keys, 0, count($keys));
             elseif($diff < 0)
-               throw new DatabaseException(I18N::getInternalLanguage()->get('database.sql.updateError'));
+               throw new DatabaseException(I18N::getInternalLanguage()->get(['databaseConnection', 'sql', 'updateError']));
          }else
             $keys = array_keys($whereColumns);
          $sql .= ' WHERE "' . implode('" = ? AND "', $keys) . '" = ?';

@@ -81,7 +81,7 @@ namespace fim {
             return self::callMethod(get_class($function[0]), '__invoke');
          $reflection = new \ReflectionFunction($function);
          if(!$reflection->isUserDefined())
-            throw new \AutoboxingException(\I18N::getInternalLanguage()->get('autoboxing.userDefined',
+            throw new \AutoboxingException(\I18N::getInternalLanguage()->get(['autoboxing', 'internalFunction'],
                [(string)$function]));
          $filename = $reflection->getFileName();
          self::$currentlyCalling = $name = $reflection->name;
@@ -427,7 +427,7 @@ abstract class {$class->getShortName()} {
                               $val = "\$$name";
                            $parseTypeHint = false;
                         }catch(\ReflectionException $E) {
-                           \Log::reportInternalError(\I18N::getInternalLanguage()->get('autoboxing.reflectionException',
+                           \Log::reportInternalError(\I18N::getInternalLanguage()->get(['autoboxing', 'reflectionException'],
                                  [$types[$name], $m->getFileName(), $m->name]));
                         }
                   }else
@@ -438,7 +438,7 @@ abstract class {$class->getShortName()} {
                            $parseTypeHint = false;
                         }
                      }catch(\ReflectionException $E) {
-                        \Log::reportInternalError(\I18N::getInternalLanguage()->get('autoboxing.reflectionException',
+                        \Log::reportInternalError(\I18N::getInternalLanguage()->get(['autoboxing', 'reflectionException'],
                               [$types[$name], $m->getFileName(), $m->name]));
                      }
             }
@@ -449,7 +449,7 @@ abstract class {$class->getShortName()} {
                elseif($parameter->isArray())
                   $val = "(array)($value)";
                elseif($parameter->isCallable() || !$parameter->canBePassedByValue())
-                  return "throw new \\AutoboxingException(\\I18N::getInternalLanguage()->get('autoboxing.invalidTypehint', ['{$m->name}', '{$m->getFileName()}', '$name']));";
+                  return "throw new \\AutoboxingException(\\I18N::getInternalLanguage()->get(['autoboxing', 'invalidTypehint'], ['{$m->name}', '{$m->getFileName()}', '$name']));";
                else
                   $val = $value;
             }
@@ -459,7 +459,7 @@ abstract class {$class->getShortName()} {
                else
                   $checks .= "if(!((\$$name = $val) instanceof \\{$typeHint->name}))";
                $checks .= "
-         throw new \\FIMErrorException(\\I18N::getInternalLanguage()->get('autoboxing.failed', ['{$m->getFileName()}', '{$m->name}', '$name']), [404]);
+         throw new \\FIMErrorException(\\I18N::getInternalLanguage()->get(['autoboxing', 'failed'], ['{$m->getFileName()}', '{$m->name}', '$name']), [404]);
       ";
                $parameters[] = "\$$name";
             }else

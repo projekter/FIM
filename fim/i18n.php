@@ -128,10 +128,10 @@ namespace {
        */
       public static final function initialize($locale) {
          if(self::$internalLanguage !== null)
-            throw new I18NException(self::$internalLanguage->get('i18n.init.double'));
+            throw new FIMInternalException(self::$internalLanguage->get(['i18n', 'doubleInitialization']));
          $rbi = new ResourceBundle($locale, FrameworkPath . 'language', true);
          if($rbi === null)
-            throw new I18NException("The internal language $locale did not exist. FIM could not be initialized.");
+            throw new FIMInternalException("The internal language $locale did not exist. FIM could not be initialized.");
          self::$internalLanguage = new I18N($locale, $rbi);
          $rbc = new ResourceBundle($locale, CodeDir . 'language', true);
          self::$activeLanguage = new I18N($locale, $rbc);
@@ -157,14 +157,26 @@ namespace {
 
       /**
        * Formats a language key.
-       * @param string $key The language key identifier
+       * @param string|array $key The language key identifier
        * @param array $args Parameters that will be passed to
        *    MessageFormatter::formatMessage if the returned value was a string
        * @return int|string|array|ResourceBundle
        * @see MessageFormatter
        */
       public final function get($key, array $args = []) {
-         $val = $this->bundle->get($key);
+         if(is_array($key)) {
+            $val = $this->bundle;
+            foreach($key as $keyFragment) {
+               if(!($val instanceof ResourceBundle)) {
+                  $val = null;
+                  break;
+               }
+               $val = $val->get($keyFragment);
+            }
+            if($val === null)
+               $key = implode('/', $key);
+         }else
+            $val = $this->bundle->get($key);
          if($val === null) {
             static $fallback = null;
             if($fallback === null)
@@ -173,14 +185,14 @@ namespace {
                $val = $key;
             else{
                if($this === self::$internalLanguage)
-                  if($key !== 'i18n.get.notFound.internal')
-                     Log::reportInternalError(self::$internalLanguage->get('i18n.get.notFound.internal',
+                  if($key !== ['i18n', 'get', 'internalNotFound'])
+                     Log::reportInternalError(self::$internalLanguage->get(['i18n', 'get', 'internalNotFound'],
                            [$key]), true);
                   else
                      Log::reportInternalError("The internal language key \"$key\" was not found.",
                         true);
                else
-                  Log::reportError(self::$internalLanguage->get('i18n.get.notFound',
+                  Log::reportError(self::$internalLanguage->get(['i18n', 'get', 'notFound'],
                         [$key]), true);
                return empty($args) ? $key : "$key: " . implode('|', $args);
             }
@@ -266,7 +278,7 @@ namespace {
       public final function formatDate($timestamp,
          $format = IntlDateFormatter::MEDIUM) {
          if($format !== IntlDateFormatter::FULL && $format !== IntlDateFormatter::LONG && $format !== IntlDateFormatter::MEDIUM && $format !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get('i18n.format.invalidDateFormat'));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidDateFormat']));
          $hash = "{$format}_" . IntlDateFormatter::NONE;
          if(!isset($this->dateFormatters[$hash]))
             $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
@@ -288,7 +300,7 @@ namespace {
       public final function formatTime($timestamp,
          $format = IntlDateFormatter::MEDIUM) {
          if($format !== IntlDateFormatter::FULL && $format !== IntlDateFormatter::LONG && $format !== IntlDateFormatter::MEDIUM && $format !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get('i18n.format.invalidTimeFormat'));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidTimeFormat']));
          $hash = IntlDateFormatter::NONE . "_$format";
          if(!isset($this->dateFormatters[$hash]))
             $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
@@ -317,9 +329,9 @@ namespace {
          $dateFormat = IntlDateFormatter::SHORT,
          $timeFormat = IntlDateFormatter::MEDIUM) {
          if($dateFormat !== IntlDateFormatter::FULL && $dateFormat !== IntlDateFormatter::LONG && $dateFormat !== IntlDateFormatter::MEDIUM && $dateFormat !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get('i18n.format.invalidDateFormat'));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidDateFormat']));
          if($timeFormat !== IntlDateFormatter::FULL && $timeFormat !== IntlDateFormatter::LONG && $timeFormat !== IntlDateFormatter::MEDIUM && $timeFormat !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get('i18n.format.invalidTimeFormat'));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidTimeFormat']));
          $hash = "{$dateFormat}_$timeFormat";
          if(!isset($this->dateFormatters[$hash]))
             $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
@@ -364,7 +376,7 @@ namespace {
          if(fileUtils::fileExists(str_replace('<L>', 'root', $fullPath)))
             return str_replace('<L>', 'root', $path);
          else{
-            Log::reportError(self::$internalLanguage->get('i18n.translatePath.notFound',
+            Log::reportError(self::$internalLanguage->get(['i18n', 'translatePathNotFound'],
                   ['/' . Router::normalize($path)]), true);
             return false;
          }
@@ -413,7 +425,7 @@ namespace {
        */
       public final function parseDate($date, $format = IntlDateFormatter::SHORT) {
          if($format !== IntlDateFormatter::FULL && $format !== IntlDateFormatter::LONG && $format !== IntlDateFormatter::MEDIUM && $format !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get('i18n.format.invalidDateFormat'));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidDateFormat']));
          $hash = "{$format}_" . IntlDateFormatter::NONE;
          if(!isset($this->dateFormatters[$hash]))
             $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
@@ -434,7 +446,7 @@ namespace {
        */
       public final function parseTime($time, $format = IntlDateFormatter::SHORT) {
          if($format !== IntlDateFormatter::FULL && $format !== IntlDateFormatter::LONG && $format !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get('i18n.format.invalidTimeFormat'));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidTimeFormat']));
          $hash = IntlDateFormatter::NONE . "_$format";
          if(!isset($this->dateFormatters[$hash]))
             $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
@@ -462,9 +474,9 @@ namespace {
          $dateFormat = IntlDateFormatter::SHORT,
          $timeFormat = IntlDateFormatter::SHORT) {
          if($dateFormat !== IntlDateFormatter::FULL && $dateFormat !== IntlDateFormatter::LONG && $dateFormat !== IntlDateFormatter::MEDIUM && $dateFormat !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get('i18n.format.invalidDateFormat'));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidDateFormat']));
          if($timeFormat !== IntlDateFormatter::FULL && $timeFormat !== IntlDateFormatter::LONG && $timeFormat !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get('i18n.format.invalidTimeFormat'));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidTimeFormat']));
          $hash = "{$dateFormat}_$timeFormat";
          if(!isset($this->dateFormatters[$hash]))
             $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
@@ -581,7 +593,7 @@ namespace fim {
       public function get($key) {
          if(!self::$logged) {
             self::$logged = true;
-            Log::reportCustomError(self::$internalLanguage->get('i18n.get.noLanguage',
+            Log::reportError(self::$internalLanguage->get(['i18n', 'get', 'noLanguage'],
                   [$key]), true);
          }
          return $key;
