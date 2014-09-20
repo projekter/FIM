@@ -29,7 +29,7 @@ abstract class Config {
       'cliServer' => 'CLI',
       'defaultAccessGranted' => true,
       'defaultEncoding' => 'utf-8',
-      'directoryListing' => 'none',
+      'directoryListing' => 'development',
       'languageCodedFallback' => false,
       'languageInternal' => 'en',
       'mailErrorsTo' => false,
