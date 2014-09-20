@@ -81,8 +81,8 @@ namespace fim {
             return self::callMethod(get_class($function[0]), '__invoke');
          $reflection = new \ReflectionFunction($function);
          if(!$reflection->isUserDefined())
-            throw new \AutoboxingException(\I18N::getInternalLanguage()->get(['autoboxing', 'internalFunction'],
-               [(string)$function]));
+            throw new \AutoboxingException(\I18N::getInternalLanguage()->get(['autoboxing',
+               'internalFunction'], [(string)$function]));
          $filename = $reflection->getFileName();
          self::$currentlyCalling = $name = $reflection->name;
          self::setupFileCache(new \ReflectionFile($filename));
@@ -109,9 +109,13 @@ namespace fim {
          $currentTimestamp = filemtime($classFile);
          $cacheTimestamp = @filemtime($cacheFile);
          if($currentTimestamp !== $cacheTimestamp) {
-            file_put_contents($cacheFile,
-               self::generateAutoboxingCache($file, $cacheNamespace));
-            touch($cacheFile, $currentTimestamp);
+            if(file_put_contents($cacheFile,
+                  self::generateAutoboxingCache($file, $cacheNamespace)) === false)
+               throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
+                  'cache', 'writeError', 'content'], [$fileName]));
+            if(!touch($cacheFile, $currentTimestamp))
+               throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
+                  'cache', 'writeError', 'timestamp'], [$fileName]));
             @unlink($closureFile);
          }
          require_once $cacheFile;
@@ -139,7 +143,9 @@ namespace fim {
                return [$cacheClass, $functionName];
             $lock = new \Semaphore($cacheFile);
             $lock->lock();
-            $cacheContent = file_get_contents($cacheFile);
+            if(($cacheContent = file_get_contents($cacheFile)) === false)
+               throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
+                  'cache', 'readError'], [$fileName]));
          }else{
             $lock = new \Semaphore($cacheFile);
             $lock->lock();
@@ -188,7 +194,9 @@ Cache;
                   ? ', $obj' : '') . ") {
       $code
    }", $cacheContent, 1);
-         file_put_contents($cacheFile, $cacheContent);
+         if(!file_put_contents($cacheFile, $cacheContent))
+            throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
+               'cache', 'writeError', 'content'], [$fileName]));
          $lock->unlock();
          if($include === false)
             include_once $cacheFile;
@@ -201,7 +209,9 @@ Cache;
       private static function generateAutoboxingCache(\ReflectionFile $file,
          $namespace) {
          if(!is_dir(CodeDir . 'cache/autoboxing'))
-            mkdir(CodeDir . 'cache/autoboxing', 0700, true);
+            if(!mkdir(CodeDir . 'cache/autoboxing', 0700, true))
+               throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
+                  'cache', 'writeError', 'directory']));
          $now = date('Y-m-d H:i:s');
          $cacheContent = <<<Cache
 <?php
@@ -427,7 +437,8 @@ abstract class {$class->getShortName()} {
                               $val = "\$$name";
                            $parseTypeHint = false;
                         }catch(\ReflectionException $E) {
-                           \Log::reportInternalError(\I18N::getInternalLanguage()->get(['autoboxing', 'reflectionException'],
+                           \Log::reportInternalError(\I18N::getInternalLanguage()->get(['autoboxing',
+                                 'reflectionException'],
                                  [$types[$name], $m->getFileName(), $m->name]));
                         }
                   }else
@@ -438,7 +449,8 @@ abstract class {$class->getShortName()} {
                            $parseTypeHint = false;
                         }
                      }catch(\ReflectionException $E) {
-                        \Log::reportInternalError(\I18N::getInternalLanguage()->get(['autoboxing', 'reflectionException'],
+                        \Log::reportInternalError(\I18N::getInternalLanguage()->get(['autoboxing',
+                              'reflectionException'],
                               [$types[$name], $m->getFileName(), $m->name]));
                      }
             }

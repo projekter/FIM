@@ -1,5 +1,13 @@
 de {
    autoboxing {
+      cache {
+         readError { "Das Lesen der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+         writeError {
+            content { "Das Schreiben der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+            directory { "Das Erstellen des Cache-Verzeichnisses \"cache/autoboxing/\" ist fehlgeschlagen." }
+            timestamp { "Das Schreiben des Zeitstempels der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+         }
+      }
       failed { "Autoboxing {0}->{1}(${2})" }
       internalFunction { "Auf die Funktion \"{0}\" kann nicht mit Autoboxing zugegriffen werden, da sie eine interne Funktion ist." }
       invalidTypehint { "Auf die Funktion \"{0}\" der Datei \"{1}\" wurde durch Autoboxing zugegriffen. Der Parameter \"{2}\" darf den Typehint \"callable\" nicht verwenden und nicht per Referenz übergeben werden müssen." }
@@ -42,6 +50,7 @@ de {
          }
          writeError {
             content { "Das Schreiben der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+            directory { "Das Erstellen des Cache-Verzeichnisses \"cache/connections/\" ist fehlgeschlagen." }
             timestamp { "Das Schreiben des Zeitstempels der Cache-Datei \"{0}\" ist fehlgeschlagen." }
          }
       }
@@ -168,6 +177,7 @@ de {
          }
          writeError {
             content { "Das Schreiben der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+            directory { "Das Erstellen des Cache-Verzeichnisses \"cache/rules/\" ist fehlgeschlagen." }
             timestamp { "Das Schreiben des Zeitstempels der Cache-Datei \"{0}\" ist fehlgeschlagen." }
          }
       }

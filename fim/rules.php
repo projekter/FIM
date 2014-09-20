@@ -359,7 +359,9 @@ namespace {
          if(isset(self::$singletons[$fileName]))
             return self::$singletons[$fileName];
          if(!is_dir(CodeDir . 'cache/rules'))
-            mkdir(CodeDir . 'cache/rules', 0700, true);
+            if(!mkdir(CodeDir . 'cache/rules', 0700, true))
+               throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules',
+                  'cache', 'writeError', 'directory']));
          $rulesTimestamp = filemtime($rulesFile);
          $cacheTimestamp = @filemtime($fileName);
          if($cacheTimestamp === $rulesTimestamp)
@@ -404,10 +406,12 @@ Cache;
          $cacheContent .= "
    $directory);";
          if(file_put_contents($fileName, $cacheContent) === false)
-            throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules', 'cache',
+            throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules',
+               'cache',
                'writeError', 'content'], [$fileName]));
          if(!touch($fileName, $rulesTimestamp))
-            throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules', 'cache',
+            throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules',
+               'cache',
                'writeError', 'timestamp'], [$fileName]));
          # Now try to call all three functions to see whether there is a regex
          # error or something similar. An exception will be thrown. If there is a

@@ -1,5 +1,13 @@
 root {
    autoboxing {
+      cache {
+         readError { "Reading the cache file \"{0}\" failed." }
+         writeError {
+            content { "Writing the cache file \"{0}\" failed." }
+            directory { "Creating the cache directory \"cache/autoboxing/\" failed." }
+            timestamp { "Writing the timestamp of the cache file \"{0}\" failed." }
+         }
+      }
       failed { "Autoboxing {0}->{1}(${2})" }
       internalFunction { "The function \"{0}\" cannot be accessed with autoboxing as it is an internal function." }
       invalidTypehint { "The function \"{0}\" in the file \"{1}\" was accessed via autoboxing. The parameter \"{2}\" must not use the type hint \"callable\" and must not be passed by reference." }
@@ -42,6 +50,7 @@ root {
          }
          writeError {
             content { "Writing the cache file \"{0}\" failed." }
+            directory { "Creating the cache directory \"cache/connections/\" failed." }
             timestamp { "Writing the timestamp of the cache file \"{0}\" failed." }
          }
       }
@@ -169,6 +178,7 @@ root {
          }
          writeError {
             content { "Writing the cache file \"{0}\" failed." }
+            directory { "Creating the cache directory \"cache/rules/\" failed." }
             timestamp { "Writing the timestamp of the cache file \"{0}\" failed." }
          }
       }
