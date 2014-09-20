@@ -120,7 +120,8 @@ namespace {
        */
       protected function setValue($value) {
          if(!isset($this->changeCallback))
-            throw new DataHelperPrimitiveException(I18N::getInternalLanguage()->get(['primaryTable', 'dataHelperUnbound']));
+            throw new DataHelperPrimitiveException(I18N::getInternalLanguage()->get(['primaryTable',
+               'dataHelperUnbound']));
          $this->value = $value;
          $change = $this->changeCallback;
          $change();
@@ -175,26 +176,26 @@ namespace {
          $nullable = $keys = $dataHelpers = [];
          foreach($cols as $name => &$type) {
             if($type === '' || !is_string($type))
-               throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'definitionInvalid'],
-                  [$name, $storage['tableName']]));
+               throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+                  'definitionInvalid'], [$name, $storage['tableName']]));
             if(($type[0] === '*') || ($type[0] === '+')) {
                if($type[0] === '+')
                   if(isset($autoIncrement))
-                     throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'definitionInvalid'],
-                        [$name, $storage['tableName']]));
+                     throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+                        'definitionInvalid'], [$name, $storage['tableName']]));
                   else
                      $autoIncrement = $name;
                $keys[$name] = $type[0];
                $type = (string)substr($type, 1);
                if($type === '')
-                  throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'definitionInvalid'],
-                     [$name, $storage['tableName']]));
+                  throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+                     'definitionInvalid'], [$name, $storage['tableName']]));
             }elseif($type[0] === '0') {
                $nullable[$name] = true;
                $type = (string)substr($type, 1);
                if($type === '')
-                  throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'definitionInvalid'],
-                     [$name, $storage['tableName']]));
+                  throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+                     'definitionInvalid'], [$name, $storage['tableName']]));
             }
             if($type !== 'string' && $type !== 'int' && $type !== 'double' && $type !== 'bool' && $type !== 'blob') {
                try {
@@ -206,15 +207,16 @@ namespace {
                   $rc = new ReflectionClass($type);
                   if($rc->implementsInterface('DataHelper')) {
                      if(isset($nullable[$name]))
-                        throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'definitionInvalid'],
-                           [$name, $storage['tableName']]));
+                        throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+                           'definitionInvalid'], [$name, $storage['tableName']]));
                      $dataHelpers[$name] = true;
                   }elseif(!$rc->implementsInterface('fimSerializable'))
-                     throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'definitionInvalid'],
-                        [$name, $storage['tableName']]));
+                     throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+                        'definitionInvalid'], [$name, $storage['tableName']]));
                }catch(Exception $E) {
-                  throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'definitionInvalid'],
-                     [$name, $storage['tableName']]), $E->getCode(), $E);
+                  throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+                     'definitionInvalid'], [$name, $storage['tableName']]),
+                  $E->getCode(), $E);
                }
             }
          }
@@ -250,8 +252,8 @@ namespace {
          if(isset($this->fields[$name]) || @array_key_exists($name,
                $this->fields)) {
             if(isset($data['keys'][$name]))
-               throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'field', 'readOnly'],
-                  [$name, $data['tableName']]));
+               throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+                  'field', 'readOnly'], [$name, $data['tableName']]));
             $method = "set$name";
             if(method_exists($this, $method)) {
                if($this->$method($value) !== false)
@@ -277,8 +279,8 @@ namespace {
                      break;
                   default:
                      if(!((object)$value instanceof $data['cols'][$name]))
-                        throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'field', 'invalid'],
-                           [$name, $data['tableName']]));
+                        throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+                           'field', 'invalid'], [$name, $data['tableName']]));
                      if(isset($data['dataHelpers'][$name]))
                         $this->update($name, $value->getStorageValue(), $value);
                      else
@@ -288,8 +290,8 @@ namespace {
             if(method_exists($this, $method))
                $this->$method();
          }else
-            throw new TableException(I18N::getInternalLanguage()->get(['table', 'field', 'unknown'],
-               [$data['tableName'], $name]));
+            throw new TableException(I18N::getInternalLanguage()->get(['table', 'field',
+               'unknown'], [$data['tableName'], $name]));
       }
 
       public final function __call($name, $arguments) {
@@ -341,8 +343,8 @@ namespace {
                return $this->fields[$name]->__invoke($arguments[0]);
          # End speed up
          else
-            throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'callUnknown'],
-               [$name, static::getStaticStorage('tableName')]));
+            throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+               'callUnknown'], [$name, static::getStaticStorage('tableName')]));
       }
 
       private function getSingletonKey() {
@@ -380,8 +382,8 @@ namespace {
       private function generateNoDBKey() {
          $data = static::getStaticStorage();
          if(!isset($data['autoIncrement']))
-            throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'create', 'virtualNoAI'],
-               [$data['tableName']]));
+            throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+               'create', 'virtualNoAI'], [$data['tableName']]));
          do
             $this->fields[$data['autoIncrement']] = -rand();
          while(isset(self::$rands[$this->fields[$data['autoIncrement']]]));
@@ -393,7 +395,8 @@ namespace {
          if(!isset($fields))
             return new static;# deleted entry, no fields
          if(!is_array($fields))
-            throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'unserialize']));
+            throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+               'unserialize']));
          $data = static::getStaticStorage();
          if(count($fields + $data['keys']) === count($data['keys'])) {
             $return = static::translateStatement(Database::getActiveConnection()->simpleSelect($data['tableName'],
@@ -413,7 +416,8 @@ namespace {
             }
             return $return;
          }else
-            throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'unserialize']));
+            throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+               'unserialize']));
       }
 
       /**
@@ -477,17 +481,24 @@ namespace {
          return static::singleton($this->getSingletonKey(), $this);
       }
 
+      /**
+       * This function will delete the current entry from the database. Data
+       * helpers will be unbound.
+       * @return bool
+       */
       protected function delete() {
          if(!isset($this->fields))
-            return;
+            return true;
          $data = static::getStaticStorage();
+         if(!$this->virtual)
+            if(!Database::getActiveConnection()->delete($data['tableName'],
+                  array_intersect_key($this->fields, $data['keys'])))
+               return false;
          foreach($data['dataHelpers'] as $key => $true)
             $this->fields[$key]->unbind();
-         if(!$this->virtual)
-            Database::getActiveConnection()->delete($data['tableName'],
-               array_intersect_key($this->fields, $data['keys']));
          $this->singleton($this->getSingletonKey(), null);
          $this->fields = null;
+         return true;
       }
 
       /**
@@ -513,8 +524,8 @@ namespace {
             unset($args[$data['autoIncrement']]);
          foreach($args as $key => &$arg) {
             if(empty($params))
-               throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'create', 'parameters'],
-                  [$data['tableName']]));
+               throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+                  'create', 'parameters'], [$data['tableName']]));
             $val = array_pop($params);
             if(!isset($val) && isset($data['nullable'][$key]))
                $arg = $fields[$key] = null;
@@ -538,8 +549,8 @@ namespace {
                      break;
                   default:
                      if(!((object)$val instanceof $data['cols'][$key]))
-                        throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'field', 'invalid'],
-                           [$key, $data['tableName']]));
+                        throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+                           'field', 'invalid'], [$key, $data['tableName']]));
                      $fields[$key] = $val;
                      if(isset($data['dataHelpers'][$key]))
                         $arg = $val->getStorageValue();
@@ -549,13 +560,13 @@ namespace {
          }
          $noDBRep = (bool)array_pop($params);
          if(!empty($params))
-            throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'create', 'parameters'],
-               [$data['tableName']]));
+            throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+               'create', 'parameters'], [$data['tableName']]));
          if(!$noDBRep) {
             $conn = Database::getActiveConnection();
             if(!$conn->insert($data['tableName'], $args))
-               throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'create', 'failed'],
-                  [$data['tableName']]));
+               throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+                  'create', 'failed'], [$data['tableName']]));
             if($data['autoIncrement'] !== null)
                $fields[$data['autoIncrement']] = $conn->lastInsertId($data['tableName'],
                   $data['autoIncrement']);
@@ -588,7 +599,8 @@ namespace {
                $return[] = $obj = static::singleton($key, new static);
                foreach($data['cols'] as $key => $value)
                   if(!isset($row[$key]) && !array_key_exists($key, $row))
-                     throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable', 'translateFailed']));
+                     throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
+                        'translateFailed']));
                   elseif(isset($data['nullable'][$key]) && ($row[$key] === null))
                      $obj->fields[$key] = null;
                   else
@@ -622,7 +634,7 @@ namespace {
       /**
        * Returns an array of objects of this class that fulfil given expectations
        * @param array $where (default empty)
-       * @param string|null $orderBy A valid SQL ordering string or null
+       * @param string|null $orderBy A valid SQL order string or null
        * @return static[]
        */
       protected static final function findBy(array $where = [], $orderBy = null) {
@@ -668,10 +680,12 @@ namespace {
        * Returns the first object of this class that fulfils given expectations or
        * null if there is none.
        * @param array $where
+       * @param string|null $orderBy A valid SQL order string or null
        * @return static|null
        */
-      protected static final function findOneBy(array $where) {
-         $return = static::findBy($where);
+      protected static final function findOneBy(array $where, $orderBy = null) {
+         return static::translateStatement(Database::getActiveConnection()->simpleSelect(static::getStaticStorage('tableName'),
+                  $where, [], $orderBy, null, '0, 1', '', true));
          return reset($return) ? : null;
       }
 
