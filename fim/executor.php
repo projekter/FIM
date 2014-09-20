@@ -54,11 +54,11 @@ abstract class Executor {
       $trailingSlash = substr($url, -1) === '/';
       if(is_dir($ioPath)) {
          if(!$trailingSlash) {
-            \Response::set('Location', "$url/$params");
+            \Response::set('Location', substr(BaseDir, 0, -1) . "$url/$params");
             return;
          }
       }elseif($trailingSlash) {
-         \Response::set('Location', substr($url, 0, -1) . $params);
+         \Response::set('Location', BaseDir . substr($url, 1, -1) . $params);
          return;
       }
       self::handlePath($ioPath, true, true);
