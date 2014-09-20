@@ -75,12 +75,7 @@ unset($basedir, $os, $osses);
  * beginning of the application.
  * @param array $config
  */
-function fimInitialize(array $config) {
-   if($config === false)
-      $config = [];
-   elseif(!is_array($config))
-      die('Error in configuration: Configuration file must return an array.');
-
+function fimInitialize(array $config = []) {
    require FrameworkPath . 'autoloader.php';
 
    Config::initialize($config);
