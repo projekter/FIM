@@ -106,8 +106,8 @@ namespace {
                   ->fetch(CodeDir . $templateFile);
          }catch(SmartyException $E) {
             chdir(CodeDir . $this->modulePath);
-            throw new ModuleException(I18N::getInternalLanguage()->get(['module', 'template', 'exception'],
-               [$templateFile]), 0, $E);
+            throw new ModuleException(I18N::getInternalLanguage()->get(['module',
+               'template', 'exception'], [$templateFile]), 0, $E);
          }
          chdir(CodeDir . $this->modulePath);
       }
@@ -287,8 +287,8 @@ namespace {
        */
       protected final function redirect($to, array $parameters = []) {
          if(($to = Router::mapPathToURL(fim\parsePath($to), $parameters)) === false)
-            throw new ModuleException(I18N::getInternalLanguage()->get(['module', 'redirectInvalid'],
-               [$to]));
+            throw new ModuleException(I18N::getInternalLanguage()->get(['module',
+               'redirectInvalid'], [$to]));
          Response::set('Location', $to);
          throw new ForwardException();
       }
@@ -497,8 +497,8 @@ namespace {
          # relative paths in templates without referencing them by "./".
          # $urls now is either a string (output directly) or an array
          if($urls === false) {
-            Log::reportError(I18N::getInternalLanguage()->get(['module', 'template', 'url'],
-                  [$path, $_current_file]));
+            Log::reportError(I18N::getInternalLanguage()->get(['module', 'template',
+                  'url'], [$path, $_current_file]));
             return '';
          }elseif(is_string($urls))
             if($escape)
@@ -542,14 +542,18 @@ namespace {
          # many named or unnamed parameters (at least one), we cannot fully rely
          # on the given parent function.
          $_attr = [];
+         $method = null;
          $escape = $compiler->smarty->escape_html;
          foreach($args as $mixed) {
             # shorthand?
             if(!is_array($mixed)) {
                if(trim($mixed, '\'"') === 'nofilter')
                   $escape = false;
-               else
+               else{
                   $_attr[] = $mixed;
+                  if($method === null)
+                     $method = false;
+               }
             }else{
                if(isset($mixed['nofilter']))
                   if(is_string($mixed['nofilter']) && in_array(trim($mixed['nofilter'],
@@ -561,17 +565,27 @@ namespace {
                   else
                      $compiler->trigger_template_error("illegal value of option flag \"nofilter\"",
                         $compiler->lex->taglineno);
-               else // named attribute - but we actually don't care
+               else{ // named attribute - but we actually don't care
                   $_attr[] = reset($mixed);
+                  if($method === null && !method_exists('I18N',
+                        $method = key($mixed)))
+                     $method = false;
+               }
             }
          }
          if(empty($_attr))
             $compiler->trigger_template_error("missing language key attribute",
                $compiler->lex->taglineno);
-         $str = "\$l->get({$_attr[0]}";
-         array_shift($_attr);
-         if(!empty($_attr))
-            $str .= ', [' . implode(', ', $_attr) . ']';
+         if($method === null) {
+            # Lazy get allows to enter all the attributes without need for array
+            # syntax
+            $str = "\$l->get({$_attr[0]}";
+            array_shift($_attr);
+            if(!empty($_attr))
+               $str .= ', [' . implode(', ', $_attr) . ']';
+         }else
+         # But verbose syntax requires exact input of attributes
+            $str = "\$l->$method(" . implode(', ', $_attr);
          if($escape)
             return "<?php echo htmlspecialchars($str), ENT_QUOTES, '" . addcslashes(Smarty::$_CHARSET,
                   "\\'") . "');?>";

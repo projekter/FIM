@@ -593,7 +593,7 @@ namespace fim {
       public function get($key) {
          if(!self::$logged) {
             self::$logged = true;
-            Log::reportError(self::$internalLanguage->get(['i18n', 'get', 'noLanguage'],
+            \Log::reportError(\I18N::getInternalLanguage()->get(['i18n', 'get', 'noLanguage'],
                   [$key]), true);
          }
          return $key;
