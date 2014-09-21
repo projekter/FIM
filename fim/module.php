@@ -103,7 +103,7 @@ namespace {
             return self::$smarty->clearAllAssign()
                   ->assign(self::$templateVars)
                   ->assignGlobal('__module', $this->moduleName)
-                  ->fetch(CodeDir . $templateFile);
+                  ->fetch("//$templateFile");
          }catch(SmartyException $E) {
             chdir(CodeDir . $this->modulePath);
             throw new ModuleException(I18N::getInternalLanguage()->get(['module',
@@ -595,6 +595,70 @@ namespace {
 
    }
 
+   # We want Smarty to be aware of FIM path identifiers, i.e. the maximum level
+   # of absoluteness shall be CodeDir. The methods of this class is mostly
+   # identical to the one implemented in Smarty, but perform the necessary
+   # transformations.
+
+   class Smarty_Resource_FIM extends Smarty_Internal_Resource_File {
+
+      /**
+       * test is file exists and save timestamp
+       *
+       * @param  Smarty_Template_Source $source source object
+       * @param  string                 $file   file name
+       * @return bool                   true if file exists
+       */
+      protected function fileExists(Smarty_Template_Source $source, $file) {
+         $source->timestamp = (is_file($file) && strpos(str_replace('\\', '/',
+                  $file), CodeDir) === 0) ? @filemtime($file) : false;
+         return $source->exists = !!$source->timestamp;
+      }
+
+      /**
+       * build template filepath by traversing the template_dir array
+       *
+       * @param  Smarty_Template_Source   $source    source object
+       * @param  Smarty_Internal_Template $_template template object
+       * @return string                   fully qualified filepath
+       * @throws SmartyException          if default template handler is registered but not callable
+       */
+      protected function buildFilepath(Smarty_Template_Source $source,
+         Smarty_Internal_Template $_template = null) {
+         $file = $source->name;
+         # Go relative to a given template?
+         $_file_is_dotted = $file[0] == '.' && ($file[1] == '.' || $file[1] == '/' || $file[1] == '\\');
+         if($_file_is_dotted && $_template && $_template->parent instanceof Smarty_Internal_Template) {
+            if($_template->parent->source->type !== 'fim' && $_template->parent->source->type !== 'file'
+               && $_template->parent->source->type !== 'extends' && !$_template->parent->allow_relative_path)
+               throw new SmartyException("Template '{$file}' cannot be relative to template of resource type '{$_template->parent->source->type}'");
+            $file = dirname($_template->parent->source->filepath) . DS . $file;
+            if(!preg_match('/^([\/\\\\]|[a-zA-Z]:[\/\\\\])/', $file))
+            # the path gained from the parent template is relative to the
+            # current working directory as expansions (like include_path)
+            # have already been done
+               $file = getcwd() . DS . $file;
+            $file = Router::normalize($file);
+            return $this->fileExists($source, $file) ? $file : false;
+         }
+         # We do not accept file system level absolute paths
+         if(preg_match('/^([a-zA-Z]:[\/\\\\])/', $file))
+            return false;
+         if($file[0] === '/')
+         # But this is FIM absoluteness
+            if($file[1] === '/')
+               $file = substr($file, 1);
+            else
+               $file = '/' . ResourceDir . $file;
+         $file = Router::normalize($file, false, false);
+         return $this->fileExists($source, $file) ? $file : false;
+         # If template_dir etc. shall be supported, use the file: protocol
+      }
+
+   }
+
+   Module::$smarty->registerResource('fim', new Smarty_Resource_FIM());
+   Module::$smarty->default_resource_type = 'fim';
 }
 
 namespace fim {
