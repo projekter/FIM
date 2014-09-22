@@ -346,7 +346,7 @@ namespace {
        * @return string|false
        */
       public final function translatePath($path) {
-         $fullPath = Router::normalize($path, false, false);
+         $fullPath = Router::convertFIMToFilesystem($path);
          static $localeParts = null;
          if($localeParts === null)
             $localeParts = Locale::parseLocale($this->locale);
@@ -377,7 +377,7 @@ namespace {
             return str_replace('<L>', 'root', $path);
          else{
             Log::reportError(self::$internalLanguage->get(['i18n', 'translatePathNotFound'],
-                  ['/' . Router::normalize($path)]), true);
+                  [Router::normalizeFIM($path)]), true);
             return false;
          }
       }

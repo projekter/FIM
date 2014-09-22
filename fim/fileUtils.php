@@ -61,7 +61,8 @@ abstract class fileUtils {
          if(isset($return[0]) && $return[0] === 'notfound')
             return false;
          else
-            throw new FIMInternalException(I18N::getInternalLanguage()->get(['fileUtils', 'corruptHelper']));
+            throw new FIMInternalException(I18N::getInternalLanguage()->get(['fileUtils',
+               'corruptHelper']));
       $sub = array_slice($return, 9);
       foreach($sub as &$value)
          $value = base64_decode($value);
@@ -87,7 +88,7 @@ abstract class fileUtils {
     *    available, exec is disabled and the file is inaccessible.
     */
    public static function size($fileName) {
-      $fileName = Router::normalize($fileName, false, false);
+      $fileName = \Router::normalizeFilesystem($fileName);
       # Implementation destilled from
       # https://github.com/jkuchar/BigFileTools/blob/master/class/BigFileTools.php
       # Original copyright:
@@ -121,7 +122,8 @@ abstract class fileUtils {
        */
       if(self::$hasCURL === null)
          self::$hasCURL = function_exists('curl_init');
-      if(self::$hasCURL && ($cURL = curl_init('file:///' . rawurlencode($fileName))) !== false) {
+      if(self::$hasCURL && ($cURL = curl_init('file://' . #
+         ($fileName[0] !== '/' ? '/' : '') . rawurlencode($fileName))) !== false) {
          if(curl_setopt_array($cURL,
                [CURLOPT_NOBODY => true,
                CURLOPT_RETURNTRANSFER => true,
@@ -192,7 +194,8 @@ abstract class fileUtils {
       # results for files that exceed the 4 GB limit.
       # It's the webmaster's responsibility to add at least one of the reliable
       # functionalities used above, so give them a clue by logging this action.
-      Log::reportInternalError(I18N::getInternalLanguage()->get(['fileUtils', 'size'], true));
+      Log::reportInternalError(I18N::getInternalLanguage()->get(['fileUtils', 'size'],
+            true));
       if(($size = @filesize($codedName)) === false)
          return false;
       elseif($size >= 0)
@@ -287,7 +290,7 @@ abstract class fileUtils {
       # memory usage, but that would be an overkill, so let's assume 20 MiB
       # should be enough for FIM, including all loaded data (hopefully not
       # complete files...). We'll increase the limit by at least 7MiB
-      $currentMemoryLimit = Config::ini_get('memory_limit');
+      $currentMemoryLimit = Config::iniGet('memory_limit');
       if($currentMemoryLimit != -1 && $currentMemoryLimit < 20971520)
          @ini_set('memory_limit', max(20971520, $currentMemoryLimit + 7340032));
       if((self::$codepage = @include (FrameworkPath . "codepages/$codepage.php")) !== false)
@@ -451,7 +454,8 @@ if(OS === 'Windows') {
                   $paths = explode('\\', str_replace('/', '\\', $path));
                   if(array_pop($paths) === '..') {
                      do
-                        $add = array_pop($paths);while($add === '.');
+                        $add = array_pop($paths);#
+                     while($add === '.');
                      $details['fileName'] .= "\\$add\\..";
                   }
                }
@@ -479,7 +483,7 @@ if(OS === 'Windows') {
          # counterparts.
          $this->codedPath = fileUtils::encodeFilename($path);
          # We now either have a pathname that is converted in such a way that
-         # our native PHP functions can cope with it or we could not get any
+         # our native PHP functions can cope with it or we cannot get any
          # CodePage to convert the filename. However, even without CodePage,
          # any ASCII filename would be recognized correctly, so this is not
          # necessarily an error. But we cannot differ between a file not found
@@ -500,7 +504,8 @@ if(OS === 'Windows') {
                   $paths = explode('\\', str_replace('/', '\\', $path));
                   if(array_pop($paths) === '..') {
                      do
-                        $add = array_pop($paths);while($add === '.');
+                        $add = array_pop($paths);#
+                     while($add === '.');
                      $this->path .= "\\$add\\..";
                   }
                }
@@ -511,8 +516,8 @@ if(OS === 'Windows') {
             # It's the webmaster's responsibility to add at least one of the
             # reliable functionalities used above, so give them a clue by
             # logging this not-found error which may be wrong.
-            Log::reportInternalError(I18N::getInternalLanguage()->get(['fileUtils', 'directoryIterator'],
-                  true));
+            Log::reportInternalError(I18N::getInternalLanguage()->get(['fileUtils',
+                  'directoryIterator'], true));
             throw new UnexpectedValueException("File not found: $path");
          }
       }
@@ -554,8 +559,8 @@ if(OS === 'Windows') {
             if($failed) # We got at least one file or directory that cannot be
             # accessed. Do not throw an exception, as most of the process may
             # have been successful, but report this incident.
-               Log::reportInternalError(I18N::getInternalLanguage()->get(['fileUtils', 'directoryIterator'],
-                     true));
+               Log::reportInternalError(I18N::getInternalLanguage()->get(['fileUtils',
+                     'directoryIterator'], true));
          }
          array_unshift($this->subItems,
             new fimDirectoryIterator($this->path . '\\..'));
@@ -1016,6 +1021,16 @@ if(OS === 'Windows') {
 }else{
 
    class fimDirectoryIterator extends DirectoryIterator {
+
+      /**
+       * (PHP 5 &gt;= 5.1.2)<br/>
+       * Gets file size
+       * @link http://php.net/manual/en/splfileinfo.getsize.php
+       * @return int The filesize in bytes.
+       */
+      public function getSize() {
+         return fileUtils::size($this->getPathname());
+      }
 
    }
 

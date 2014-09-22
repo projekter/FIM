@@ -29,7 +29,7 @@ namespace {
        * @var Smarty
        */
       public static $smarty;
-      private $moduleName, $modulePath, $contentModulePath;
+      private $moduleName, $modulePath;
       private static $templateVars = [];
 
       /**
@@ -54,8 +54,7 @@ namespace {
          $r = new ReflectionClass($this);
          $this->modulePath = dirname(substr($r->getFileName(), strlen(CodeDir)));
          $this->moduleName = basename($this->modulePath);
-         $this->modulePath = str_replace('\\', '/', $this->modulePath) . '/';
-         $this->contentModulePath = (string)substr($this->modulePath, 8);
+         $this->modulePath = '//' . str_replace('\\', '/', $this->modulePath) . '/';
       }
 
       public final function __get($name) {
@@ -75,8 +74,7 @@ namespace {
       }
 
       /**
-       * Returns the path of the file the module was declared in, relative to
-       * CodeDir, including the trailing slash
+       * Returns the path of the file the module was declared in
        * @return string
        */
       public final function getModulePath() {
@@ -97,19 +95,17 @@ namespace {
           */
             define('ServerEncoded',
                htmlspecialchars(Server, ENT_QUOTES, Smarty::$_CHARSET));
-         $templateFile = Router::normalize($templateFile);
-         chdir(CodeDir . dirname($templateFile));
+         $templateFile = Router::normalizeFIM($templateFile);
+         $chdir = new \fim\chdirHelper(CodeDir . dirname(substr($templateFile, 2)));
          try {
             return self::$smarty->clearAllAssign()
                   ->assign(self::$templateVars)
                   ->assignGlobal('__module', $this->moduleName)
-                  ->fetch("//$templateFile");
-         }catch(SmartyException $E) {
-            chdir(CodeDir . $this->modulePath);
+                  ->fetch($templateFile);
+         }catch(SmartyException $e) {
             throw new ModuleException(I18N::getInternalLanguage()->get(['module',
-               'template', 'exception'], [$templateFile]), 0, $E);
+               'template', 'exception'], [$templateFile]), 0, $e);
          }
-         chdir(CodeDir . $this->modulePath);
       }
 
       /**
@@ -177,14 +173,14 @@ namespace {
        */
       protected final function displayFile($fileName, $checkAccess = 0,
          $requireSubdirectory = null) {
-         $fileName = Router::normalize($fileName);
+         $fileName = Router::normalizeFIM($fileName);
          if($requireSubdirectory !== null) {
-            $requireSubdirectory = Router::normalize($requireSubdirectory);
+            $requireSubdirectory = Router::normalizeFIM($requireSubdirectory);
             if(substr($fileName, 0, strlen($requireSubdirectory)) !== $requireSubdirectory)
                $this->errorInternal(404);
          }
-         chdir(CodeDir);
-         if(!fileUtils::isReadable($fileName))
+         if(!fileUtils::isReadable(Router::convertFIMToFilesystem($fileName,
+                  false)))
             $this->errorInternal(404);
          else{
             if(($checkAccess & Rules::CHECK_EXISTENCE) !== 0)
@@ -197,11 +193,10 @@ namespace {
          Response::$responseText = '';
          ob_clean(); # Avoid adding any data that was echoed before
          \fim\Executor::passFile($fileName);
-         chdir($this->modulePath);
       }
 
       private final function errorInternal($errno) {
-         throw new FIMErrorException($this->contentModulePath . 'fim.module.php',
+         throw new FIMErrorException($this->modulePath . 'fim.module.php',
          [$errno], true);
       }
 
@@ -214,7 +209,7 @@ namespace {
        *    be forwarded to the error handling routines.
        */
       protected final function error($errno) {
-         throw new FIMErrorException($this->contentModulePath . 'fim.module.php',
+         throw new FIMErrorException($this->modulePath . 'fim.module.php',
          func_get_args());
       }
 
@@ -224,7 +219,7 @@ namespace {
        * programmer. The error function might however been called by the
        * framework.
        * @return null|array('code' => error code,
-       *    'file' => module file name relative to the ResourceDir,
+       *    'file' => module file name relative to the CodeDir,
        *    'line' => line of calling error, 'trace' => stacktrace array)
        */
       protected final function getErrorDetails() {
@@ -258,14 +253,6 @@ namespace {
        */
       protected final function forward($to, array $parameters = null,
          $keepTemplateVars = true, $checkRules = true) {
-         $to = Router::normalize($to);
-         try {
-            $to = \fileUtils::encodeFilename($to);
-         }catch(\UnexpectedValueException $e) {
-            self::error(404, $to);
-            return;
-         }
-         chdir(CodeDir);
          if(!$keepTemplateVars)
             self::$templateVars = [];
          if(isset($parameters))
@@ -286,7 +273,7 @@ namespace {
        * @see \Module::forward()
        */
       protected final function redirect($to, array $parameters = []) {
-         if(($to = Router::mapPathToURL(fim\parsePath($to), $parameters)) === false)
+         if(($to = Router::mapPathToURL($to, $parameters)) === false)
             throw new ModuleException(I18N::getInternalLanguage()->get(['module',
                'redirectInvalid'], [$to]));
          Response::set('Location', $to);
@@ -312,7 +299,7 @@ namespace {
    Module::$smarty = new Smarty();
    Module::$smarty->setCompileDir(CodeDir . 'cache/templates');
    Module::$smarty->setTemplateDir([]);
-   Module::$smarty->registerFilter('post', '\\fim\\fimRegisterLanguage');
+   Module::$smarty->registerFilter('post', '\\fim\\initTemplate');
 
    # We cannot simply define the functions smarty_compiler_url and
    # smarty_compiler_l which would be the "standard" way. But these functions
@@ -321,6 +308,27 @@ namespace {
    # Both functions are almost identical, so we use a trait to share them.
 
    trait urlCompiler {
+
+      /**
+       * Checks whether given PHP code consists only of static strings and
+       * parses them.
+       * @param string $str
+       * @return false|string False if the input was dynamic
+       */
+      private function parseStaticString($str) {
+         try {
+            $tokens = token_get_all("<?php $str");
+            static $validTokens = [T_OPEN_TAG => true, T_CONSTANT_ENCAPSED_STRING => true,
+               T_ENCAPSED_AND_WHITESPACE => true, T_WHITESPACE => true];
+            foreach($tokens as $token)
+               if($token !== '.' && is_array($token))
+                  if(!isset($validTokens[$token[0]]))
+                     return false;
+            return (string)@eval("return $str;");
+         }catch(Exception $e) {
+            return false;
+         }
+      }
 
       protected function _compile($args, $compiler, $translate) {
          # copy pieces of the getAttribute() behavior. As we want to allow as
@@ -349,7 +357,7 @@ namespace {
                   else
                      $compiler->trigger_template_error("illegal value of option flag \"nofilter\"",
                         $compiler->lex->taglineno);
-               else{ // named attribute
+               else{ # named attribute
                   $attr = each($mixed);
                   $parameters[$attr['key']] = $attr['value'];
                }
@@ -360,108 +368,69 @@ namespace {
             $compiler->trigger_template_error("missing url attribute",
                $compiler->lex->taglineno);
          $_current_file = $compiler->smarty->_current_file;
-         $oldDir = getcwd();
          static $dirCaches = [];
-         if(!isset($dirCaches[$_current_file])) {
-            # We need to get the file name of the template that is actually
-            # executed. $smarty->_current_file serves as a hint: It contains
-            # either an absolute path (relative to /) or a relative path to cwd.
-            # As the maximum level of "absoluteness" we work with in FIM is
-            # CodeDir, we will first have to cut off everything that goes beyond
-            # CodeDir.
-            static $cdl = null;
-            if($cdl === null)
-               $cdl = strlen(CodeDir);
-            $currentFile = str_replace('\\', '/', $_current_file);
-            if(substr($currentFile, 0, $cdl) === CodeDir)
-               $currentFile = substr($currentFile, $cdl - 1);# Keep trailing /
-            $currentFile = Router::normalize($currentFile, false, false);
-            $dirCaches[$_current_file] = dirname($currentFile);
-            # This is not very performant, but remember we only have to do it
-            # once while the template is being compiled.
-         }
-         chdir($dirCaches[$_current_file]);
+         if(!isset($dirCaches[$_current_file]))
+         # We need to get the file name of the template that is actually
+         # executed. $smarty->_current_file serves as a hint: It contains
+         # either an filesystem absolute path or a path relative to cwd.
+            $dirCaches[$_current_file] = dirname(Router::normalizeFilesystem($_current_file));
+         $chdir = new fim\chdirHelper($dirCaches[$_current_file]);
          # Now our cwd is assured to be the template's directory.
-         # We can only output the path and all parameters are not composed but a
-         # static string. This is a very unlikely thing, but may occur in static
-         # navigations. It's worth the effort to check. For this, we have to
-         # parse the code and check for dynamic strings. Everything that is not
-         # a string literal, a concatenation of constant strings or a whitespace
-         # character is supposed to be dynamic.
-         try {
-            $tokens = token_get_all("<?php $path");
-            static $validTokens = [T_OPEN_TAG => true, T_CONSTANT_ENCAPSED_STRING => true,
-               T_ENCAPSED_AND_WHITESPACE => true, T_WHITESPACE => true];
-            foreach($tokens as $token)
-               if($token !== '.' && is_array($token))
-                  if(!isset($validTokens[$token[0]]))
-                     goto invalid;
-            $path = @eval("return $path;");
-            if($path !== '' && $path[0] === '/')
-               if(@$path[1] === '/')
-                  $path = substr($path, 1);
-               else
-                  $path = '/' . ResourceDir . $path;
-         }catch(Exception $e) {
-            invalid:
+         # We can only output the path and all parameters if they are not
+         # composed but static strings. This is a very unlikely thing, but may
+         # occur in static navigations. It's worth the effort to check. For
+         # this, we have to parse the code and check for dynamic strings.
+         # Everything that is not a string literal, a concatenation of constant
+         # strings or a whitespace character is supposed to be dynamic.
+         if(($staticPath = $this->parseStaticString($path)) === false) {
             # This is supposed not to happen very often. While parameters will
             # most likely be dynamic, the path itself should be static; so let's
             # accept this performance drawback here.
-            $return = '<?php $oldDir=getcwd();chdir(' .
+            $return = '<?php $chdir=new fim\\chdirHelper(' .
                var_export($dirCaches[$_current_file], true) .
-               ');echo ';
+               '); echo ';
             if($escape)
                $return .= 'htmlspecialchars(';
             $return .= $translate ?
-               "Router::mapPathToURL(\$l->translatePath(fim\\parsePath($path))" : "Router::mapPathToURL(fim\\parsePath($path)";
+               "Router::mapPathToURL(\$l->translatePath($path)" :
+               "Router::mapPathToURL($path";
             if(!empty($parameters)) {
                $return .= ', [';
                foreach($parameters as $key => $param)
-                  $return .= var_export($key, true) . "=>$param,";
+                  $return .= var_export($key, true) . " => $param, ";
                $return .= ']';
             }
             if($escape)
                $return .= "), ENT_QUOTES, '" . addcslashes(Smarty::$_CHARSET,
                      "\\'") . "'";
-            $return .= ');chdir($oldDir);unset($oldDir);?>';
-            chdir($oldDir);
+            $return .= '); unset($chdir);?>';
             return $return;
          }
-         try {
-            $parsedParameters = [];
-            foreach($parameters as $key => $param) {
-               $tokens = token_get_all($param);
-               foreach($tokens as $token)
-                  if($token !== '.' && is_array($token))
-                     if(!isset($validTokens[$token[0]]))
-                        goto invalid2;
-               $parsedParameters[$key] = @eval("return $param;");
+         $parsedParameters = [];
+         foreach($parameters as $key => $param)
+            if(($parsedParameters[$key] = $this->parseStaticString($param)) === false) {
+               # This is supposed to be the most likely case. We already have a
+               # parsed, static path, but at least one of our parameters is
+               # dynamic. We therefore do not need to do a chdir in the
+               # template, as we already know the whole path.
+               if($escape)
+                  $return = $translate ? '<?php echo htmlspecialchars(Router::mapPathToURL($l->translatePath('
+                        : '<?php echo htmlspecialchars(Router::mapPathToURL(';
+               else
+                  $return = $translate ? '<?php echo Router::mapPathToURL($l->translatePath('
+                        : '<?php echo Router::mapPathToURL(';
+               $return .= var_export(Router::normalizeFIM($staticPath), true);
+               if($translate)
+                  $return .= ')';
+               if(!empty($parameters)) {
+                  $return .= ', [';
+                  foreach($parameters as $key => $param)
+                     $return .= var_export($key, true) . " => $param, ";
+                  $return .= ']';
+               }
+               return $escape ? ("$return), ENT_QUOTES, '" .
+                  addcslashes(Smarty::$_CHARSET, "\\'") . "');?>") : "$return);?>";
             }
-         }catch(Exception $e) {
-            invalid2:
-            # This is supposed to be the most likely case. We already have a
-            # parsed, static path, but at least one of our parameters is
-            # dynamic. We therefore do not need to do a chdir in the template,
-            # as we already know the whole path.
-            if($escape)
-               $return = $translate ? '<?php echo htmlspecialchars(Router::mapPathToURL($l->translatePath('
-                     : '<?php echo htmlspecialchars(Router::mapPathToURL(';
-            else
-               $return = $translate ? '<?php echo Router::mapPathToURL($l->translatePath('
-                     : '<?php echo Router::mapPathToURL(';
-            $return .= var_export('/' . Router::normalize($path), true);
-            if($translate)
-               $return .= ')';
-            if(!empty($parameters)) {
-               $return .= ',[';
-               foreach($parameters as $key => $param)
-                  $return .= var_export($key, true) . '=>' . $param . ',';
-               $return .= ']';
-            }
-            chdir($oldDir);
-            return $escape ? ("$return), ENT_QUOTES, '" .
-               addcslashes(Smarty::$_CHARSET, "\\'") . "');?>") : "$return);?>";
-         }
          if($translate)
          # We cannot apply routings now, as the translatePath function only
          # works for paths, not for urls. So everything is left to the
@@ -470,35 +439,34 @@ namespace {
          # Although this might not happen very often, we can also have urls that
          # are completely static and the url function is only used for
          # consistency and possibly differing subdomains. Now we know the path
-         # and all parameters, so we can possibly do better caching.
-         $urls = Router::mapPathToURL($path, $parsedParameters, $noRouting, true);
+         # and all parameters, so we might be able to do better caching.
+         $urls = Router::mapPathToURL($staticPath, $parsedParameters,
+               $noRouting, true);
          if(!$noRouting) {
             noRouting:
-            # We cannot assure that our path will never change, so we cannot fully
-            # cache the url.
+            # We cannot assure that our path will never change, so we cannot
+            # fully cache the url.
             if($escape)
                $return = $translate ? '<?php echo htmlspecialchars(Router::mapPathToURL($l->translatePath('
                      : '<?php echo htmlspecialchars(Router::mapPathToURL(';
             else
                $return = $translate ? '<?php echo Router::mapPathToURL($l->translatePath('
                      : '<?php echo Router::mapPathToURL(';
-            $return .= var_export('/' . Router::normalize($path), true);
+            $return .= var_export('/' . Router::normalizeFIM($staticPath), true);
             if($translate)
                $return .= ')';
             if(!empty($parsedParameters))
-               $return .= ',' . var_export($parsedParameters, true);
-            chdir($oldDir);
+               $return .= ', ' . var_export($parsedParameters, true);
             return $escape ? ("$return), ENT_QUOTES, '" .
                addcslashes(Smarty::$_CHARSET, "\\'") . "');?>") : "$return);?>";
          }
          # Caching gets even better. We now know that our routing will never
          # change, so we can really use the routing's result.
-         chdir($oldDir); # This might be necessary for some bad guys which use
-         # relative paths in templates without referencing them by "./".
-         # $urls now is either a string (output directly) or an array
+         # $urls now is either a string (output directly) or an array - or the
+         # url is completely inaccessible.
          if($urls === false) {
             Log::reportError(I18N::getInternalLanguage()->get(['module', 'template',
-                  'url'], [$path, $_current_file]));
+                  'url'], [$staticPath, Router::normalizeFIM($_current_file)]));
             return '';
          }elseif(is_string($urls))
             if($escape)
@@ -565,7 +533,7 @@ namespace {
                   else
                      $compiler->trigger_template_error("illegal value of option flag \"nofilter\"",
                         $compiler->lex->taglineno);
-               else{ // named attribute - but we actually don't care
+               else{ # named attribute - but we actually don't care
                   $_attr[] = reset($mixed);
                   if($method === null && !method_exists('I18N',
                         $method = key($mixed)))
@@ -596,8 +564,8 @@ namespace {
    }
 
    # We want Smarty to be aware of FIM path identifiers, i.e. the maximum level
-   # of absoluteness shall be CodeDir. The methods of this class is mostly
-   # identical to the one implemented in Smarty, but perform the necessary
+   # of absoluteness shall be CodeDir. The methods of this class are mostly
+   # identical to the ones implemented in Smarty, but perform the necessary
    # transformations.
 
    class Smarty_Resource_FIM extends Smarty_Internal_Resource_File {
@@ -632,25 +600,10 @@ namespace {
             if($_template->parent->source->type !== 'fim' && $_template->parent->source->type !== 'file'
                && $_template->parent->source->type !== 'extends' && !$_template->parent->allow_relative_path)
                throw new SmartyException("Template '{$file}' cannot be relative to template of resource type '{$_template->parent->source->type}'");
-            $file = dirname($_template->parent->source->filepath) . DS . $file;
-            if(!preg_match('/^([\/\\\\]|[a-zA-Z]:[\/\\\\])/', $file))
-            # the path gained from the parent template is relative to the
-            # current working directory as expansions (like include_path)
-            # have already been done
-               $file = getcwd() . DS . $file;
-            $file = Router::normalize($file);
+            $file = Router::normalizeFilesystem(dirname($_template->parent->source->filepath) . DS . $file);
             return $this->fileExists($source, $file) ? $file : false;
          }
-         # We do not accept file system level absolute paths
-         if(preg_match('/^([a-zA-Z]:[\/\\\\])/', $file))
-            return false;
-         if($file[0] === '/')
-         # But this is FIM absoluteness
-            if($file[1] === '/')
-               $file = substr($file, 1);
-            else
-               $file = '/' . ResourceDir . $file;
-         $file = Router::normalize($file, false, false);
+         $file = Router::normalizeFIM($file);
          return $this->fileExists($source, $file) ? $file : false;
          # If template_dir etc. shall be supported, use the file: protocol
       }
@@ -665,24 +618,10 @@ namespace fim {
 
    /**
     * Internal function
-    * @param string $path
-    * @return string
-    */
-   function parsePath($path) {
-      if($path !== '' && $path[0] === '/')
-         if(@$path[1] === '/')
-            return substr($path, 1);
-         else
-            return '/' . ResourceDir . $path;
-      return $path;
-   }
-
-   /**
-    * Internal function
     * @param string $in
     * @return string
     */
-   function fimRegisterLanguage($in) {
+   function initTemplate($in) {
       return '<?php if(!isset($l)) $l = I18N::getLanguage();?>' . $in;
    }
 

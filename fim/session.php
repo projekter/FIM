@@ -51,7 +51,8 @@ namespace {
          }
 
          public static final function __callStatic($name, $arguments) {
-            throw new SessionException(I18N::getInternalLanguage()->get(['session', 'cli']));
+            throw new SessionException(I18N::getInternalLanguage()->get(['session',
+               'cli']));
          }
 
       }
@@ -354,9 +355,12 @@ namespace {
             $oldID = session_id();
             $oldData = $_SESSION;
             session_unset();
-            $file = session_save_path() . "/sess_$oldID";
-            session_destroy();
-            @unlink($file);
+            if(Config::get('sessionStorage') === 'default') {
+               $file = session_save_path() . "/sess_$oldID";
+               session_destroy();
+               @unlink($file);
+            }else
+               session_destroy();
             session_id($newId);
             session_start();
             $_SESSION = $oldData;

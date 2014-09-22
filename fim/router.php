@@ -23,33 +23,124 @@ if(@FrameworkPath === 'FrameworkPath')
  */
 abstract class Router {
 
+   /**
+    * @var Router[]
+    */
    private static $instances = [];
 
    /**
-    * Converts a given relative path to an array
+    * Converts a path into an array. The resulting array will contain an
+    * absolute path.
     * @param string $path
-    * @return string[]
+    * @param bool $fimStyle True: Maximum level of absoluteness is CodeDir<br />
+    *    False: As expected from a filesystem normalizer
+    * @return array
     */
-   private static function arrayize($path) {
-      if($path == '')
+   private static function convertPathToArray($path, $fimStyle) {
+      if(empty($path))
          $path = '.';
-      else
+      elseif(OS === 'Windows')
          $path = str_replace('\\', '/', $path);
-      $parts = array_filter(explode('/', $path));
-      if($path[0] === '/')
-         $relToCodeDir = [];
-      else{
-         $relToCodeDir = str_replace('\\', '/',
-            (string)substr(getcwd(), strlen(CodeDir)));
-         $relToCodeDir = $relToCodeDir === '' ? [] : explode('/', $relToCodeDir);
+      if($path[0] === '/') # absolute path
+         if($fimStyle && @$path[1] !== '/')
+            $return = [ResourceDir];
+         else
+            $return = [];
+      elseif(!$fimStyle && OS === 'Windows' && preg_match('/^[a-z]:/i', $path) === 1) {
+         $return = []; # absolute path on Windows
+         # We will need to save the current drive, as on Windows, anything that
+         # will delete this drive from the path array shall be regarded as
+         # invalid
+         $drive = $path[0];
+      }else{ # relative path
+         $return = getcwd();
+         if($fimStyle) # in FIM style, trim everything beyond CodeDir
+            $return = (string)substr($return, strlen(CodeDir));
+         if($return === '')
+            $return = [];
+         else{
+            if(OS === 'Windows') {
+               $return = str_replace('\\', '/', $return);
+               $drive = $return[0];
+            }
+            $return = explode('/', $return);
+         }
       }
-      foreach($parts as $part)
-         if($part !== '.')
-            if($part === '..')
-               array_pop($relToCodeDir);
-            else
-               $relToCodeDir[] = $part;
-      return $relToCodeDir;
+      foreach(explode('/', $path) as $part)
+         if($part === '..') {
+            array_pop($return);
+            if(empty($return) && isset($drive))
+               $return = ["$drive:"];
+         }elseif($part !== '' && $part !== '.')
+            $return[] = $part;
+      return $return;
+   }
+
+   /**
+    * Normalizes a path in FIM style. The returned path will start with two
+    * slashes and will not end with a slash.
+    * @param string $path
+    * @param bool $returnArray
+    */
+   public static function normalizeFIM($path, $returnArray = false) {
+      $pathArray = self::convertPathToArray($path, true);
+      return $returnArray ? $pathArray : '//' . implode('/', $pathArray);
+   }
+
+   /**
+    * Normalizes a path in filesystem style. The returned path will start with
+    * a slash or drive letter and will not end with a slash.
+    * @param string $path
+    * @param bool $returnArray
+    */
+   public static function normalizeFilesystem($path, $returnArray = false) {
+      $pathArray = self::convertPathToArray($path, false);
+      if($returnArray)
+         return $pathArray;
+      else{
+         $path = implode('/', $pathArray);
+         if(OS === 'Windows' && preg_match('/^[a-z]:/i', $path))
+            return $path;
+         else
+            return "/$path";
+      }
+   }
+
+   /**
+    * Converts a FIM path to an absolute path.
+    * @param string $fimPath
+    * @param bool $normalize If you set this to false, ensure that $fimPath is
+    *    already a fully normalized path!
+    * @return string
+    */
+   public static function convertFIMToFilesystem($fimPath, $normalize = true) {
+      if($normalize)
+         return CodeDir . implode('/', self::convertPathToArray($fimPath, true));
+      else
+         return CodeDir . substr($fimPath, 2);
+   }
+
+   /**
+    * Converts a filesystem path to a FIM path, if possible
+    * @param string $filesystemPath
+    * @param bool $normalize If you set this to false, ensure that
+    *    $filesystemPath is already a fully normalized path (-> forward
+    *    slashes)!
+    * @return false|string
+    */
+   public static function convertFilesystemToFIM($filesystemPath, $normalize = true) {
+      if($normalize)
+         $filesystemPath = self::normalizeFilesystem($filesystemPath);
+      static $cdl = null;
+      if($cdl === null)
+         $cdl = strlen(CodeDir);
+      $prePath = substr($filesystemPath, 0, $cdl);
+      if(OS === 'Windows') {
+         if(strcasecmp($prePath, CodeDir) !== 0)
+            return false;
+      }elseif($prePath !== CodeDir)
+         return false;
+      return '//' . substr($filesystemPath, $cdl);
    }
 
    /**
@@ -70,9 +161,8 @@ abstract class Router {
 
    /**
     * Converts a path to a correct url, respecting all subdomain settings.
-    * @param string $path Any path relative to the current working directory or
-    *    absolute (= relative to CodeDir) - must lie in content/ or script/
-    *    subdirectory!
+    * Routing functions must have been applied to the path before!
+    * @param string $path Required to start in content/ or script/
     * @param bool $directory Indicates whether the source is a directory
     *    (module)
     * @param bool $allServers If the url would differ according to the current
@@ -84,30 +174,28 @@ abstract class Router {
     *    settings.
     */
    private static final function convertPathToURL($path, $directory, $allServers) {
-      $relToCodeDir = self::arrayize($path);
-      if(@$relToCodeDir === 'script') {
-         $impl = implode('/', $relToCodeDir);
-         if(is_dir(CodeDir . $impl) && !empty($relToCodeDir))
-            $relToCodeDir[] = '';# close with trailing slash for directories
-         return "/$impl";
-      }elseif(@$relToCodeDir[0] !== 'content')
+      $path = self::convertPathToArray($path, true);
+      if(@$path[0] === 'script') {
+         if($directory && !empty($path))
+            $path[] = '';# close with trailing slash for directories
+         $path = implode('/', $path);
+         if(OS === 'Windows')
+            return preg_replace('#(/fim\.)bypass\.#i', '$1', "/$path");
+         else
+            str_replace('/fim.bypass.', '/fim.', "/$path");
+      }elseif(@$path[0] !== 'content')
          return false;
       $depth = Config::get('subdomainDepth');
       if(!CLI && $depth === 0) {
          # Speed up things a bit
-         unset($relToCodeDir[0]);
+         unset($path[0]);
          $result = BaseDir;
       }else{
-         array_shift($relToCodeDir);
-         $subdomainArray = array_splice($relToCodeDir, 0, $depth);
+         array_shift($path);
+         $subdomainArray = array_splice($path, 0, $depth);
+         if(!$directory && empty($path))
+            $path = (array)array_pop($subdomainArray);
          $subdomainFolder = implode('/', $subdomainArray);
-         if(!$directory && empty($relToCodeDir)) {
-            # We could either check for is_file or !is_dir. But as modules can
-            # emulate files while they cannot emulate directories, lets treat
-            # everything that is not a dir - also non-existing stuff - as a file...
-            $relToCodeDir = (array)array_pop($subdomainArray);
-            $subdomainFolder = implode('/', $subdomainArray);
-         }
          if(CLI || $subdomainFolder !== CurrentSubdomain) {
             static $subdomainDefault = null;
             if($subdomainDefault === null)
@@ -115,7 +203,7 @@ abstract class Router {
             if($subdomainFolder === $subdomainDefault)
                $subdomainArray = [];
             else{
-               # Maybe subdomainDefault prevents from reaching this address..
+               # Maybe subdomainDefault prevents from reaching this address
                $defaultCount = $subdomainDefault === '' ? 0 : substr_count($subdomainDefault,
                      '.') + 1;
                if(count($subdomainArray) < $defaultCount)
@@ -123,8 +211,12 @@ abstract class Router {
                   return false;
                unset($defaultCount);
             }
-            $subdomainFolder = empty($subdomainArray) ? '' : implode('.',
-                  array_reverse($subdomainArray)) . '.';
+            if(empty($subdomainArray))
+               $subdomainFolder = '';
+            else
+               $subdomainFolder = implode('/',
+                     preg_replace('#^(fim\.)bypass\.#' . (OS === 'Windows' ? 'i' : ''),
+                        '$1', array_reverse($subdomainArray))) . '.';
             static $https = null;
             if($https === null)
                $https = Request::isHTTPS();
@@ -142,61 +234,37 @@ abstract class Router {
          }else
             $result = '/';
       }
-      if($directory && !empty($relToCodeDir))
-         $relToCodeDir[] = '';# close with trailing slash for directories
+      if($directory && !empty($path))
+         $path[] = '';# close with trailing slash for directories
       if(isset($multipleBases) && $multipleBases) {
-         $result[] = '/' . implode('/', $relToCodeDir);
-         return $result;
-      }else
-         return $result . implode('/', $relToCodeDir);
-   }
-
-   /**
-    * Converts a relative or absolute path into a sensitive path.
-    * @param string $path Any path relative to the current working directory or
-    *    absolute (= relative to CodeDir)
-    * @param boolean $returnArray Does not return the path as a string but as an
-    *    array, each hierarchy level as an own entry
-    * @param boolean $relativeToCodeDir Removes any path before CodeDir
-    * @return string|array If not $relativeToCodeDir:<br />
-    *    absolute path, starting with slash on non-Windows systems, no closing /
-    * <br />If $relativeToCodeDir:<br />
-    *    relative path, starting without slash, no closing /
-    * <br />If $returnArray:<br />
-    *    no distinction between $relativeToCodeDir and not possible without
-    *    knowing its value
-    */
-   public static final function normalize($path, $returnArray = false,
-      $relativeToCodeDir = true) {
-      $relToCodeDir = self::arrayize($path);
-      if($returnArray)
-         if($relativeToCodeDir)
-            return $relToCodeDir;
+         if(OS === 'Windows')
+            $result[] = preg_replace('#(/fim\.)bypass\.#i', '$1',
+               '/' . implode('/', $path));
          else
-            return array_filter(array_merge(explode('/', CodeDir), $relToCodeDir));
-      $ret = implode('/', $relToCodeDir);
-      if($relativeToCodeDir)
-         return $ret;
-      elseif($ret === '')
-         return substr(CodeDir, 0, -1);
+            $result[] = str_replace('/fim.bypass.', '/fim.',
+               '/' . implode('/', $path));
+         return $result;
+      }elseif(OS === 'Windows')
+         return $result . preg_replace('#(/fim\.)bypass\.#i', '$1',
+               implode('/', $path));
       else
-         return CodeDir . $ret;
+         return $result . str_replace('/fim.bypass.', '/fim.',
+               implode('/', $path));
    }
 
    /**
-    * Converts a relative or absolute url into a sensitive url with regards
-    * to url parameters and escaping
-    * @param string $path Any url relative to the current working directory or
+    * Splits a path with parameters in URL-like style in path and parameter
+    * @param string $url Any url relative to the current working directory or
     *    absolute (= relative to CodeDir)
     * @param array &$parameters A reference array that will be filled with all
     *    parameters
     * @return array Each part of the path as an entry in the array
     */
-   public static final function normalizeURL($path, &$parameters) {
-      $path = explode('?', $path, 2);
+   private static final function explodeURL($url, &$parameters) {
+      $url = explode('?', $url, 2);
       $parameters = [];
-      if(isset($path[1])) {
-         $params = explode('&', $path[1]);
+      if(isset($url[1])) {
+         $params = explode('&', $url[1]);
          foreach($params as $p) {
             $p = array_map('urldecode', explode('=', $p, 2));
             if(isset($p[1])) {
@@ -215,7 +283,7 @@ abstract class Router {
                $parameters[$p[0]] = true;
          }
       }
-      return array_map('urldecode', self::normalize($path[0], true));
+      return array_map('urldecode', self::convertPathToArray("//{$url[0]}", false));
    }
 
    /**
@@ -223,7 +291,7 @@ abstract class Router {
     * @param array $parameters
     * @return string A valid url parameter, starting with ? or an empty string
     */
-   public static final function getParamString(array $parameters) {
+   private static final function getParamString(array $parameters) {
       if(empty($parameters))
          return '';
       $result = '';
@@ -240,21 +308,20 @@ abstract class Router {
    }
 
    /**
-    * Converts a given url to a valid path respecing given routings. The result
-    * will be relative to CodeDir and neither start nor end with a slash
+    * Converts a given url to a normalized path respecing given routings.
     * @param string $url
     * @param array &$parameters Outgoing parameter array
     * @param bool &$noRouting This will be true when no routing will ever occur
     *    to this path
+    * @param string|null &$failureAt This will be set with the last directory
+    *    that could be mapped successfully. It will be null on complete failure
     * @return string|false False if the url was invalid, i.e. not mappable
     */
    public static final function mapURLToPath($url, &$parameters,
-      &$noRouting = null) {
-      $url = self::normalizeURL('/' . ResourceDir . "/$url", $parameters);
+      &$noRouting = null, &$failureAt = null) {
+      $url = self::explodeURL($url, $parameters);
       $noRouting = true;
-      if(empty($url) || $url[0] !== ResourceDir)
-         return false;
-      $dir = $namespace = array_shift($url);
+      $dir = $namespace = ResourceDir;
       $absDir = CodeDir . $dir;
       while(true) {
          $stopRewriting = false;
@@ -269,12 +336,13 @@ abstract class Router {
          }
          if(isset($tmp)) {
             $noRouting = false;
-            if($tmp === false)
+            if($tmp === false) {
+               $failureAt = "//$dir";
                return false;
-            elseif(is_array($tmp))
+            }elseif(is_array($tmp))
                $url = self::sanitizePathArray($tmp);
             else
-               $url = self::arrayize("/$tmp");
+               $url = self::convertPathToArray("/$tmp", false);
             unset($tmp);
          }
          if(empty($url))
@@ -289,7 +357,10 @@ abstract class Router {
          $absDir .= "/$new";
          $namespace .= "\\$new";
       }
-      return $dir;
+      if(OS === 'Windows')
+         return preg_replace('#(/fim\.)#i', '$1bypass.', "//$dir");
+      else
+         return str_replace('/fim.', '/fim.bypass.', "//$dir");
    }
 
    /**
@@ -303,13 +374,13 @@ abstract class Router {
     *    current server, [1]: The part after the current server. If the urls
     *    would be the same, a string is returned as usual.
     * @return string|boolean|array False if the path was invalid i.e. not within
-    *    the content directory or not reachable due to subdomain default
-    *    settings.
+    *    the content or script directory or not reachable due to subdomain
+    *    default settings.
     */
    public static final function mapPathToURL($path, array $parameters = [],
       &$noRouting = null, $allServers = false) {
       $noRouting = true;
-      $path = self::normalize($path, true);
+      $path = self::convertPathToArray($path, true);
       if(empty($path) || ($path[0] !== 'content' && $path[0] !== 'script'))
          return false;
       $dir = [];
@@ -335,7 +406,7 @@ abstract class Router {
             elseif(is_array($tmp))
                $dir = self::sanitizePathArray($tmp);
             else
-               $dir = self::arrayize("/$tmp");
+               $dir = self::convertPathToArray("/$tmp", false);
             unset($tmp);
          }
          $new = array_pop($path);
@@ -350,7 +421,7 @@ abstract class Router {
          $namespace = implode('\\', $path);
          $absDir = CodeDir . implode('/', $path);
       }
-      $paths = self::convertPathToURL('/' . implode('/', $dir), $isDir,
+      $paths = self::convertPathToURL('//' . implode('/', $dir), $isDir,
             $allServers);
       if($paths === false)
          return false;

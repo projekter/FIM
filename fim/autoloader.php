@@ -19,8 +19,26 @@ namespace fim;
 if(@FrameworkPath === 'FrameworkPath')
    die('Please do not call this file directly.');
 
-$oldDir = getcwd();
-chdir(__DIR__);
+/**
+ * This helper class changes the current working directory as long as the object
+ * exists, then reverts it back automatically
+ */
+class chdirHelper {
+
+   private $oldDir;
+
+   public function __construct($newDir) {
+      $this->oldDir = getcwd();
+      chdir($newDir);
+   }
+
+   public function __destruct() {
+      chdir($this->oldDir);
+   }
+
+}
+
+$chdir = new chdirHelper(__DIR__);
 require './exceptions.php';
 require './config.php';
 require './i18n.php';
@@ -48,8 +66,7 @@ require './primaryTable.php';
 require './fileUtils.php';
 if(!function_exists('array_column'))
    require './array_column/array_column.php';
-chdir($oldDir);
-unset($oldDir);
+unset($chdir);
 
 spl_autoload_register(function($class) {
    $pathInfo = pathinfo(str_replace('\\', '/', $class) . '.php');

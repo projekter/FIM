@@ -1281,7 +1281,8 @@ abstract class Response {
    public static final function contentNegotiation(array $contentTypes,
       $charset = null) {
       if(!isset($contentTypes['*']))
-         throw new ResponseException(I18N::getInternalLanguage()->get(['response', 'negotiationLacksStar']));
+         throw new ResponseException(I18N::getInternalLanguage()->get(['response',
+            'negotiationLacksStar']));
       if($charset !== null)
          $encoding = "; charset=$charset";
       else{

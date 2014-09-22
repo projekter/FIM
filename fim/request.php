@@ -29,59 +29,76 @@ abstract class Request {
    }
 
    /**
-    * Returns a parameter
+    * Returns a GET parameter
     * @param string $param The name of the parameter
     * @param string $default A default value that will be returned if the
     *    parameter is not set
-    * @param bool $post (default true) Set this to TRUE to return a parameter
-    *    transferred with POST. Set this to FALSE to return one transferred
-    *    via GET.
     * @return string|null The value of the parameter or the default value or
     *    null if no default value was specified.
     */
-   public static final function get($param, $default = null, $post = true) {
-      if(self::has($param, $post))
-         if($post)
-            return $_POST[$param];
-         else
-            return $_GET[$param];
-      else
-         return $default;
+   public static final function get($param, $default = null) {
+      return isset($_GET[$param]) ? $_GET[$param] : $default;
    }
 
    /**
-    * Returns a boolean parameter
+    * Returns a POST parameter
+    * @param string $param The name of the parameter
+    * @param string $default A default value that will be returned if the
+    *    parameter is not set
+    * @return string|null The value of the parameter or the default value or
+    *    null if no default value was specified.
+    */
+   public static final function post($param, $default = null) {
+      return isset($_POST[$param]) ? $_POST[$param] : $default;
+   }
+
+   private static $bools = ['0' => false, '1' => true,
+      'false' => false, 'true' => true, 'FALSE' => false, 'TRUE' => true,
+      'off' => false, 'on' => true, 'OFF' => false, 'ON' => true,
+      'no' => false, 'yes' => true, 'NO' => false, 'YES' => true,
+      'wrong' => false, 'right' => true, 'WRONG' => false, 'RIGHT' => true];
+
+   /**
+    * Returns a boolean GET parameter
     * @param string $param The name of the parameter
     * @param bool $default A default value that will be returned if the
     *    parameter is not set
-    * @param bool $post (default true) Set this to TRUE to return a parameter
-    *    transferred with POST. Set this to FALSE to return one transferred
-    *    via GET.
     * @return bool|null The value of the parameter or the default value or
     *    null if no default value was specified.
     */
-   public static final function bool($param, $default = false, $post = true) {
-      static $bools = ['0' => false, '1' => true, 'false' => false, 'true' => true,
-         'FALSE' => false, 'TRUE' => true, 'off' => false, 'on' => true,
-         'OFF' => false, 'ON' => true, 'no' => false, 'yes' => true,
-         'NO' => false, 'YES' => true, 'wrong' => false, 'right' => true,
-         'WRONG' => false, 'RIGHT' => true];
-      return @$bools[(string)self::get($param, $default, $post)];
+   public static final function boolGet($param, $default = false) {
+      return (bool)@self::$bools[(string)(isset($_GET[$param]) ? $_GET[$param] : $default)];
    }
 
    /**
-    * Checks whether a parameter exists
+    * Returns a boolean POST parameter
     * @param string $param The name of the parameter
-    * @param bool $post (default true) Set this to TRUE to check for a parameter
-    *    transferred with POST. Set this to FALSE to check for one transferred
-    *    via GET.
+    * @param bool $default A default value that will be returned if the
+    *    parameter is not set
+    * @return bool|null The value of the parameter or the default value or
+    *    null if no default value was specified.
+    */
+   public static final function boolPost($param, $default = false) {
+      return (bool)@self::$bools[(string)(isset($_POST[$param]) ? $_POST[$param]
+               : $default)];
+   }
+
+   /**
+    * Checks whether a GET parameter exists
+    * @param string $param The name of the parameter
     * @return bool
     */
-   public static final function has($param, $post = true) {
-      if($post)
-         return isset($_POST[$param]);
-      else
-         return isset($_GET[$param]);
+   public static final function hasGet($param) {
+      return isset($_GET[$param]);
+   }
+
+   /**
+    * Checks whether a POST parameter exists
+    * @param string $param The name of the parameter
+    * @return bool
+    */
+   public static final function hasPost($param) {
+      return isset($_POST[$param]);
    }
 
    /**
@@ -292,7 +309,7 @@ abstract class Request {
    /**
     * Gets the current uri that was requested. This does not include subdomains
     * or the server name and no parameters as well. BaseDir will be truncated if
-    * necessary
+    * necessary. The URL will start with a slash.
     * @param bool $parameters (default false) Set this to true if GET parameters
     *    shall be included
     * @return string
@@ -382,7 +399,8 @@ abstract class Request {
     * @see Request::getMaxUploadSize()
     */
    public static final function postSizeExceeded() {
-      return self::isPost() && empty($_POST);
+      return CLI ? false :
+         (($_SERVER['REQUEST_METHOD'] === 'POST') && empty($_POST) && empty($_FILES));
    }
 
    /**
@@ -516,9 +534,9 @@ abstract class Request {
     * @return int
     */
    public static final function getMaxUploadSize() {
-      $upload_max_filesize = Config::ini_get('upload_max_filesize');
-      $post_max_size = Config::ini_get('post_max_size');
-      $memory_limit = Config::ini_get('memory_limit');
+      $upload_max_filesize = Config::iniGet('upload_max_filesize');
+      $post_max_size = Config::iniGet('post_max_size');
+      $memory_limit = Config::iniGet('memory_limit');
       if($upload_max_filesize === '' || $upload_max_filesize === -1)
          $upload_max_filesize = PHP_INT_MAX;
       if($post_max_size === '' || $post_max_size === -1)

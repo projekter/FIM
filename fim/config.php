@@ -63,9 +63,14 @@ abstract class Config {
    const XSENDFILE_LIGHTTPD = 'lighttpd';
    const XSENDFILE_NGINX = 'nginx';
 
+   private final function __construct() {
+
+   }
+
    public static final function initialize(array $config) {
       if(self::$config !== null)
-         throw new FIMInternalException(I18N::getInternalLanguage()->get(['config', 'doubleInitialization']));
+         throw new FIMInternalException(I18N::getInternalLanguage()->get(['config',
+            'doubleInitialization']));
       register_shutdown_function(function() {
          foreach(self::$shutdownFunctions as $f)
             $f();
@@ -116,128 +121,140 @@ abstract class Config {
       self::$config = $config;
       if(!$subdomainPassed)
          if($config['subdomainBaseError'] !== '') {
-            chdir(dirname($config['subdomainBaseError']));
-            require $config['subdomainBaseError'];
+            $file = Router::convertFIMToFilesystem($config['subdomainBaseError']);
+            chdir(dirname($file));
+            require $file;
             exit;
          }else
-            throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'subdomainError', 'baseMismatchesURL']));
+            throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+               'subdomainError', 'baseMismatchesURL']));
    }
 
    // <editor-fold desc="Configuration validators" defaultstate="collapsed">
    private static function validateTypes(array &$config) {
       # Fast checks first
       if($config['directoryListing'] !== self::DIRECTORY_LISTING_NONE && $config['directoryListing'] !== self::DIRECTORY_LISTING_SIMPLE && $config['directoryListing'] !== self::DIRECTORY_LISTING_DETAIL && $config['directoryListing'] !== 'development')
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidValue'],
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidValue'],
             ['directoryListing', "'none', 'simple', 'detail', 'development'"]));
       if($config['x-sendfile'] !== self::XSENDFILE_NONE && $config['x-sendfile'] !== 'auto' && $config['x-sendfile'] !== self::XSENDFILE_APACHE && $config['x-sendfile'] !== self::XSENDFILE_CHEROKEE && $config['x-sendfile'] !== self::XSENDFILE_LIGHTTPD && $config['x-sendfile'] !== self::XSENDFILE_NGINX)
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidValue'],
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidValue'],
             ['x-sendfile',
             "'none', 'auto', 'apache', 'nginx', 'cherokee', 'lighttpd'"]));
       if($config['sessionStorage'] !== self::SESSION_STORAGE_DEFAULT && $config['sessionStorage'] !== self::SESSION_STORAGE_MEMCACHED && $config['sessionStorage'] !== self::SESSION_STORAGE_REDIS)
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidValue'],
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidValue'],
             ['sessionStorage', "'default', 'memcached', 'redis'"]));
       # slower is_*-checks afterwards
       if(!is_bool($config['autoEscape']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
-            ['autoEscape', 'boolean']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'], ['autoEscape', 'boolean']));
       if(!is_string($config['cliServer']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
-            ['cliServer', 'string']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'], ['cliServer', 'string']));
       if(!is_bool($config['defaultAccessGranted']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
-            ['defaultAccessGranted', 'boolean']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'], ['defaultAccessGranted', 'boolean']));
       if(!is_string($config['defaultEncoding']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
-            ['defaultEncoding', 'string']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'], ['defaultEncoding', 'string']));
       if(!is_bool($config['languageCodedFallback']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
-            ['languageCodedFallback', 'boolean']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'], ['languageCodedFallback', 'boolean']));
       if($config['mailErrorsTo'] !== false && !is_string($config['mailErrorsTo']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
-            ['mailErrorsTo', 'string|false']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'], ['mailErrorsTo', 'string|false']));
       if(!is_string($config['mailFrom']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
-            ['mailFrom', 'string']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'], ['mailFrom', 'string']));
       if(!is_array($config['memcachedConnection']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'],
             ['memcachedConnection', '[[string, int, int]*]']));
       else
          foreach($config['memcachedConnection'] as &$conn)
             if(!is_array($conn))
                $conn = [$conn, 11211];
             elseif(!isset($conn[0]) || !isset($conn[1]))
-               throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
+               throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+                  'validation', 'invalidType'],
                   ['memcachedConnection', '[((string, int, [int])|string)*]']));
       if(!is_array($config['plugins']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
-            ['plugins', 'array']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'], ['plugins', 'array']));
       else
          foreach($config['plugins'] as $key => $plug) {
             if(($lowerKey = strtolower($key)) !== $key)
                if(isset($config['plugins'][$lowerKey]))
-                  throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'doublePlugins'],
-                     [$key]));
+                  throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+                     'validation', 'doublePlugins'], [$key]));
                else{
                   $config['plugins'][$lowerKey] = $plug;
                   unset($config['plugins'][$key]);
                }
          }
       if(!is_bool($config['production']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
-            ['production', 'boolean']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'], ['production', 'boolean']));
       if(!is_bool($config['requireSecure']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
-            ['requireSecure', 'boolean']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'], ['requireSecure', 'boolean']));
       if(!is_int($config['sessionLifetime']) || ($config['sessionLifetime'] < 10 && $config['sessionLifetime'] !== 0))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'],
             ['sessionLifetime', 'integer >= 10 or 0']));
       if(!is_int($config['sessionTransition']) || $config['sessionTransition'] < 0 || ($config['sessionLifetime'] !== 0 && $config['sessionTransition'] > $config['sessionLifetime']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'],
             ['sessionTransition', 'integer from zero to sessionLifetime']));
       if(!is_string($config['subdomainBase']) && !is_array($config['subdomainBase']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
-            ['subdomainBase', 'string|string[]']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'], ['subdomainBase', 'string|string[]']));
       if(!is_string($config['subdomainBaseError']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
-            ['subdomainBaseError', 'string']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'], ['subdomainBaseError', 'string']));
       if(!is_string($config['subdomainDefault']))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
-            ['subdomainDefault', 'string']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'], ['subdomainDefault', 'string']));
       if(!is_int($config['subdomainDepth']) || $config['subdomainDepth'] < 0)
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'invalidType'],
-            ['subdomainDepth', 'integer >= 0']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'invalidType'], ['subdomainDepth', 'integer >= 0']));
    }
 
    private static function validateKeys(array $config) {
-      foreach($config as $key => $value)
-         if(!isset(self::$configDefaults[$key]) && !array_key_exists($key,
-               self::$configDefaults))
-            throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'notFound'],
-               [$key]));
+      $diff = array_diff_key($config, self::$configDefaults);
+      if(!empty($diff))
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'notFound'], [implode(', ', array_keys($diff))]));
    }
 
    private static function validateSubdomain(array &$config) {
-      $depth = $config['subdomainDepth']; # Cache, as array access is relatively slow
+      $depth = $config['subdomainDepth'];
       $bases = empty($config['subdomainBase']) ? [] : (array)$config['subdomainBase'];
       $errorFile = &$config['subdomainBaseError'];
       if($depth > 0 && (empty($bases) || empty($bases[0])))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'subdomain', 'depthRequiresBase']));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'validation', 'subdomain', 'depthRequiresBase']));
       if(!empty($errorFile)) {
          if(empty($bases))
-            throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'subdomain', 'baseErrorRequiresBase']));
-         $errorFile = CodeDir . 'content/' . Router::normalize($errorFile);
-         if(!is_file($errorFile))
-            throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'subdomain', 'baseErrorNotFound']));
+            throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+               'validation', 'subdomain', 'baseErrorRequiresBase']));
+         $errorFile = Router::normalizeFIM($errorFile);
+         if(!is_file(Router::convertFIMToFilesystem($errorFile, false)))
+            throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+               'validation', 'subdomain', 'baseErrorNotFound']));
       }
 
-      if(CLI || ($depth === 0 && empty($bases))) {
+      if(CLI) {
          define('CurrentSubdomain', '');
          define('Server',
-            CLI ? (($config['cliServer'] !== 'CLI') ?
-                  $config['cliServer'] : (empty($bases) ? 'CLI' : reset($bases)))
-                  :
-               explode(':', @$_SERVER['HTTP_HOST'])[0] .
-               Request::getPort(true));
+            ($config['cliServer'] !== 'CLI') ? $config['cliServer'] : #
+               (empty($bases) ? 'CLI' : reset($bases)));
+      }elseif($depth === 0 && empty($bases)) {
+         define('CurrentSubdomain', '');
+         define('Server',
+            explode(':', @$_SERVER['HTTP_HOST'])[0] . Request::getPort(true));
          # First trimming the port number, then reappending it is done for
          # security purposes. As HTTP_HOST comes from the client (and we do not
          # know, which server software is used), it might contain a port or not
@@ -259,7 +276,8 @@ abstract class Config {
             }#
          else{
             if(BaseDir !== '/')
-               throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'validation', 'subdomain', 'documentRoot']));
+               throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+                  'validation', 'subdomain', 'documentRoot']));
             foreach($bases as $b) {
                $baseLength = strlen($b);
                if(substr($currentSubdomain, -$baseLength) === $b) {
@@ -338,12 +356,12 @@ abstract class Config {
     * @param mixed $value
     */
    public static final function set($key, $value) {
-      if($key === 'languageInternal' || $key === 'languageCodedFallback' || $key === 'subdomainBase' || $key === 'subdomainDefault' || $key === 'subdomainDepth' || $key === 'plugins')
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'set', 'readonly'],
-            [$key]));
+      if($key === 'languageInternal' || $key === 'languageCodedFallback' || $key === 'subdomainBase' || $key === 'subdomainBaseError' || $key === 'subdomainDefault' || $key === 'subdomainDepth' || $key === 'plugins')
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'set', 'readonly'], [$key]));
       elseif(!isset(self::$configDefaults[$key]))
-         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config', 'set', 'unknown'],
-            [$key]));
+         throw new ConfigurationException(I18N::getInternalLanguage()->get(['config',
+            'set', 'unknown'], [$key]));
       self::$config[$key] = $value;
    }
 
@@ -393,7 +411,7 @@ abstract class Config {
     * @param string $key
     * @return int|string
     */
-   public static final function ini_get($key) {
+   public static final function iniGet($key) {
       $val = ini_get($key);
       if($val === '')
          return '';

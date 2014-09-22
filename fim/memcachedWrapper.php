@@ -582,11 +582,10 @@ class Memcached {
          return true; # again return true, regardless of the success
       }
       $success = false;
-      foreach($servers as $server) {
+      foreach($servers as $server)
          if(($success |= $this->memcache->addServer($server[0], $server[1],
             true, isset($server[2]) ? $server[2] : null)))
             $this->servers[] = ['host' => $server[0], 'port' => $server[1]];
-      }
       $this->status = $success ? self::RES_SUCCESS : self::RES_FAILURE;
       return $success;
    }
@@ -1023,7 +1022,7 @@ class Memcached {
             return false;
          case self::OPT_SOCKET_SEND_SIZE:
          case self::OPT_SOCKET_RECV_SIZE:
-            return (int)Config::ini_get('memcache.chunk_size');
+            return (int)Config::iniGet('memcache.chunk_size');
          case self::OPT_CONNECT_TIMEOUT:
             return 1000;
          case self::OPT_RETRY_TIMEOUT:
@@ -1127,7 +1126,7 @@ class Memcached {
       if(method_exists($this->memcache, 'getExtendedStats'))
          return $this->memcache->getExtendedStats();
       else{
-         # We are unable to server with the correct information, old memache
+         # We are unable to serve with the correct information, old memache
          # versions simply do not support this. So generate as least a result
          # that is structural identical to what we expect, although it is
          # neither complete nor necessarily correct for multiple servers...
@@ -1381,12 +1380,12 @@ class Memcached {
     * @throws BadMethodCallException
     */
    public function setSaslAuthData($username, $password) {
-      throw new BadMethodCallException(I18N::getInternalLanguage()->get(['memcachedWrapper', 'saslUnsupported']));
+      throw new BadMethodCallException(I18N::getInternalLanguage()->get(['memcachedWrapper',
+         'saslUnsupported']));
    }
 
    /**
-    * This function is not thread-safe if you do not call self::makeThreadsafe
-    * globally.
+    * This function is not thread-safe!
     * @param string $key
     * @param int $expiration
     * @return boolean

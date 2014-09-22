@@ -213,10 +213,10 @@ namespace {
                   }elseif(!$rc->implementsInterface('fimSerializable'))
                      throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
                         'definitionInvalid'], [$name, $storage['tableName']]));
-               }catch(Exception $E) {
+               }catch(Exception $e) {
                   throw new PrimaryTableException(I18N::getInternalLanguage()->get(['primaryTable',
                      'definitionInvalid'], [$name, $storage['tableName']]),
-                  $E->getCode(), $E);
+                  $e->getCode(), $e);
                }
             }
          }
@@ -684,7 +684,7 @@ namespace {
        * @return static|null
        */
       protected static final function findOneBy(array $where, $orderBy = null) {
-         return static::translateStatement(Database::getActiveConnection()->simpleSelect(static::getStaticStorage('tableName'),
+         $return = static::translateStatement(Database::getActiveConnection()->simpleSelect(static::getStaticStorage('tableName'),
                   $where, [], $orderBy, null, '0, 1', '', true));
          return reset($return) ? : null;
       }

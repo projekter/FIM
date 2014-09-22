@@ -32,8 +32,9 @@ abstract class Log {
 
    private static function createLogHandles() {
       $dir = CodeDir . 'logs';
-      if(!(is_dir($dir) || mkdir($dir, 0700)))
-         throw new FIMInternalException(I18N::getInternalLanguage()->get(['log', 'initFailed']));
+      if(!is_dir($dir) && !mkdir($dir, 0700))
+         throw new FIMInternalException(I18N::getInternalLanguage()->get(['log',
+            'initFailed']));
       self::$internalErrors = fopen("$dir/internalError.log", 'a+');
       self::$errors = fopen("$dir/error.log", 'a+');
       self::$customErrors = fopen("$dir/customError.log", 'a+');
@@ -71,7 +72,8 @@ abstract class Log {
          self::createLogHandles();
       if(self::$inMail) {
          @fwrite(self::$internalErrors,
-               I18N::getInternalLanguage()->get(['log', 'mail', 'failed'], [$message]));
+               I18N::getInternalLanguage()->get(['log', 'mail', 'failed'],
+                  [$message]));
          return;
       }
       @fwrite(self::$internalErrors, "$message\r\n");
@@ -84,21 +86,23 @@ abstract class Log {
             $language = I18N::getInternalLanguage();
             if($language === null)
                Response::mail($mailError, 'Error on ' . Request::getFullURL(),
-                  "Hint: This is an auto-generated message.\nAn internal error occured within FIM. Please contact the support if necessary. The following message was returned:\n====\n" .
-                  $message . "\n====\nYou will also find this error logged in the \"logs\" directory in the file \"error.log\".\nThe content of the _SERVER variable was as follows:\n====" .
-                  print_r($_SERVER, true) . "\n====The stack was as follows:\n====\n" . print_r(debug_backtrace(),
+                  "Hint: This is an auto-generated message.\nAn internal error occurred within FIM. Please file a bug if necessary. The following message was returned:\n====\n" .
+                  $message . "\n====\nYou can review this error in the file \"internalError.log\" within the \"logs\" directory as well.\nThe content of the _SERVER variable was as follows:\n====" .
+                  print_r($_SERVER, true) . "\n====The following stack is given:\n====\n" . print_r(debug_backtrace(),
                      true));
             else
                Response::mail($mailError,
-                  $language->get(['log', 'mail', 'subject'], [Request::getFullURL()]),
+                  $language->get(['log', 'mail', 'subject'],
+                     [Request::getFullURL()]),
                   $language->get(['log', 'mail', 'internal'],
                      [$message, print_r($_SERVER, true), print_r(debug_backtrace(),
                         true)]));
          }
       }catch(Exception $e) {
          @fwrite(self::$internalErrors,
-               I18N::getInternalLanguage()->get(['log', 'mail', 'failed'], [(string)$e]));
-      }# finally (but we need to support PHP 5.4
+               I18N::getInternalLanguage()->get(['log', 'mail', 'failed'],
+                  [(string)$e]));
+      }# finally (but we need to support PHP 5.4)
       self::$inMail = false;
    }
 
@@ -187,7 +191,8 @@ abstract class Log {
             case E_COMPILE_ERROR:
             case E_USER_ERROR:
             case E_RECOVERABLE_ERROR:
-               echo I18N::getInternalLanguage()->get(['log', 'message'], [$errid]);
+               echo I18N::getInternalLanguage()->get(['log', 'message'],
+                  [$errid]);
                if(!$shutdown)
                   exit;
          }
@@ -199,24 +204,24 @@ abstract class Log {
    /**
     * This is the framework exception handler. This function should not be
     * called - it is called by PHP automatically.
-    * @param Exception $E
+    * @param Exception $e
     */
-   public static final function exceptionHandler(Exception $E) {
+   public static final function exceptionHandler(Exception $e) {
       $errid = date('Y-m-d H:i') . '-' . uniqid();
       if(($l = I18N::getInternalLanguage()) === null) {
          # Language is not set up. This is only possible in a very early state
          # of FIM's initialization.
          self::reportInternalError("[$errid] An unhandled exception of type " .
-            get_class($E) . " has occured. Details:\n$E");
+            get_class($e) . " has occured. Details:\n$e");
          echo "An error has occured and the execution was halted. Please inform an administrator of error $errid.";
          return;
       }
-      if($E instanceof FIMInternalException)
+      if($e instanceof FIMInternalException)
          self::reportInternalError("[$errid] " . $l->get(['log', 'exception'],
-               [get_class($E), (string)$E]));
+               [get_class($e), (string)$e]));
       else
          self::reportError("[$errid] " . $l->get(['log', 'exception'],
-               [get_class($E), (string)$E]));
+               [get_class($e), (string)$e]));
       if(Config::get('production'))
          echo $l->get(['log', 'message'], [$errid]);
       else{
@@ -224,19 +229,19 @@ abstract class Log {
 <br />
 <font size='1'><table class='xdebug-error xe-uncaught-exception' dir='ltr' border='1' cellspacing='0' cellpadding='1'>
 <tr><th align='left' bgcolor='#f57900' colspan=\"5\"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> "),
-         $l->get(['log', 'exception'], [get_class($E), $E->getMessage()]), CLI ? "\r\n"
+         $l->get(['log', 'exception'], [get_class($e), $e->getMessage()]), CLI ? "\r\n"
                : '</th></tr>';
          $xvd = function_exists('xdebug_var_dump');
          do {
-            $exceptionName = get_class($E);
+            $exceptionName = get_class($e);
             if(CLI)
-               echo $exceptionName, ': ', $E->getMessage(), ' in ', $E->getFile(), ' on line ', $E->getLine(), "\r\n",
+               echo $exceptionName, ': ', $e->getMessage(), ' in ', $e->getFile(), ' on line ', $e->getLine(), "\r\n",
                "Call Stack\r\nFile:Line, Function, Args\r\n";
             else
-               echo "\n<tr><th align='left' bgcolor='#f57900' colspan=\"5\"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> ", $exceptionName, ': ', $E->getMessage(), ' in ', $E->getFile(), ' on line <i>', $E->getLine(), "</i></th></tr>
+               echo "\n<tr><th align='left' bgcolor='#f57900' colspan=\"5\"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> ", $exceptionName, ': ', $e->getMessage(), ' in ', $e->getFile(), ' on line <i>', $e->getLine(), "</i></th></tr>
 <tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
 <tr><th align='left' bgcolor='#eeeeec'>File</th><th align='left' bgcolor='#eeeeec'>Line</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Args</th>";
-            foreach($E->getTrace() as $t) {
+            foreach($e->getTrace() as $t) {
                if(CLI)
                   echo $t['file'], ':', $t['line'], ', ', @$t['class'], @$t['type'], $t['function'], ', ';
                else
@@ -258,7 +263,7 @@ abstract class Log {
                         $arg = $arg->name;
                   }
                   $t['args'] = array_combine($args, $t['args']);
-               }catch(Exception $E) {
+               }catch(Exception $e) {
                   # But if this is not possible, just leave them number-indexed
                }
                if(CLI) {
@@ -276,7 +281,7 @@ abstract class Log {
                if(!CLI)
                   echo '</td></tr>';
             }
-         }while(($E = $E->getPrevious()) !== null);
+         }while(($e = $e->getPrevious()) !== null);
          if(!CLI)
             echo '
 </table></font>';

@@ -44,8 +44,8 @@ abstract class Table implements fimSerializable {
       if(isset($this->fields[$name]) || @array_key_exists($name, $this->fields))
          return $this->fields[$name];
       else
-         throw new TableException(I18N::getInternalLanguage()->get(['table', 'field', 'unknown'],
-            [static::getStaticStorage('tableName'), $name]));
+         throw new TableException(I18N::getInternalLanguage()->get(['table', 'field',
+            'unknown'], [static::getStaticStorage('tableName'), $name]));
    }
 
    public function __set($name, $value) {
@@ -58,11 +58,11 @@ abstract class Table implements fimSerializable {
             if($this->$method($value) !== false)
                $this->fields[$name] = $value;
          }else
-            throw new TableException(I18N::getInternalLanguage()->get(['table', 'field', 'readOnly'],
-               [$name, static::getStaticStorage('tableName')]));
+            throw new TableException(I18N::getInternalLanguage()->get(['table', 'field',
+               'readOnly'], [$name, static::getStaticStorage('tableName')]));
       }else
-         throw new TableException(I18N::getInternalLanguage()->get(['table', 'field', 'unknown'],
-            [static::getStaticStorage('tableName'), $name]));
+         throw new TableException(I18N::getInternalLanguage()->get(['table', 'field',
+            'unknown'], [static::getStaticStorage('tableName'), $name]));
    }
 
    public final function __isset($name) {

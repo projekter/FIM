@@ -49,24 +49,24 @@ namespace {
        * @param Closure $checkExistence
        * @param Closure $checkReading
        * @param Closure $checkListing
-       * @param string $directory This parameter does not have to be given by
-       *    a manual call of the Rules object, it is only required for internal
-       *    use. However, you may as well pass __DIR__ to this parameter.
        */
       public final function __construct(Closure $checkExistence = null,
-         Closure $checkReading = null, Closure $checkListing = null,
-         $directory = null) {
+         Closure $checkReading = null, Closure $checkListing = null) {
          if(isset($checkExistence))
             $this->checkExistence = $checkExistence->bindTo($this, $this);
          if(isset($checkReading))
             $this->checkReading = $checkReading->bindTo($this, $this);
          if(isset($checkListing))
             $this->checkListing = $checkListing->bindTo($this, $this);
-         if($directory === null)
+         if(func_num_args() < 4) {
             $this->directory = dirname(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,
                   1)[0]['file']);
-         else
-            $this->directory = $directory;
+            static $cdl = null;
+            if($cdl === null)
+               $cdl = strlen(CodeDir);
+            $this->directory = '//' . substr($this->directory, $cdl);
+         }else
+            $this->directory = func_get_arg(3);
       }
 
       public final function __get($name) {
@@ -107,21 +107,19 @@ namespace {
       /**
        * Checks the recommendation that the simple rules file in the same folder
        * as the rules script gives for a certain file name
-       * @param string $fileName Relative to the current working directory or
-       *    absolute to CodeDir. Must start in ResourceDir.
+       * @param string $fileName Must start in ResourceDir.
        * @param int $checkFor A bitmask of the Rules::CHECK_-constants
        * @return int|boolean|null Null if there is no rules file
        */
       protected final function checkSimpleAccess($fileName, $checkFor) {
          if(($simpleInstance = self::buildSimpleCache("{$this->directory}/fim.rules.txt")) === null)
             return null;
-         $fullName = Router::normalize($fileName);
+         $fullName = Router::normalizeFIM($fileName);
          if($fileName !== '.')
             $fileName = basename($fullName);
-         # Simple overwriting scheme: Forbid with the greatest weight, allow with
-         #                            the smallest weight. If one single entry says
-         #                            forbidden, even the weightiest allowance
-         #                            cannot dominate - not even true.
+         # Simple overwriting scheme: Forbid with the greatest weight, allow
+         #    with the smallest weight. If one single entry says forbidden, even
+         #    the weightiest allowance cannot dominate - not even true.
          $val = 0;
          if(($checkFor & self::CHECK_EXISTENCE) !== 0)
             if(($val = $simpleInstance->checkExistence($fileName, $fullName)) === false)
@@ -162,10 +160,9 @@ namespace {
        */
       private static function checkAccessFileCache($folder, $checkFor, $fileName) {
          $cacheStr = "$folder/$fileName";
-         # Simple overwriting scheme: Forbid with the greatest weight, allow with
-         #                            the smallest weight. If one single entry says
-         #                            forbidden, even the weightiest allowance
-         #                            cannot dominate - not even true.
+         # Simple overwriting scheme: Forbid with the greatest weight, allow
+         #    with the smallest weight. If one single entry says forbidden, even
+         #    the weightiest allowance cannot dominate - not even true.
          $val = 0;
          if(($checkFor & self::CHECK_EXISTENCE) !== 0) {
             if(isset(self::$cacheExistence[$cacheStr])) {
@@ -224,9 +221,10 @@ namespace {
        */
       private static function checkAccessFile($folder, $checkFor, $fileName) {
          $obj = "$folder/fim.rules.php";
+         $absObj = Router::convertFIMToFilesystem($obj, false);
          if(!isset(self::$singletons[$obj]))
-            if(is_file($obj))
-               self::$singletons[$obj] = fim\requireClosure($obj);
+            if(is_file($absObj))
+               self::$singletons[$obj] = fim\requireClosure($absObj);
             else
                self::$singletons[$obj] = false;
          if(($obj = self::$singletons[$obj]) === false)
@@ -235,64 +233,57 @@ namespace {
          $fullName = ($fileName === '.') ? $folder : "$folder/$fileName";
          static $functions = [self::CHECK_EXISTENCE => 'checkExistence',
             self::CHECK_READING => 'checkReading', self::CHECK_LISTING => 'checkListing'];
-         chdir($folder);
+         $chdir = new fim\chdirHelper($folder);
          $previousConnection = Database::getActiveConnection(false);
          \Database::setActiveConnection('.');
          $ret = $obj->{$functions[$checkFor]}($fileName, $fullName);
          Database::restoreConnection($previousConnection);
-         chdir(CodeDir);
          return $ret;
       }
 
       /**
        * Checks whether a bitmask of rights can be applied to a certain file or
        * folder. The result will be cached.
-       * @param string $fileName Relative to the current working directory or
-       *    absolute to CodeDir. Must start in ResourceDir.
+       * @param string $fileName Must start in ResourceDir
        * @param int $checkFor Bitmask of CHECK_-constants
        * @return boolean
        */
       public static final function check($fileName, $checkFor) {
-         $hierarchy = Router::normalize($fileName, true);
+         $hierarchy = Router::normalizeFIM($fileName, true);
          if(empty($hierarchy) || $hierarchy[0] !== ResourceDir)
             throw new RulesException(I18N::getInternalLanguage()->get(['rules', 'invalidFilenameScope'],
                [$fileName, CLI ? 'script' : 'content']));
-         $folder = ResourceDir;
-         $oldDir = getcwd();
-         chdir(CodeDir);
-         if(($currentState = self::checkAccessFileCache($folder, $checkFor, '.')) === false) {
-            chdir($oldDir);
+         $folder = '//' . ResourceDir;
+         $absFolder = \Router::convertFIMToFilesystem($folder, false);
+         if(($currentState = self::checkAccessFileCache($folder, $checkFor, '.')) === false)
             return false;
-         }
          array_shift($hierarchy);
          foreach($hierarchy as $cur) {
             # first check what the parent says to the folder
             $newState = self::checkAccessFileCache($folder, $checkFor, $cur);
-            if($newState === false) {
-               chdir($oldDir);
+            if($newState === false)
                return false;
-            }elseif($newState === true || $currentState === 0)
+            elseif($newState === true || $currentState === 0)
                $currentState = $newState;
             elseif(($currentState !== true) && ($newState !== 0) && # abs($newState) >= abs($currentState) is the same but 15x slower
-               (($newState < 0 ? -$newState : $newState) >= ($currentState < 0 ? -$currentState
-                     : $currentState)))
+               (($newState < 0 ? -$newState : $newState) >= #
+               ($currentState < 0 ? -$currentState : $currentState)))
                $currentState = $newState;
             $folder .= "/$cur";
-            if(is_dir($folder)) {
+            $absFolder .= "/$cur";
+            if(is_dir($absFolder)) {
                # then check what the folder says to itself
                $newState = self::checkAccessFileCache($folder, $checkFor, '.');
-               if($newState === false) {
-                  chdir($oldDir);
+               if($newState === false)
                   return false;
-               }elseif($newState === true || $currentState === 0)
+               elseif($newState === true || $currentState === 0)
                   $currentState = $newState;
-               elseif(($currentState !== true) && ($newState !== 0) && (($newState < 0
-                        ? -$newState : $newState) >= ($currentState < 0 ? -$currentState
-                        : $currentState)))
+               elseif(($currentState !== true) && ($newState !== 0) && #
+                  (($newState < 0 ? -$newState : $newState) >= #
+                  ($currentState < 0 ? -$currentState : $currentState)))
                   $currentState = $newState;
             }
          }
-         chdir($oldDir);
          if($currentState === 0) {
             # No recommendation; check defaults
             if(($checkFor & (self::CHECK_EXISTENCE | self::CHECK_READING)) !== 0)
@@ -313,12 +304,11 @@ namespace {
        * Checks whether for a specific location a filter will ever be triggered.
        * This function only checks for the existence of fim.rules-files, not
        * what these files will do
-       * @param string $fileName Relative to current working directory or CodeDir;
-       *    must start in content/
+       * @param string $fileName Must start in ResourceDir
        * @return boolean
        */
       public static final function checkFilterExistence($fileName) {
-         $hierarchy = Router::normalize($fileName, true);
+         $hierarchy = Router::normalizeFIM($fileName, true);
          if(empty($hierarchy) || $hierarchy[0] !== ResourceDir)
             throw new RulesException(I18N::getInternalLanguage()->get(['rules', 'invalidFilenameScope'],
                [$fileName, CLI ? 'script' : 'content']));
@@ -353,38 +343,40 @@ namespace {
       private static $currentFileName, $parsingCache;
 
       private static function buildSimpleCache($rulesFile) {
-         if(!is_file($rulesFile))
+         $absRulesFile = \Router::convertFIMToFilesystem($rulesFile, false);
+         if(!is_file($absRulesFile))
             return null;
-         $fileName = CodeDir . 'cache/rules/' . hash('md5', $rulesFile) . '.php';
-         if(isset(self::$singletons[$fileName]))
-            return self::$singletons[$fileName];
-         if(!is_dir(CodeDir . 'cache/rules'))
-            if(!mkdir(CodeDir . 'cache/rules', 0700, true))
-               throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules',
-                  'cache', 'writeError', 'directory']));
-         $rulesTimestamp = filemtime($rulesFile);
-         $cacheTimestamp = @filemtime($fileName);
+         $cacheFile = 'cache/rules/' . hash('md5', $rulesFile) . '.php';
+         if(isset(self::$singletons[$cacheFile]))
+            return self::$singletons[$cacheFile];
+         $absCacheFile = CodeDir . $cacheFile;
+         if(!is_dir(CodeDir . 'cache/rules') && !mkdir(CodeDir . 'cache/rules',
+               0700, true))
+            throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules',
+               'cache', 'writeError', 'directory']));
+         $rulesTimestamp = filemtime($absRulesFile);
+         $cacheTimestamp = @filemtime($absCacheFile);
          if($cacheTimestamp === $rulesTimestamp)
-            return self::$singletons[$fileName] = fim\requireClosure($fileName);
+            return self::$singletons[$cacheFile] = fim\requireClosure($absCacheFile);
          $now = date('Y-m-d H:i:s');
          $cacheContent = <<<Cache
 <?php
 
-/** This is an autogenerated cache file. Do not change this file, it might be
-  * overwritten at any time without notification.
-  * The original file is $rulesFile.
-  * Date of generation: $now.
-  */
+/* This is an autogenerated cache file. Do not change this file, it might be
+ * overwritten at any time without notification.
+ * The original file is $rulesFile.
+ * Date of generation: $now.
+ */
 
 return new Rules(
 Cache;
-         $rulesContent = file($rulesFile, FILE_SKIP_EMPTY_LINES);
+         $rulesContent = file($absRulesFile, FILE_SKIP_EMPTY_LINES);
          if(isset($rulesContent[0]) && strcasecmp(trim($rulesContent[0]),
                'delete') === 0) {
-            if(is_file($fileName) && !@unlink($fileName))
+            if(is_file($absCacheFile) && !@unlink($absCacheFile))
                Log::reportInternalError(I18N::getInternalLanguage()->get(['rules',
-                     'cache', 'unlinkError', 'cache'], [$fileName]));
-            if(!@unlink($rulesFile))
+                     'cache', 'unlinkError', 'cache'], [$cacheFile]));
+            if(!@unlink($absRulesFile))
                Log::reportInternalError(I18N::getInternalLanguage()->get(['rules',
                      'cache', 'unlinkError', 'rules'], [$rulesFile]));
             return null;
@@ -405,35 +397,36 @@ Cache;
          }
          $cacheContent .= "
    $directory);";
-         if(file_put_contents($fileName, $cacheContent) === false)
+         if(file_put_contents($absCacheFile, $cacheContent) === false)
             throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules',
                'cache',
-               'writeError', 'content'], [$fileName]));
-         if(!touch($fileName, $rulesTimestamp))
+               'writeError', 'content'], [$cacheFile]));
+         if(!touch($absCacheFile, $rulesTimestamp))
             throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules',
                'cache',
-               'writeError', 'timestamp'], [$fileName]));
+               'writeError', 'timestamp'], [$cacheFile]));
          # Now try to call all three functions to see whether there is a regex
          # error or something similar. An exception will be thrown. If there is a
          # parsing error, make use of the shutdown function which will write this
          # error to the log
-         $shutdownKey = Config::registerShutdownFunction(function() use ($fileName, $rulesFile) {
+         $shutdownKey = Config::registerShutdownFunction(function() use ($cacheFile, $rulesFile) {
                Log::errorHandler(E_ERROR,
                   I18N::getInternalLanguage()->get(['rules', 'cache', 'syntaxError',
-                     'hard'], [$rulesFile, $fileName]), $fileName, 0, null, true);
+                     'hard'], [$rulesFile, $cacheFile]), $cacheFile, 0, null,
+                  true);
             });
          try {
-            $obj = fim\requireClosure($fileName);
+            $obj = fim\requireClosure($absCacheFile);
             $obj->checkExistence('', '');
             $obj->checkReading('', '');
             $obj->checkListing('', '');
-         }catch(Exception $E) {
+         }catch(Exception $e) {
             # No parsing error, only an exception
             Config::unregisterShutdownFunction($shutdownKey);
-            throw $E;
+            throw $e;
          }
          Config::unregisterShutdownFunction($shutdownKey);
-         self::$singletons[$fileName] = $obj;
+         self::$singletons[$cacheFile] = $obj;
          return $obj;
       }
 

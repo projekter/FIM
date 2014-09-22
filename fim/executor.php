@@ -31,27 +31,33 @@ abstract class Executor {
 
    }
 
+   private static $executeCall = false;
+
    /**
     * Runs the framework by using the current url
     * @return
     */
    public static final function execute() {
       # First we have to determine the routing which says where to look for data
+      # Normalization should not be needed in most cases, but requests from
+      # broken browsers shall not be able to break our subdomain structure.
       $url = \Request::getURL();
+      $trailingSlash = substr($url, -1) === '/';
+      $url = \Router::normalizeFilesystem("/$url");
       $params = \Request::getParameterString();
-      if(($path = \Router::mapURLToPath(CurrentSubdomain . $url . $params, $_GET)) === false) {
-         self::error(404, $url);
+      $chdir = new chdirHelper(CodeDir);
+      if(($path = \Router::mapURLToPath(CurrentSubdomain . $url . $params,
+            $_GET, $unused, $failureAt)) === false) {
+         self::error(404, isset($failureAt) ? substr($failureAt, 2) : '.');
          return;
       }
-      chdir(CodeDir);
-      $path = preg_replace('#/fim\.([^/]*+)#', '/fim.bypass.$1', $path);
+      $path = substr($path, 2);
       try {
          $ioPath = \fileUtils::encodeFilename($path);
       }catch(\UnexpectedValueException $e) {
          self::error(404, $path);
          return;
       }
-      $trailingSlash = substr($url, -1) === '/';
       if(is_dir($ioPath)) {
          if(!$trailingSlash) {
             \Response::set('Location', substr(BaseDir, 0, -1) . "$url/$params");
@@ -61,13 +67,14 @@ abstract class Executor {
          \Response::set('Location', BaseDir . substr($url, 1, -1) . $params);
          return;
       }
+      self::$executeCall = true;
       self::handlePath($ioPath, true, true);
    }
 
    /**
     * Checks a given path for its existence and calls the correct handler
-    * functions
-    * @param string $path Relative to the content directory
+    * functions.
+    * @param string $path
     * @param boolean $outside Defines whether the url was typed by the user, so
     *    access to fim. files will map to their respective bypass files and
     *    modules will be performed instead of files if applicable
@@ -77,6 +84,19 @@ abstract class Executor {
     */
    public static final function handlePath($path, $outside, $checkRules) {
       \FIMErrorException::$last = null; # framework-defined error
+      if(!self::$executeCall) {
+         try {
+            $fimPath = \fileUtils::encodeFilename(\Router::normalizeFIM($path));
+         }catch(\UnexpectedValueException $e) {
+            self::error(404, $path);
+            return;
+         }
+         $path = substr($fimPath, 2);
+         $chdir = new chdirHelper(CodeDir);
+      }else{
+         self::$executeCall = false;
+         $fimPath = "//$path";
+      }
       if(is_dir($path)) {
          $filename = '';
          $dir = $path;
@@ -87,6 +107,7 @@ abstract class Executor {
             return;
          }
       }
+      $fimDir = "//$dir";
       # We will use is_file instead of fileUtils::isReadable, as it is faster.
       # is_file will only be wrong for files larger than 4 GB. We will assume
       # that one single file with _source code_ can never grow as big as this.
@@ -97,10 +118,10 @@ abstract class Executor {
             return;
          }
          if($checkRules)
-            if(!\Rules::check($dir, \Rules::CHECK_EXISTENCE)) {
+            if(!\Rules::check($fimDir, \Rules::CHECK_EXISTENCE)) {
                self::error(404, $dir);
                return;
-            }elseif(!\Rules::check($dir, \Rules::CHECK_READING)) {
+            }elseif(!\Rules::check($fimDir, \Rules::CHECK_READING)) {
                self::error(401, $dir);
                return;
             }
@@ -117,24 +138,24 @@ abstract class Executor {
             return;
          }
          if($checkRules)
-            if(!\Rules::check($path, \Rules::CHECK_EXISTENCE)) {
+            if(!\Rules::check($fimPath, \Rules::CHECK_EXISTENCE)) {
                self::error(404, $path);
                return;
-            }elseif($checkRules && !\Rules::check($path,
+            }elseif($checkRules && !\Rules::check($fimPath,
                   \Rules::CHECK_READING | #
                   (($filename === '') ? \Rules::CHECK_LISTING : 0))) {
                self::error(401, $path);
                return;
             }
          if($filename === '')
-            self::listDirectory("/$dir");
+            self::listDirectory($fimDir);
          else{
-            if(!$checkRules || !\Rules::checkFilterExistence($path))
+            if(!$checkRules || !\Rules::checkFilterExistence($fimPath))
                if(\Config::get('production'))
                   \Response::cache(time() + 2592000, false);# One month
                else
                   \Response::cache(time() + 604800, true);# One week
-            self::passFile("/$path");
+            self::passFile($fimPath);
          }
       }
    }
@@ -143,23 +164,26 @@ abstract class Executor {
     * Executes the code of a module, given the full name of the module class
     * @param string $className
     */
-   public static final function executeModule($className) {
+   private static final function executeModule($className) {
       self::$executedModules = true;
       ob_start();
+      $module = new $className();
+      $path = substr($module->getModulePath(), 2);
       try {
-         $module = new $className();
-         chdir($module->getModulePath());
+         $chdir = new chdirHelper($path);
          \Database::setActiveConnection('.');
          if(!method_exists($module, 'execute'))
-            self::error(404, $module->getModulePath());
+            self::error(404, $path);
          else
             Autoboxing::callMethod($module, 'execute');
-      }catch(\ForwardException $E) {
+      }catch(\ForwardException $e) {
          # not an exception
-      }catch(\FIMErrorException $E) {
-         self::error($E->getCode(), $module->getModulePath(), $E->details);
-      }catch(\Exception $E) {
-         self::exception($module->getModulePath(), $E);
+      }catch(\FIMErrorException $e) {
+         chdir(CodeDir);
+         self::error($e->getCode(), $path, $e->details);
+      }catch(\Exception $e) {
+         chdir(CodeDir);
+         self::exception($path, $e);
       }
       \Response::$responseText .= ob_get_clean();
    }
@@ -174,18 +198,16 @@ abstract class Executor {
 
    /**
     * Lists all the accessible content of a certain directory in the fim style
-    * @param string $path Relative to the current working directory. Paths
-    *    outside of ResourceDir/ are not allowed.
+    * @param string $path Paths outside of ResourceDir/ are not allowed.
     */
    public static final function listDirectory($path) {
-      $path = \Router::normalize($path, true);
-      if(empty($path))
-         $path = ResourceDir;
-      elseif($path[0] !== ResourceDir)
-         $path = ResourceDir . '/' . implode('/', $path);
-      else
-         $path = implode('/', $path);
-      chdir(CodeDir);
+      $path = \Router::normalizeFIM($path, true);
+      $chdir = new chdirHelper(CodeDir);
+      if(empty($path) || $path[0] !== ResourceDir) {
+         self::error(404, implode('/', $path));
+         return;
+      }
+      $path = implode('/', $path);
       $it = new \fimDirectoryIterator($path);
       $intLanguage = \I18N::getInternalLanguage();
       $language = \I18N::getLanguage();
@@ -194,36 +216,36 @@ abstract class Executor {
             \Config::DIRECTORY_LISTING_DETAIL);
       if(CLI && $details)
          $maxLength = [0, 0, 0, 0, 0];
+      $strpos = (OS === 'Windows') ? 'stripos' : 'strpos';
+      $ownURL = \Router::mapPathToURL("//$path");
+      $ownURLLen = strlen($ownURL);
       foreach($it as $fileInfo) {
          $fn = $fileInfo->getFilename();
-         if(substr($fn, 0, 4) === 'fim.')
-            if(substr($fn, 0, 11) === 'fim.bypass.') {
-               $origFn = "$path/$fn";
-               $fn = 'fim.' . substr($fn, 11);
-            }else
-               continue;
-         else
-            $origFn = "$path/$fn";
          if($fn === '..' && $path === ResourceDir)
             continue;
-         if((!$fileInfo->isDot() || !CLI) && !\Rules::check($origFn,
-               \Rules::CHECK_EXISTENCE | \Rules::CHECK_LISTING))
-            continue;
-         $escaped = htmlspecialchars($fn);
-         if($fileInfo->isDir()) {
+         if($fn === '.') {
+            $displayName = $url = '.';
             $class = 'folder';
-            if(!CLI) {
-               if(($url = \Router::mapPathToURL("$path/$fn")) === false)
-                  continue;
-               $url = htmlspecialchars($url);
-            }
          }else{
-            $class = 'file';
-            $url = $escaped;
+            if($strpos($fn, 'fim.') === 0 && $strpos($fn, 'fim.bypass.') !== 0)
+               continue;
+            $fileName = "//$path/$fn";
+            if($fn !== '..' && !\Rules::check($fileName,
+                  \Rules::CHECK_EXISTENCE | \Rules::CHECK_LISTING))
+               continue;
+            if(($url = \Router::mapPathToURL($fileName)) === false)
+               continue;
+            if(!CLI) {
+               $url = htmlspecialchars($url, ENT_QUOTES, 'utf-8');
+               if(strpos($url, $ownURL) === 0)
+                  $url = substr($url, $ownURLLen);
+            }
+            $displayName = $fn === '..' ? '..' : basename($url);
+            $class = $fileInfo->isDir() ? 'folder' : 'file';
          }
          if($details)
             if(CLI) {
-               $str = [$fn, $language->formatSize(\fileUtils::size("$path/$fn")),
+               $str = [$displayName, $language->formatSize($fileInfo->getSize()),
                   $language->formatDateTime($fileInfo->getMTime()),
                   $language->formatDateTime($fileInfo->getCTime()),
                   $language->formatDateTime($fileInfo->getATime())];
@@ -231,15 +253,15 @@ abstract class Executor {
                   if(($newLen = strlen($str[$idx])) > $len)
                      $len = $newLen;
             }else
-               $str = "\r\n<tr><th class=\"$class\"><a href=\"$url\">$escaped</a></th>" .
-                  '<td>' . $language->formatSize(\fileUtils::size("$path/$fn")) . '</td>' .
+               $str = "\r\n<tr><th class=\"$class\"><a href=\"$url\">$displayName</a></th>" .
+                  '<td>' . $language->formatSize($fileInfo->getSize()) . '</td>' .
                   '<td>' . $language->formatDateTime($fileInfo->getMTime()) . '</td>' .
                   '<td>' . $language->formatDateTime($fileInfo->getCTime()) . '</td>' .
                   '<td>' . $language->formatDateTime($fileInfo->getATime()) . '</td></tr>';
          elseif(CLI)
             $str = $fn;
          else
-            $str = "\r\n<li class=\"$class\"><a href=\"$url\">$escaped</a></li>";
+            $str = "\r\n<li class=\"$class\"><a href=\"$url\">$displayName</a></li>";
          if($class === 'folder')
             $resultDir[$fn] = $str;
          else
@@ -252,7 +274,8 @@ abstract class Executor {
             $captions = [$intLanguage->get(['executor', 'directoryListing', 'filename']),
                $intLanguage->get(['executor', 'directoryListing', 'size']),
                $intLanguage->get(['executor', 'directoryListing', 'mtime']),
-               $intLanguage->get(['executor', 'directoryListing', OS === 'Windows' ? 'creationTime' : 'ctime']),
+               $intLanguage->get(['executor', 'directoryListing', OS === 'Windows'
+                        ? 'creationTime' : 'ctime']),
                $intLanguage->get(['executor', 'directoryListing', 'atime'])];
             foreach($captions as $idx => $txt) {
                if(($newLen = strlen($txt)) > $maxLength[$idx])
@@ -284,28 +307,37 @@ abstract class Executor {
                   foreach($dir as $idx => $element)
                      $result .= $element . str_repeat(' ',
                            ($maxLength[$idx] - strlen($element) + 3));
-               }else
+               }#
+            else
                foreach($resultFile as $dir)
                   $result .= "\r\n$dir";
          }elseif(empty($resultDir))
-            $result .= "\r\n\r\n" . $intLanguage->get(['executor', 'directoryListing', 'empty']);
+            $result .= "\r\n\r\n" . $intLanguage->get(['executor', 'directoryListing',
+                  'empty']);
          \Response::$responseText = $result;
       }else{
          header('Content-Type: text/html');
          $result = implode('', $resultDir) . implode('', $resultFile);
          if($result === '')
-            $result = '<tr><td colspan="5">' . $intLanguage->get(['executor', 'directoryListing', 'empty']) . '</td></tr>';
+            $result = '<tr><td colspan="5">' . $intLanguage->get(['executor', 'directoryListing',
+                  'empty']) . '</td></tr>';
          if($details)
             $result = '<table><thead><tr><th>' .
-               htmlspecialchars($intLanguage->get(['executor', 'directoryListing', 'filename'])) . '</th><td>' .
-               htmlspecialchars($intLanguage->get(['executor', 'directoryListing', 'size'])) . '</td><td>' .
-               htmlspecialchars($intLanguage->get(['executor', 'directoryListing', 'mtime'])) . '</td><td>' .
-               htmlspecialchars($intLanguage->get(['executor', 'directoryListing', OS === 'Windows' ? 'creationTime' : 'ctime'])) . '</td><td>' .
-               htmlspecialchars($intLanguage->get(['executor', 'directoryListing', 'atime'])) .
+               htmlspecialchars($intLanguage->get(['executor', 'directoryListing',
+                     'filename'])) . '</th><td>' .
+               htmlspecialchars($intLanguage->get(['executor', 'directoryListing',
+                     'size'])) . '</td><td>' .
+               htmlspecialchars($intLanguage->get(['executor', 'directoryListing',
+                     'mtime'])) . '</td><td>' .
+               htmlspecialchars($intLanguage->get(['executor', 'directoryListing',
+                     OS === 'Windows' ? 'creationTime' : 'ctime'])) . '</td><td>' .
+               htmlspecialchars($intLanguage->get(['executor', 'directoryListing',
+                     'atime'])) .
                "</td></thead><tbody>$result</tbody></table>";
          else
             $result = "<ul>$result</ul>";
-         $title = htmlspecialchars($intLanguage->get(['executor', 'directoryListing', 'title']));
+         $title = htmlspecialchars($intLanguage->get(['executor', 'directoryListing',
+               'title']));
          \Response::$responseText .= // <editor-fold desc="Directory Listing code" defaultstate="collapsed">
             <<<listing
 <!DOCTYPE html>
@@ -393,8 +425,9 @@ listing;
    }
 
    private static function prepareFileHeaders($fileName) {
-      $name = substr($fileName, 0, 11) === 'fim.bypass.' ? 'fim.' . substr($fileName,
-            11) : $fileName;
+      $name = basename($fileName);
+      $name = substr($name, 0, 11) === 'fim.bypass.' ? 'fim.' . substr($name, 11)
+            : $name;
       $mime = \Response::getMIMEType($name);
       if((substr($mime, 0, 5) === 'text/') && !\Response::has('Content-Type')) {
          if(($handle = @fopen($fileName, 'rb')) !== false) {
@@ -422,11 +455,10 @@ listing;
          $handle = @fopen($fileName, 'rb');
       \Response::set('Content-Type', $mime, false);
       if((substr($mime, 0, 5) === 'text/') || (substr($mime, 0, 6) === 'image/'))
-         \Response::set('Content-Disposition',
-            'inline; filename=' . basename($name), false);
+         \Response::set('Content-Disposition', "inline; filename=$name", false);
       else
-         \Response::set('Content-Disposition',
-            'attachment; filename=' . basename($name), false);
+         \Response::set('Content-Disposition', "attachment; filename=$name",
+            false);
       if(\Config::equals('x-sendfile', \Config::XSENDFILE_APACHE,
             \Config::XSENDFILE_CHEROKEE, \Config::XSENDFILE_NGINX))
       # Apache/Cherokee/nginx will do the rest
@@ -452,16 +484,15 @@ listing;
    /**
     * Serves a file to the client without parsing it. Supports ranges and
     * acceleration with X-Sendfile/X-Accel-Redirect if available.
-    * @param string $fileName Relative to the current working directory. Paths
-    *    outside of ResourceDir/ are not allowed.
+    * @param string $fileName Paths outside of ResourceDir/ are not allowed.
     */
    public static final function passFile($fileName) {
       static $buffer = 8192;
       \Response::set('Accept-Ranges', 'bytes');
-      $fileName = \Router::normalize($fileName, true);
-      chdir(CodeDir);
+      $fileName = \Router::normalizeFIM($fileName, true);
+      $chdir = new chdirHelper(CodeDir);
       if(empty($fileName) || $fileName[0] !== ResourceDir) {
-         self::error(404, $fileName);
+         self::error(404, implode('/', $fileName));
          return;
       }
       $fileName = implode('/', $fileName);
@@ -475,7 +506,8 @@ listing;
          # Content-Type and Content-Disposition, which is done manually.
          # Sadly, rewriting the urls to index.php will also have effect on
          # XAccelRedirect. This requires us to reserve an internal directory
-         # /fim.InternalGetContent/ which will serve all files without rewriting.
+         # /fim.InternalGetContent/ which will serve all files without
+         # rewriting.
          self::prepareFileHeaders($fileName);
          \Response::set('X-Accel-Redirect', "/fim.InternalGetContent/$fileName");
          return;
@@ -491,7 +523,6 @@ listing;
       }
       if(\Request::isGet() && (preg_match('/^bytes=(?:(\d++)-(\d++)?+|-(\d++))/',
             @$_SERVER['HTTP_RANGE'], $matches) === 1)) {
-         die('2');
          # Ranges were requested
          if(($length = \fileUtils::size($fileName)) === false) {
             self::error(500, $fileName); # File exists but filesize fails...
@@ -559,7 +590,7 @@ listing;
          # In order to get an error that is at least one, we thus need at least
          # an ending position that is greater than 9009009009009009. As this
          # calculation is a bit optimistic (there are three elemetary operations
-         # involved, we will say that this operation is safe when $endPos is
+         # involved), we will say that this operation is safe when $endPos is
          # smaller than 3003003003003003. If it is greater, we will simply omit
          # Content-Length. This is not nice and not standard compliant, but the
          # browsers shall life with it. The complete size is given in
@@ -740,31 +771,29 @@ listing;
       }
    }
 
-   private static function exception($fileName, \Exception $E) {
+   private static function exception($fileName, \Exception $e) {
       if(!self::lookFor($fileName,
-            function($className) use($E) {
+            function($className) use($e) {
             if(method_exists($className, 'handleException')) {
                $module = new $className;
-               $ret = $module->handleException($E);
+               $ret = $module->handleException($e);
                return $ret !== \Module::PROPAGATE && $ret !== \Module::PROPAGATE_UP;
             }else
                return false;
          })) # No handler found; throw the exception and let the logger do the job
-         throw $E;
+         throw $e;
    }
 
    private static function lookFor($fileName, callable $callback) {
-      chdir(CodeDir);
+      # When this function is called, it is assured that cwd === CodeDir
       if(\fileUtils::isReadable($fileName))
          $fileName = dirname($fileName);
       elseif(!is_dir($fileName)) {
-         $fileNameArray = explode('/', $fileName);
+         $fileNameArray = \Router::normalizeFilesystem("/$fileName", true);
          $fileName = array_shift($fileNameArray);
          if($fileName !== ResourceDir)
             return false;
          foreach($fileNameArray as $cur) {
-            if($cur === '')
-               continue;
             $newFileName = "$fileName/$cur";
             if(is_dir($newFileName))
                $fileName = $newFileName;
@@ -772,7 +801,7 @@ listing;
                break;
          }
       }else
-         $fileName = \Router::normalize($fileName);
+         $fileName = \Router::normalizeFilesystem("/$fileName");
       # Now we know that $fileName points at a valid directory. Let's check
       # whether we find modules at any level of hierarchy which implement any
       # of the functions
@@ -785,7 +814,7 @@ listing;
                if($callback($className))
                   return true;
                chdir(CodeDir);
-            }catch(\ForwardException $E) {
+            }catch(\ForwardException $e) {
                return true;
             }
          }
