@@ -99,7 +99,7 @@ abstract class Router {
          return $pathArray;
       else{
          $path = implode('/', $pathArray);
-         if(OS === 'Windows' && preg_match('/^[a-z]:/i', $path))
+         if(OS === 'Windows' && preg_match('/^[a-z]:/i', $path) === 1)
             return $path;
          else
             return "/$path";

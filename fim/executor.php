@@ -801,7 +801,7 @@ listing;
                break;
          }
       }else
-         $fileName = \Router::normalizeFilesystem("/$fileName");
+         $fileName = substr(\Router::normalizeFilesystem("/$fileName"), 1);
       # Now we know that $fileName points at a valid directory. Let's check
       # whether we find modules at any level of hierarchy which implement any
       # of the functions

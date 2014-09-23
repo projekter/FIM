@@ -263,7 +263,7 @@ abstract class Log {
                         $arg = $arg->name;
                   }
                   $t['args'] = array_combine($args, $t['args']);
-               }catch(Exception $e) {
+               }catch(Exception $notUsed) {
                   # But if this is not possible, just leave them number-indexed
                }
                if(CLI) {

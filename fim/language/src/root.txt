@@ -137,6 +137,7 @@ root {
       template {
          exception { "A template error occurred while processing the file \"{0}\"." }
          url { "The URL function was called with the address \"{0}\" by the template \"{1}\". However, this address is not available from the outside." }
+         urlRelative { "The URL function was called with the relative address \"{0}\" by the template \"{1}\". Therefore this template has to be of resource type \"fim\" or \"file\", but is \"{2}\" instead." }
       }
       redirectInvalid { "A redirect to the address \"{0}\" was triggered, but no URL could be mapped to this address." }
    }

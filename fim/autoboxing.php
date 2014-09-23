@@ -113,7 +113,7 @@ namespace fim {
          $currentTimestamp = filemtime($absClassFile);
          $cacheTimestamp = @filemtime($cacheFile);
          if($currentTimestamp !== $cacheTimestamp) {
-            if(file_put_contents($cacheFile,
+            if(@file_put_contents($cacheFile,
                   self::generateAutoboxingCache($file, $cacheNamespace, $classFile)) === false)
                throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
                   'cache', 'writeError', 'content'], [$classFile]));
@@ -147,7 +147,7 @@ namespace fim {
                return [$cacheClass, $functionName];
             $lock = new \Semaphore($cacheFile);
             $lock->lock();
-            if(($cacheContent = file_get_contents($cacheFile)) === false)
+            if(($cacheContent = @file_get_contents($cacheFile)) === false)
                throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
                   'cache', 'readError'], [$classFile]));
          }else{
@@ -198,7 +198,7 @@ Cache;
                   ? ', $obj' : '') . ") {
       $code
    }", $cacheContent);
-         if(!file_put_contents($cacheFile, $cacheContent))
+         if(@file_put_contents($cacheFile, $cacheContent) === false)
             throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
                'cache', 'writeError', 'content'], [$classFile]));
          $lock->unlock();
@@ -212,10 +212,9 @@ Cache;
 
       private static function generateAutoboxingCache(\ReflectionFile $file,
          $namespace, $fileName) {
-         if(!is_dir(CodeDir . 'cache/autoboxing'))
-            if(!mkdir(CodeDir . 'cache/autoboxing', 0700, true))
-               throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
-                  'cache', 'writeError', 'directory']));
+         if(!is_dir(CodeDir . 'cache/autoboxing') && !mkdir(CodeDir . 'cache/autoboxing', 0700, true))
+            throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
+               'cache', 'writeError', 'directory']));
          $now = date('Y-m-d H:i:s');
          $cacheContent = <<<Cache
 <?php

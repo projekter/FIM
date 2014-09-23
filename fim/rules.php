@@ -397,7 +397,7 @@ Cache;
          }
          $cacheContent .= "
    $directory);";
-         if(file_put_contents($absCacheFile, $cacheContent) === false)
+         if(@file_put_contents($absCacheFile, $cacheContent) === false)
             throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules',
                'cache',
                'writeError', 'content'], [$cacheFile]));

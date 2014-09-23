@@ -56,6 +56,7 @@ require './session.php';
 require './reflectionFile.php';
 require './autoboxing.php';
 require './module.php';
+require './smarty.php';
 require './executor.php';
 
 require './database.php';
