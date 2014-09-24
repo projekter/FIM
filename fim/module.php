@@ -94,7 +94,7 @@ abstract class Module {
          define('ServerEncoded',
             htmlspecialchars(Server, ENT_QUOTES, Smarty::$_CHARSET));
       $templateFile = Router::normalizeFIM($templateFile);
-      $chdir = new \fim\chdirHelper(CodeDir . dirname(substr($templateFile, 2)));
+      $chdir = new \fim\chdirHelper(Router::convertFIMToFilesystem(dirname($templateFile)));
       try {
          return self::$smarty->clearAllAssign()
                ->assign(self::$templateVars)

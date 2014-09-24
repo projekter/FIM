@@ -41,8 +41,7 @@ abstract class fileUtils {
    private static function getFileDetails($fileName) {
       if(self::$hasExec === null)
          self::$hasExec = function_exists('exec');
-      $commandLine = FrameworkPath . 'FileHelper.exe ' . base64_encode($fileName) .
-         ' ' . base64_encode(getcwd());
+      $commandLine = FrameworkPath . 'FileHelper.exe ' . base64_encode(\Router::normalizeFilesystem($fileName));
       if(self::$hasExec)
          exec($commandLine, $return);
       else{
@@ -83,7 +82,7 @@ abstract class fileUtils {
    /**
     * Calculates the size of file even for files that are greater than two
     * or four GB correctly. Symbolic links will be resolved.
-    * @param int $fileName
+    * @param string $fileName
     * @return string|bool False only if none of the extensions cURL or COM is
     *    available, exec is disabled and the file is inaccessible.
     */
