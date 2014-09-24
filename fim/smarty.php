@@ -400,7 +400,7 @@ namespace {
          Smarty_Internal_Template $_template = null) {
          $file = $source->name;
          # Go relative to a given template?
-         if($_template && $_template->parent instanceof Smarty_Internal_Template) {
+         if($file[0] !== '/' && $_template && $_template->parent instanceof Smarty_Internal_Template) {
             $parentSource = $_template->parent->source;
             switch($parentSource->type) {
                case 'fim':
