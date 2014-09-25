@@ -172,9 +172,10 @@ abstract class Executor {
       try {
          $chdir = new chdirHelper($path);
          \Database::setActiveConnection('.');
-         if(!method_exists($module, 'execute'))
+         if(!method_exists($module, 'execute')) {
+            chdir(CodeDir);
             self::error(404, $path);
-         else
+         }else
             Autoboxing::callMethod($module, 'execute');
       }catch(\ForwardException $e) {
          # not an exception

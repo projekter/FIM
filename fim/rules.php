@@ -314,7 +314,7 @@ namespace {
                [$fileName, CLI ? 'script' : 'content']));
          $folder = CodeDir . ResourceDir;
          array_shift($hierarchy);
-         if(is_dir($fileName))
+         if(is_dir($folder))
             $hierarchy[] = '.';
          foreach($hierarchy as $cur) {
             if(is_file("$folder/fim.rules.php") || is_file("$folder/fim.rules.txt"))
