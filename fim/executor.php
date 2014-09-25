@@ -763,11 +763,11 @@ listing;
                   [$errno]);
             else
                \Response::$responseText .= $logStr;
-         elseif(!\Config::get('production'))
+         elseif(!\Config::get('production')) {
             echo $language->get(['executor', 'error', 'production'], [$errno]);
-         else
+            \Log::reportError($logStr, true);
+         }else
             echo $logStr;
-         \Log::reportError($logStr, true);
       }
    }
 
