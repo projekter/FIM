@@ -741,8 +741,8 @@ listing;
                if($ret !== \Module::PROPAGATE && $ret !== \Module::PROPAGATE_UP) {
                   if($ret === null)
                      $ret = $errno;
-                  if(\Response::translateHTTPCode((int)$ret) !== null)
-                     \Response::$responseCode = (int)$ret;
+                  if(is_int($ret) && \Response::translateHTTPCode($ret) !== null)
+                     \Response::$responseCode = $ret;
                   return true;
                }else
                   return false;
