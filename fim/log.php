@@ -178,11 +178,11 @@ abstract class Log {
          E_USER_WARNING => 'E_USER_WARNING',
          E_USER_NOTICE => 'E_USER_NOTICE',
          E_STRICT => 'E_STRICT',
-         E_RECOVERABLE_ERROR => 'E_RECOVERABLE_ERROR',
+         #E_RECOVERABLE_ERROR => 'E_RECOVERABLE_ERROR', # will not happen
          E_DEPRECATED => 'E_DEPRECATED',
          E_USER_DEPRECATED => 'E_USER_DEPRECATED'];
       $errtype = isset($errorCodes[$errno]) ? $errorCodes[$errno] : '(unknown error type)';
-      self::reportInternalError("[$errid] $errtype: $errstr\r\n   -> $errfile : $errline\r\n");
+      self::reportError("[$errid] $errtype: $errstr\r\n   -> $errfile : $errline\r\n");
       if(Config::get('production')) {
          switch($errno) {
             case E_ERROR:
@@ -190,7 +190,6 @@ abstract class Log {
             case E_CORE_ERROR:
             case E_COMPILE_ERROR:
             case E_USER_ERROR:
-            case E_RECOVERABLE_ERROR:
                echo I18N::getInternalLanguage()->get(['log', 'message'],
                   [$errid]);
                if(!$shutdown)
