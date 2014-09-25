@@ -1374,7 +1374,8 @@ abstract class Response {
             $text = self::$responseCodes[self::$responseCode];
          else{
             @header('Content-Type: text/plain');
-            exit('Unknown http status code "' . self::$responseCode . '"');
+            exit(I18N::getInternalLanguage()->get(['response', 'unknownStatus'],
+                  [self::$responseCode]));
          }
          self::set('Content-Type',
             'text/html; charset=' . Config::get('defaultEncoding'), false);

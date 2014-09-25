@@ -160,6 +160,7 @@ de {
    response {
       cliRedirect { "Bitte rufen Sie das Skript erneut mit der URL \"{0}\" auf." }
       negotiationLacksStar { "\\Response::contentNegotiation() wurde ohne Alternativ-Eintrag aufgerufen." }
+      unknownStatus { "Unbekannter HTTP-Statuscode: {0,number}". }
    }
    rules {
       cache {
