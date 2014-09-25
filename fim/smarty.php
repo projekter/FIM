@@ -274,7 +274,7 @@ namespace fim {
          # and all parameters, so we might be able to do better caching.
          $urls = \Router::mapPathToURL($staticPath, $staticParameters,
                $noRouting, true);
-         if(!$noRouting)
+         if($noRouting)
          # Caching gets even better. We now know that our routing will never
          # change, so we can really use the routing's result.
             return $this->returnFullyStatic($urls, $staticPath);
