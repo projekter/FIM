@@ -739,8 +739,10 @@ listing;
                   $ret = $module->handleError($errno, $details[0]);
                # End speed up
                if($ret !== \Module::PROPAGATE && $ret !== \Module::PROPAGATE_UP) {
-                  if(is_int($ret))
-                     \Response::$responseCode = $ret;
+                  if($ret === null)
+                     $ret = $errno;
+                  if(\Response::translateHTTPCode((int)$ret) !== null)
+                     \Response::$responseCode = (int)$ret;
                   return true;
                }else
                   return false;
