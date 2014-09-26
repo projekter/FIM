@@ -323,11 +323,8 @@ namespace {
             if(!is_array($mixed)) {
                if(trim($mixed, '\'"') === 'nofilter')
                   $escape = false;
-               else{
+               else
                   $_attr[] = $mixed;
-                  if($method === null)
-                     $method = false;
-               }
             }else{
                if(isset($mixed['nofilter']))
                   if(is_string($mixed['nofilter']) && in_array(trim($mixed['nofilter'],
