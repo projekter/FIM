@@ -81,10 +81,8 @@ function fimInitialize(array $config = []) {
    Config::initialize($config);
 
    # FIM can be set up in a web-only or console-only manner
-   if(CLI && !is_dir(CodeDir . 'script/'))
-      die('Console access is not set up.');
-   elseif(!CLI && !is_dir(CodeDir . 'content/'))
-      die('Web access is not set up.');
+   if(!is_dir(CodeDir . ResourceDir))
+      die(CLI ? 'Console access is not set up.' : 'Web access is not set up.');
 
    # We definitely need to call isHTTPS() to fill the cache
    if(!Request::isHTTPS() && !CLI && Config::get('requireSecure')) {
@@ -93,7 +91,11 @@ function fimInitialize(array $config = []) {
    }
    fim\sessionInitialize();
 
+   @include (CodeDir . ResourceDir . '/fim.startup.php');
+
    fim\Executor::execute();
+
+   @include (CodeDir . ResourceDir . '/fim.shutdown.php');
 
    Response::doSend();
 }

@@ -138,13 +138,13 @@ namespace {
       }
 
       /**
-       * Sets the language that is used by the main application. By default, this
-       * will be the same language as the internal language. In contrast to the
-       * internal language, it can be changed at any time.
+       * Sets the locale that is used by the main application. By default, this
+       * will be the same locale as the internal one. In contrast to the
+       * internal locale, it can be changed at any time.
        * @param string $locale
        * @return boolean
        */
-      public static final function setLanguage($locale) {
+      public static final function setLocale($locale) {
          $rbc = new ResourceBundle($locale, CodeDir . 'language/', true);
          if($rbc !== false) {
             self::$activeLanguage = new I18N($locale, $rbc);
