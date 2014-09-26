@@ -99,6 +99,12 @@ abstract class Module {
          return self::$smarty->clearAllAssign()
                ->assign(self::$templateVars)
                ->assignGlobal('__module', $this->moduleName)
+               ->assignGlobal('__modulePath', $this->modulePath)
+               ->assignGlobal('__modulePathArray',
+                  $ma = Router::normalizeFIM($this->modulePath, true))
+               ->assignGlobal('__moduleResource',
+                  '/' . implode('/', $ma = array_slice($ma, 1)))
+               ->assignGlobal('__moduleResourceArray', $ma)
                ->fetch($templateFile);
       }catch(SmartyException $e) {
          throw new ModuleException(I18N::getInternalLanguage()->get(['module',
