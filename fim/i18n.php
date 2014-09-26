@@ -129,11 +129,11 @@ namespace {
       public static final function initialize($locale) {
          if(self::$internalLanguage !== null)
             throw new FIMInternalException(self::$internalLanguage->get(['i18n', 'doubleInitialization']));
-         $rbi = new ResourceBundle($locale, FrameworkPath . 'language', true);
+         $rbi = new ResourceBundle($locale, FrameworkPath . 'language/', true);
          if($rbi === null)
             throw new FIMInternalException("The internal language $locale did not exist. FIM could not be initialized.");
          self::$internalLanguage = new I18N($locale, $rbi);
-         $rbc = new ResourceBundle($locale, CodeDir . 'language', true);
+         $rbc = new ResourceBundle($locale, CodeDir . 'language/', true);
          self::$activeLanguage = new I18N($locale, $rbc);
       }
 
@@ -145,7 +145,7 @@ namespace {
        * @return boolean
        */
       public static final function setLanguage($locale) {
-         $rbc = new ResourceBundle($locale, CodeDir . 'language/language', true);
+         $rbc = new ResourceBundle($locale, CodeDir . 'language/', true);
          if($rbc !== false) {
             self::$activeLanguage = new I18N($locale, $rbc);
             if(isset($GLOBALS['l']))
