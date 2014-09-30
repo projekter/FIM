@@ -108,7 +108,7 @@ abstract class Module {
                ->fetch($templateFile);
       }catch(SmartyException $e) {
          throw new ModuleException(I18N::getInternalLanguage()->get(['module',
-            'template', 'exception'], [$templateFile]), 0, $e);
+            'templateException'], [$templateFile]), 0, $e);
       }
    }
 

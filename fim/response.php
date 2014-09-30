@@ -1332,7 +1332,7 @@ abstract class Response {
    private static function buildETag() {
       $headers = self::$headers;
       unset($headers['Pragma'], $headers['Cache-Control'], $headers['Expires']);
-      return hash('md5', self::$responseText . implode('|', $headers));
+      return md5(self::$responseText . implode('|', $headers));
    }
 
    /**

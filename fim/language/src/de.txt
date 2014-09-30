@@ -134,12 +134,8 @@ de {
       saslUnsupported { "Der FIM-Memcached-Wrapper kann keine SASL-Authentifizierung emulieren. Hierfür die die MemcacheD-Erweiterung unerlässlich." }
    }
    module {
-      template {
-         exception { "Es ist ein Templatefehler beim Verarbeiten der Datei \"{0}\" aufgetreten." }
-         url { "Im Template \"{1}\" wurde die URL-Funktion mit der Adresse \"{0}\" aufgerufen, die jedoch nicht von außen erreichbar ist." }
-         urlRelative { "Im Template \"{1}\" wurde die URL-Funktion mit der relativen Adresse \"{0}\" aufgerufen. Demzufolge muss das Template vom Ressourcentyp \"fim\" oder \"file\" sein, nicht jedoch \"{2}\"." }
-      }
       redirectInvalid { "Es wurde eine Weiterleitung auf die Adresse \"{0}\" ausgelöst, der jedoch keine URL zugeordnet werden konnte." }
+      templateException { "Es ist ein Templatefehler beim Verarbeiten der Datei \"{0}\" aufgetreten." }
    }
    primaryTable {
       callUnknown { "Die Tabelle \"{0}\" besitzt keine Methode mit dem Namen \"{1}\"." }
@@ -191,6 +187,10 @@ de {
    }
    session {
       cli { "Der Zugriff auf die Session-Funktionen ist im Kommandozeilenmodus nicht möglich." }
+   }
+   smarty {
+      url { "Im Template \"{1}\" wurde die URL-Funktion mit der Adresse \"{0}\" aufgerufen, die jedoch nicht von außen erreichbar ist." }
+      urlRelative { "Im Template \"{1}\" wurde die URL-Funktion mit der relativen Adresse \"{0}\" aufgerufen. Demzufolge muss das Template vom Ressourcentyp \"fim\" oder \"file\" sein, nicht jedoch \"{2}\"." }
    }
    table {
       definitionInvalid { "Der Tabellenklasse \"{0}\" wurde die Eigenschaft $columns nicht zugewiesen." }

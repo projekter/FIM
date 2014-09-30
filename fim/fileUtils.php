@@ -792,7 +792,7 @@ if(OS === 'Windows') {
        * @return string the file name of the current <b>fimDirectoryIterator</b> item.
        */
       public function __toString() {
-         return pathinfo($this->path, PATHINFO_FILENAME);
+         return pathinfo($this->path, PATHINFO_BASENAME);
       }
 
       private $getInfoClass = 'SplFileInfo';

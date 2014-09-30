@@ -103,7 +103,7 @@ namespace fim {
       private static function setupFileCache(\ReflectionFile $file) {
          $absClassFile = $file->getFileName();
          $classFile = \Router::convertFilesystemToFIM($absClassFile);
-         $hash = hash('md5', $classFile);
+         $hash = md5($classFile);
          $cacheFile = CodeDir . "cache/autoboxing/$hash";
          $closureFile = "{$cacheFile}_functions.php";
          $cacheFile .= '.php';
@@ -114,7 +114,8 @@ namespace fim {
          $cacheTimestamp = @filemtime($cacheFile);
          if($currentTimestamp !== $cacheTimestamp) {
             if(@file_put_contents($cacheFile,
-                  self::generateAutoboxingCache($file, $cacheNamespace, $classFile)) === false)
+                  self::generateAutoboxingCache($file, $cacheNamespace,
+                     $classFile)) === false)
                throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
                   'cache', 'writeError', 'content'], [$classFile]));
             if(!touch($cacheFile, $currentTimestamp))
@@ -128,7 +129,7 @@ namespace fim {
 
       private static function setupFunctionCache(\ReflectionFunction $function) {
          $classFile = \Router::convertFilesystemToFIM($function->getFileName());
-         $hash = hash('md5', $classFile);
+         $hash = md5($classFile);
          $cacheFile = CodeDir . "cache/autoboxing/{$hash}_functions.php";
          $namespace = "cache\\autoboxing\\_{$hash}_functions";
          $cacheClass = "\\$namespace\\Autoboxing";
@@ -136,12 +137,11 @@ namespace fim {
             $startLine = $function->getStartLine();
             $endLine = $function->getEndLine();
             if($startLine !== $endLine)
-               $functionName = 'Closure' . hash('md5', "$startLine-$endLine");
+               $functionName = 'Closure' . md5("$startLine-$endLine");
             else # Multiple closures may occur in one line. We need to distinguish between them, so try to get as much information as possible
-               $functionName = 'Closure' . hash('md5',
-                     "$startLine:{$function->getNumberOfRequiredParameters()}:{$function->getNumberOfParameters()}:{$function->getDocComment()}");
+               $functionName = 'Closure' . md5("$startLine:{$function->getNumberOfRequiredParameters()}:{$function->getNumberOfParameters()}:{$function->getDocComment()}");
          }else
-            $functionName = 'Function' . hash('md5', $function->name);
+            $functionName = 'Function' . md5($function->name);
          if(($include = (@include_once $cacheFile)) !== false) {
             if(method_exists($cacheClass, $functionName) || isset($cacheClass::$newMethods[$functionName]))
                return [$cacheClass, $functionName];
@@ -212,7 +212,8 @@ Cache;
 
       private static function generateAutoboxingCache(\ReflectionFile $file,
          $namespace, $fileName) {
-         if(!is_dir(CodeDir . 'cache/autoboxing') && !mkdir(CodeDir . 'cache/autoboxing', 0700, true))
+         if(!is_dir(CodeDir . 'cache/autoboxing') && !mkdir(CodeDir . 'cache/autoboxing',
+               0700, true))
             throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
                'cache', 'writeError', 'directory']));
          $now = date('Y-m-d H:i:s');
@@ -270,7 +271,8 @@ abstract class {$class->getShortName()} {
          return $cacheContent;
       }
 
-      private static function generateAutoboxingMethod(\ReflectionFunctionAbstract $m, $fileName) {
+      private static function generateAutoboxingMethod(\ReflectionFunctionAbstract $m,
+         $fileName) {
          # We will do rather expensive parsing of the docblock. This will grant
          # maximum compatibility with the current work-in-progress standard and
          # allow programmers not to bother whether FIM will be able to parse

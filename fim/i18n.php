@@ -128,7 +128,8 @@ namespace {
        */
       public static final function initialize($locale) {
          if(self::$internalLanguage !== null)
-            throw new FIMInternalException(self::$internalLanguage->get(['i18n', 'doubleInitialization']));
+            throw new FIMInternalException(self::$internalLanguage->get(['i18n',
+               'doubleInitialization']));
          $rbi = new ResourceBundle($locale, FrameworkPath . 'language/', true);
          if($rbi === null)
             throw new FIMInternalException("The internal language $locale did not exist. FIM could not be initialized.");
@@ -138,19 +139,123 @@ namespace {
       }
 
       /**
+       * @const Returns the complete locale strings that are supported
+       */
+      const SUPPORTED_LOCALES = 0;
+
+      /**
+       * @const Returns only the supported languages
+       */
+      const SUPPORTED_LANGUAGES = 1;
+
+      /**
+       * @const Returns only the supported regions
+       */
+      const SUPPORTED_REGIONS = 2;
+
+      /**
+       * @const Returns only the supported scripts
+       */
+      const SUPPORTED_SCRIPTS = 3;
+
+      /**
+       * Returns an array of all locales that are found in the language
+       * directory
+       * @param int $checkFor One of I18N::SUPPORTED_LOCALES to
+       *    I18N::SUPPORTED_SCRIPTS
+       * @return string[]
+       */
+      public static final function getSupportedLocales($checkFor = self::SUPPORTED_LOCALES) {
+         # There is a function called "ResourceBundle::getLocales" which would
+         # perfectly suit our wishes if it did as it is documented. But this
+         # function requires to create a locale called "res_index" and add a
+         # table called "InstalledLocales" inside (which has to be compiled to
+         # a resource bundle) which contains all the locales that are available.
+         # This just introduces lots of extra work which should be avoided.
+         # Therefore we will scan the directory for ourselves. As ICU caches the
+         # data until our webserver dies, we will do as well (if possible).
+         static $supportedLocales = null;
+         if($supportedLocales !== null)
+            return $supportedLocales[$checkFor];
+         static $cacheMethod = null;
+         if($cacheMethod === null)
+            if(function_exists('apc_store'))
+               $cacheMethod = ['apc_fetch', 'apc_store'];
+            elseif(function_exists('xcache_set'))
+               $cacheMethod = ['xcache_get', 'xcache_set'];
+            elseif(function_exists('zend_shm_cache_store'))
+               $cacheMethod = ['zend_shm_cache_fetch', 'zend_shm_cache_store'];
+            elseif(function_exists('wincache_ucache_set'))
+               $cacheMethod = ['wincache_ucache_get', 'wincache_ucache_set'];
+            elseif(class_exists('YAC', false))
+               $cacheMethod = [['YAC', 'get'], ['YAC', 'set']];
+            else
+               $cacheMethod = false;
+         if($cacheMethod !== false && ($supportedLocales = $cacheMethod[0]('FIM' . crc32(CodeDir))) !== false)
+            return $supportedLocales[$checkFor];
+         $di = new fimDirectoryIterator(CodeDir . 'language');
+         $_locales = $_languages = $_regions = $_scripts = [];
+         foreach(new RegexIterator($di,
+         OS === 'Windows' ? '/([A-Z_-]++)\.res$/i' : '/([A-Za-z_-]++)\.res$/',
+         RegexIterator::GET_MATCH) as $item) {
+            $curLocale = Locale::canonicalize($item[1]);
+            if($curLocale === 'root')
+               continue;
+            $_locales[$curLocale] = true;
+            # Those functions are supposed to return NULL, but might return ''
+            # instead.
+            if(($tmp = Locale::getPrimaryLanguage($curLocale)) != null)
+               $_languages[$tmp] = true;
+            if(($tmp = Locale::getRegion($curLocale)) != null)
+               $_regions[$tmp] = true;
+            if(($tmp = Locale::getScript($curLocale)) != null)
+               $_scripts[$tmp] = true;
+         }
+         $supportedLocales = [self::SUPPORTED_LOCALES => array_keys($_locales),
+            self::SUPPORTED_LANGUAGES => array_keys($_languages),
+            self::SUPPORTED_REGIONS => array_keys($_regions),
+            self::SUPPORTED_SCRIPTS => array_keys($_scripts)];
+         if($cacheMethod !== false)
+            $cacheMethod[1]('FIM' . crc32(CodeDir), $supportedLocales);
+         return $supportedLocales[$checkFor];
+      }
+
+      /**
+       * Returns the current I18N
+       * @return I18N
+       */
+      public static final function getLocale() {
+         return self::$activeLanguage;
+      }
+
+      /**
+       * Returns the current I18N object that is used by FIM only
+       * @return I18N
+       */
+      public static final function getInternalLanguage() {
+         return self::$internalLanguage;
+      }
+
+      /**
        * Sets the locale that is used by the main application. By default, this
        * will be the same locale as the internal one. In contrast to the
        * internal locale, it can be changed at any time.
-       * @param string $locale
-       * @return boolean
+       * @param string|I18N $locale
+       * @return I18N|false
        */
       public static final function setLocale($locale) {
+         if($locale instanceof self) {
+            self::$activeLanguage = $locale;
+            if(isset($GLOBALS['l']))
+               $GLOBALS['l'] = $locale;
+            return $locale;
+         }
          $rbc = new ResourceBundle($locale, CodeDir . 'language/', true);
          if($rbc !== false) {
             self::$activeLanguage = new I18N($locale, $rbc);
             if(isset($GLOBALS['l']))
                $GLOBALS['l'] = self::$activeLanguage;
-            return true;
+            return self::$activeLanguage;
          }else
             return false;
       }
@@ -186,8 +291,8 @@ namespace {
             else{
                if($this === self::$internalLanguage)
                   if($key !== ['i18n', 'get', 'internalNotFound'])
-                     Log::reportInternalError(self::$internalLanguage->get(['i18n', 'get', 'internalNotFound'],
-                           [$key]), true);
+                     Log::reportInternalError(self::$internalLanguage->get(['i18n',
+                           'get', 'internalNotFound'], [$key]), true);
                   else
                      Log::reportInternalError("The internal language key \"$key\" was not found.",
                         true);
@@ -204,11 +309,80 @@ namespace {
       }
 
       /**
-       * Returns the locale of this language
+       * Returns the complete locale of this object
        * @return string
        */
-      public final function getLocale() {
+      public final function getLocaleName() {
          return $this->locale;
+      }
+
+      /**
+       * Returns the language part of this locale
+       * @return string
+       */
+      public final function getLocaleLanguage() {
+         return Locale::getPrimaryLanguage($this->locale);
+      }
+
+      /**
+       * Returns the region part of this locale
+       * @return string
+       */
+      public final function getLocaleRegion() {
+         return Locale::getRegion($this->locale);
+      }
+
+      /**
+       * Returns the script part of this locale
+       * @return string
+       */
+      public final function getLocaleScript() {
+         return Locale::getScript($this->locale);
+      }
+
+      /**
+       * Returns the name of the language of this locale
+       * @return string
+       */
+      public final function getDisplayLanguage() {
+         return Locale::getDisplayLanguage($this->locale,
+               self::$activeLanguage->locale);
+      }
+
+      /**
+       * Returns the name of this locale
+       * @return string
+       */
+      public final function getDisplayName() {
+         return Locale::getDisplayName($this->locale,
+               self::$activeLanguage->locale);
+      }
+
+      /**
+       * Returns the name of the region of this locale
+       * @return string
+       */
+      public final function getDisplayRegion() {
+         return Locale::getDisplayRegion($this->locale,
+               self::$activeLanguage->locale);
+      }
+
+      /**
+       * Returns the name of the script of this locale
+       * @return string
+       */
+      public final function getDisplayScript() {
+         return Locale::getDisplayScript($this->locale,
+               self::$activeLanguage->locale);
+      }
+
+      /**
+       * Returns the name of the variant of this locale
+       * @return string
+       */
+      public final function getDisplayVariant() {
+         return Locale::getDisplayVariant($this->locale,
+               self::$activeLanguage->locale);
       }
 
       /**
@@ -278,7 +452,8 @@ namespace {
       public final function formatDate($timestamp,
          $format = IntlDateFormatter::MEDIUM) {
          if($format !== IntlDateFormatter::FULL && $format !== IntlDateFormatter::LONG && $format !== IntlDateFormatter::MEDIUM && $format !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidDateFormat']));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format',
+               'invalidDateFormat']));
          $hash = "{$format}_" . IntlDateFormatter::NONE;
          if(!isset($this->dateFormatters[$hash]))
             $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
@@ -300,7 +475,8 @@ namespace {
       public final function formatTime($timestamp,
          $format = IntlDateFormatter::MEDIUM) {
          if($format !== IntlDateFormatter::FULL && $format !== IntlDateFormatter::LONG && $format !== IntlDateFormatter::MEDIUM && $format !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidTimeFormat']));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format',
+               'invalidTimeFormat']));
          $hash = IntlDateFormatter::NONE . "_$format";
          if(!isset($this->dateFormatters[$hash]))
             $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
@@ -329,9 +505,11 @@ namespace {
          $dateFormat = IntlDateFormatter::SHORT,
          $timeFormat = IntlDateFormatter::MEDIUM) {
          if($dateFormat !== IntlDateFormatter::FULL && $dateFormat !== IntlDateFormatter::LONG && $dateFormat !== IntlDateFormatter::MEDIUM && $dateFormat !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidDateFormat']));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format',
+               'invalidDateFormat']));
          if($timeFormat !== IntlDateFormatter::FULL && $timeFormat !== IntlDateFormatter::LONG && $timeFormat !== IntlDateFormatter::MEDIUM && $timeFormat !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidTimeFormat']));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format',
+               'invalidTimeFormat']));
          $hash = "{$dateFormat}_$timeFormat";
          if(!isset($this->dateFormatters[$hash]))
             $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
@@ -425,7 +603,8 @@ namespace {
        */
       public final function parseDate($date, $format = IntlDateFormatter::SHORT) {
          if($format !== IntlDateFormatter::FULL && $format !== IntlDateFormatter::LONG && $format !== IntlDateFormatter::MEDIUM && $format !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidDateFormat']));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format',
+               'invalidDateFormat']));
          $hash = "{$format}_" . IntlDateFormatter::NONE;
          if(!isset($this->dateFormatters[$hash]))
             $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
@@ -446,7 +625,8 @@ namespace {
        */
       public final function parseTime($time, $format = IntlDateFormatter::SHORT) {
          if($format !== IntlDateFormatter::FULL && $format !== IntlDateFormatter::LONG && $format !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidTimeFormat']));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format',
+               'invalidTimeFormat']));
          $hash = IntlDateFormatter::NONE . "_$format";
          if(!isset($this->dateFormatters[$hash]))
             $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
@@ -474,9 +654,11 @@ namespace {
          $dateFormat = IntlDateFormatter::SHORT,
          $timeFormat = IntlDateFormatter::SHORT) {
          if($dateFormat !== IntlDateFormatter::FULL && $dateFormat !== IntlDateFormatter::LONG && $dateFormat !== IntlDateFormatter::MEDIUM && $dateFormat !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidDateFormat']));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format',
+               'invalidDateFormat']));
          if($timeFormat !== IntlDateFormatter::FULL && $timeFormat !== IntlDateFormatter::LONG && $timeFormat !== IntlDateFormatter::SHORT)
-            throw new I18NException(self::$internalLanguage->get(['i18n', 'format', 'invalidTimeFormat']));
+            throw new I18NException(self::$internalLanguage->get(['i18n', 'format',
+               'invalidTimeFormat']));
          $hash = "{$dateFormat}_$timeFormat";
          if(!isset($this->dateFormatters[$hash]))
             $this->dateFormatters[$hash] = new IntlDateFormatter($this->locale,
@@ -545,35 +727,21 @@ namespace {
       /**
        * Calculates the prefered language according to the user's browser. The
        * language has to be included in $acceptedLanguages
-       * @param array $acceptedLanguages This array contains all valid languages.
-       *    They have to be represented as language string
+       * @param array $acceptedLocales This array contains all valid locales.
+       *    If null, all supported locales are used.
        * @param string $fallback This language string will be returned when there
        *    is no match
        * @return string A language string
        */
-      public static final function detectBrowserLanguage(array $acceptedLanguages,
+      public static final function detectBrowserLocale(array $acceptedLocales = null,
          $fallback = 'en') {
+         if($acceptedLocales === null)
+            $acceptedLocales = self::getSupportedLocales();
          $lang = Locale::acceptFromHttp(@$_SERVER['HTTP_ACCEPT_LANGUAGE']);
-         if(isset($lang))
-            return Locale::lookup($acceptedLanguages, $lang, true, $fallback);
+         if($lang !== null)
+            return Locale::lookup($acceptedLocales, $lang, true, $fallback);
          else
             return $fallback;
-      }
-
-      /**
-       * Returns the current I18N
-       * @return I18N
-       */
-      public static final function getLanguage() {
-         return self::$activeLanguage;
-      }
-
-      /**
-       * Returns the current I18N object that is used by FIM only
-       * @return I18N
-       */
-      public static final function getInternalLanguage() {
-         return self::$internalLanguage;
       }
 
    }

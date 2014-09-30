@@ -28,7 +28,7 @@ namespace fim {
     * @return string
     */
    function initTemplate($in) {
-      return '<?php if(!isset($l)) $l = I18N::getLanguage();?>' . $in;
+      return '<?php if(!isset($l)) $l = I18N::getLocale();?>' . $in;
    }
 
    # We cannot simply define the functions smarty_compiler_url and
@@ -152,13 +152,15 @@ namespace fim {
          # most likely be dynamic, the path itself should be static; so let's
          # accept this performance drawback here.
          if($this->cwd === false) {
-            $return = "<?php \$path={$this->path}; if(@\$path[0] !== '/') throw new FIMException(I18N::getInternalLanguage()->get(['module', 'template', 'urlRelative'], ['" .
+            $return = "<?php \$path={$this->path}; if(@\$path[0] !== '/') throw new FIMException(I18N::getInternalLanguage()->get(['smarty', 'urlRelative'], ['" .
                addcslashes($this->resourceName, "\\'") . "', \$path, '" .
-               addcslashes($this->resourceType, "\\'") . "']));";
+               addcslashes($this->resourceType, "\\'") . "'])); echo ";
             $path = '$path';
-         }else
-            $return = '<?php $chdir=new fim\\chdirHelper(\'' . addcslashes($this->cwd,
-                  "\\'") . "'); echo ";
+         }else{
+            $path = $this->path;
+            $return = '<?php $chdir=new fim\\chdirHelper(CodeDir . \'' . addcslashes(substr($this->cwd,
+                     strlen(CodeDir)), "\\'") . "'); echo ";
+         }
          if($this->escape)
             $return .= 'htmlspecialchars(';
          $return .= $translate ?
@@ -224,8 +226,8 @@ namespace fim {
          # $urls now is either a string (output directly) or an array - or the
          # url is completely inaccessible.
          if($urls === false) {
-            \Log::reportError(\I18N::getInternalLanguage()->get(['module', 'template',
-                  'url'], [$staticPath, $this->resourceName]));
+            \Log::reportError(\I18N::getInternalLanguage()->get(['smarty', 'url'],
+                  [$staticPath, $this->resourceName]));
             return '';
          }elseif(is_string($urls))
             if($this->escape)
@@ -255,8 +257,8 @@ namespace fim {
          if(($staticPath = $this->parseStaticString($this->path)) === false)
             return $this->returnFullyDynamic($translate);
          if($this->cwd === false && @$staticPath[0] !== '/')
-            throw new \FIMException(\I18N::getInternalLanguage()->get(['module',
-               'template', 'urlRelative'],
+            throw new \FIMException(\I18N::getInternalLanguage()->get(['smarty',
+               'urlRelative'],
                [$this->resourceName, $staticPath, $this->resourceType]));
          $staticParameters = [];
          foreach($this->parameters as $key => $param)
@@ -366,6 +368,17 @@ namespace {
 
    }
 
+   class Smarty_Internal_Compile_Mute extends Smarty_Internal_CompileBase {
+
+      public function compile($args, $compiler) {
+         if(empty($args))
+            return '';
+         else
+            return '<?php ' . implode(';', $args) . ';?>';
+      }
+
+   }
+
    # We want Smarty to be aware of FIM path identifiers, i.e. the maximum level
    # of absoluteness shall be CodeDir.
 
@@ -455,6 +468,54 @@ namespace {
          throw new SmartyException("Unable to read template {$source->type} '{$source->name}'");
       }
 
+   }
+
+   /**
+    * Returns an array that contains the urls to the given path for every
+    * supported locale
+    * @param int $checkFor For locale, language, region or script, see
+    *    I18N::SUPPORTED_ constants
+    * @param array $path ['path' => string, 'parameters' => array] or null to
+    *    use the current path; use two dimensional array to get multiple paths
+    * @return array Key is locale/language/region/script name<br />
+    *    ['active' => bool, 'display' => display name,
+    *     'path' => mapped path or array of paths]
+    */
+   function i18nURL($checkFor, array $path = null) {
+      static $functions = [I18N::SUPPORTED_LOCALES => 'Name', I18N::SUPPORTED_LANGUAGES => 'Language',
+         I18N::SUPPORTED_REGIONS => 'Region', I18N::SUPPORTED_SCRIPTS => 'Script'];
+      $getName = "getLocale{$functions[$checkFor]}";
+      $getDisplay = "getDisplay{$functions[$checkFor]}";
+
+      $currentLocale = I18N::getLocale();
+      $currentName = $currentLocale->$getName();
+      if($path === null) {
+         $path = fim\Executor::getExecutedPath();
+         $twoDimensions = false;
+      }elseif(is_array(reset($path))) {
+         foreach($path as &$p)
+            if($p === null)
+               $p = fim\Executor::getExecutedPath();
+         unset($p);
+         $twoDimensions = true;
+      }else
+         $twoDimensions = false;
+      $return = [];
+      foreach(I18N::getSupportedLocales($checkFor) as $locale) {
+         $i18n = I18N::setLocale($locale);
+         $return[$locale] = ['active' => ($currentName === $locale),
+            'display' => $i18n->$getDisplay()];
+         if($twoDimensions) {
+            $r = []; # Array access with two indices is relatively slow
+            foreach($path as $key => $p)
+               $r[$key] = Router::mapPathToURL($p['path'], $p['parameters']);
+            $return[$locale]['path'] = $r;
+         }else
+            $return[$locale]['path'] = Router::mapPathToURL($path['path'],
+                  $path['parameters']);
+      }
+      I18N::setLocale($currentLocale);
+      return $return;
    }
 
    Module::$smarty->registerResource('fim', new Smarty_Resource_FIM());

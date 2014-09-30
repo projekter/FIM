@@ -26,6 +26,7 @@ if(@FrameworkPath === 'FrameworkPath')
 abstract class Executor {
 
    private static $executedModules = false;
+   private static $executedPath = null;
 
    private final function __construct() {
 
@@ -48,9 +49,11 @@ abstract class Executor {
       $chdir = new chdirHelper(CodeDir);
       if(($path = \Router::mapURLToPath(CurrentSubdomain . $url . $params,
             $_GET, $unused, $failureAt)) === false) {
+         self::$executedPath = ['path' => $path, 'parameters' => $_GET];
          self::error(404, isset($failureAt) ? substr($failureAt, 2) : '.');
          return;
       }
+      self::$executedPath = ['path' => $path, 'parameters' => $_GET];
       $path = substr($path, 2);
       try {
          $ioPath = \fileUtils::encodeFilename($path);
@@ -198,6 +201,14 @@ abstract class Executor {
    }
 
    /**
+    * Returns the path that was executed by the current URL
+    * @return array ['path' => string, 'parameters' => array]
+    */
+   public static final function getExecutedPath() {
+      return self::$executedPath;
+   }
+
+   /**
     * Lists all the accessible content of a certain directory in the fim style
     * @param string $path Paths outside of ResourceDir/ are not allowed.
     */
@@ -211,7 +222,7 @@ abstract class Executor {
       $path = implode('/', $path);
       $it = new \fimDirectoryIterator($path);
       $intLanguage = \I18N::getInternalLanguage();
-      $language = \I18N::getLanguage();
+      $language = \I18N::getLocale();
       $resultFile = $resultDir = [];
       $details = \Config::equals('directoryListing',
             \Config::DIRECTORY_LISTING_DETAIL);

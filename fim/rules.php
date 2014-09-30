@@ -346,7 +346,7 @@ namespace {
          $absRulesFile = \Router::convertFIMToFilesystem($rulesFile, false);
          if(!is_file($absRulesFile))
             return null;
-         $cacheFile = 'cache/rules/' . hash('md5', $rulesFile) . '.php';
+         $cacheFile = 'cache/rules/' . md5($rulesFile) . '.php';
          if(isset(self::$singletons[$cacheFile]))
             return self::$singletons[$cacheFile];
          $absCacheFile = CodeDir . $cacheFile;

@@ -573,7 +573,7 @@ namespace fim {
          if(!file_exists($file))
             throw new \InvalidArgumentException("File \"$file\" not found");
          $file = realpath($file);
-         $cacheId = hash('md5', $file);
+         $cacheId = md5($file);
          if(isset(static::$cache[$cacheId]))
             $this->fileScanner = self::$cache[$cacheId];
          else{

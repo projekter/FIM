@@ -69,7 +69,7 @@ abstract class Database {
     * @throws Exception
     */
    private static final function buildConnectionFile($connectionFile) {
-      $cacheFile = 'cache/connections/' . hash('md5', $connectionFile) . '.php';
+      $cacheFile = 'cache/connections/' . md5($connectionFile) . '.php';
       $absCacheFile = CodeDir . $cacheFile;
       $absConnectionFile = CodeDir . $connectionFile;
       if(!is_dir(CodeDir . 'cache/connections') && !mkdir(CodeDir . 'cache/connections', 0700, true))

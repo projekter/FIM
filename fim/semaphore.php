@@ -39,7 +39,7 @@ final class Semaphore {
    const METHOD_XCACHE = 6;
    const METHOD_WINCACHE = 7;
 
-   # Zend cache is not equipped with atomic data cache operations
+   # Zend cache and YAC are not equipped with atomic data cache operations
 
    /**
     * Creates a new semaphore.
@@ -49,7 +49,7 @@ final class Semaphore {
     *    Memcached or Redis to be set up properly.
     */
    public function __construct($name, $multiServer = false) {
-      $this->data = "fimSemaphore$name";
+      $this->data = 'FIM' . crc32(CodeDir) . "Sem$name";
       $this->multiServer = $multiServer;
       if($multiServer) {
          if(self::$multiServerMethod === null)
@@ -79,8 +79,8 @@ final class Semaphore {
          if(self::$singleServerMethod === self::METHOD_SEMAPHORE)
             $this->data = sem_get(crc32($this->data));
          elseif(self::$singleServerMethod === self::METHOD_FILE)
-            $this->data = fopen(sys_get_temp_dir() . '/' . hash('md5',
-                  FrameworkPath . $this->data) . '.lock', 'a');
+            $this->data = fopen(sys_get_temp_dir() . '/' . md5(CodeDir . $this->data) . '.lock',
+               'a');
       }
    }
 

@@ -134,12 +134,8 @@ root {
       saslUnsupported { "The FIM memcached wrapper cannot emulate SASL authentification. The MemcacheD extension is required for this purpose." }
    }
    module {
-      template {
-         exception { "A template error occurred while processing the file \"{0}\"." }
-         url { "The URL function was called with the address \"{0}\" by the template \"{1}\". However, this address is not available from the outside." }
-         urlRelative { "The URL function was called with the relative address \"{0}\" by the template \"{1}\". Therefore this template has to be of resource type \"fim\" or \"file\", but is \"{2}\" instead." }
-      }
       redirectInvalid { "A redirect to the address \"{0}\" was triggered, but no URL could be mapped to this address." }
+      templateException { "A template error occurred while processing the file \"{0}\"." }
    }
    primaryTable {
       callUnknown { "The table \"{0}\" does not contain a method named \"{1}\"." }
@@ -192,6 +188,10 @@ root {
    }
    session {
       cli { "Accessing session functions is not possible in command line mode." }
+   }
+   smarty {
+      url { "The URL function was called with the address \"{0}\" by the template \"{1}\". However, this address is not available from the outside." }
+      urlRelative { "The URL function was called with the relative address \"{0}\" by the template \"{1}\". Therefore this template has to be of resource type \"fim\" or \"file\", but is \"{2}\" instead." }
    }
    table {
       definitionInvalid { "The property $columns was not assigned to the table class \"{0}\"." }
