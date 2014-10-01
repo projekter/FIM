@@ -200,7 +200,7 @@ Cache;
     * Gets the current connection object that can be worked with. Will ensure
     * that the connection is established.
     * @param boolean $require (default true) Throw an exception when there is
-    *    not object to work with
+    *    no connection to work with
     * @return DatabaseConnection
     * @throws DatabaseException
     */

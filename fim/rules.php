@@ -22,7 +22,7 @@ namespace {
    /**
     * This is the base class for all rule objects.
     */
-   class Rules {
+   abstract class Rules {
 
       const CHECK_EXISTENCE = 0b001;
       const CHECK_READING = 0b010;
@@ -36,37 +36,16 @@ namespace {
        * Reference to Module::$templateVars
        * @var array
        */
-      private static $templateVars = [];
-      private $checkExistence, $checkReading, $checkListing, $directory;
+      private static $templateVars;
+      protected $directory;
 
-      /**
-       * Creates a new Rules object. This constructor shall only be called
-       * within a fim.rules.php. It expects three closures (might be null) that
-       * are triggered when the respective check is performed.<br />
-       * The closured may require at most two parameters, the first one being
-       * only the name of the file, the second one being its complete file path
-       * and name, starting from CodeDir.
-       * @param Closure $checkExistence
-       * @param Closure $checkReading
-       * @param Closure $checkListing
-       */
-      public final function __construct(Closure $checkExistence = null,
-         Closure $checkReading = null, Closure $checkListing = null) {
-         if(isset($checkExistence))
-            $this->checkExistence = $checkExistence->bindTo($this, $this);
-         if(isset($checkReading))
-            $this->checkReading = $checkReading->bindTo($this, $this);
-         if(isset($checkListing))
-            $this->checkListing = $checkListing->bindTo($this, $this);
-         if(func_num_args() < 4) {
-            $this->directory = dirname(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,
-                  1)[0]['file']);
-            static $cdl = null;
-            if($cdl === null)
-               $cdl = strlen(CodeDir);
-            $this->directory = '//' . substr($this->directory, $cdl);
-         }else
-            $this->directory = func_get_arg(3);
+      protected function __construct() {
+         $this->directory = dirname(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,
+               1)[0]['file']);
+         static $cdl = null;
+         if($cdl === null)
+            $cdl = strlen(CodeDir);
+         $this->directory = '//' . substr($this->directory, $cdl);
       }
 
       public final function __get($name) {
@@ -85,23 +64,16 @@ namespace {
          return isset(self::$templateVars[$name]);
       }
 
-      public final function __call($name, array $arguments) {
-         switch($name) {
-            case 'checkExistence':
-               $closure = $this->checkExistence;
-               break;
-            case 'checkReading':
-               $closure = $this->checkReading;
-               break;
-            case 'checkListing':
-               $closure = $this->checkListing;
-               break;
-            default:
-               throw new RulesException(I18N::getInternalLanguage()->get(['rules',
-                  'callNotFound'], [$name]));
-         }
-         return isset($closure) ? \fim\Autoboxing::callFunction($closure,
-               ['fileName' => $arguments[0], 'fullName' => $arguments[1]]) : null;
+      public function checkExistence($fileName, $fullName) {
+
+      }
+
+      public function checkReading($fileName, $fullName) {
+
+      }
+
+      public function checkListing($fileName, $fullName) {
+
       }
 
       /**
@@ -117,17 +89,20 @@ namespace {
          $fullName = Router::normalizeFIM($fileName);
          if($fileName !== '.')
             $fileName = basename($fullName);
+         $params = ['fileName' => $fileName, 'fullName' => $fullName];
          # Simple overwriting scheme: Forbid with the greatest weight, allow
          #    with the smallest weight. If one single entry says forbidden, even
          #    the weightiest allowance cannot dominate - not even true.
          $val = 0;
          if(($checkFor & self::CHECK_EXISTENCE) !== 0)
-            if(($val = $simpleInstance->checkExistence($fileName, $fullName)) === false)
+            if(($val = \fim\Autoboxing::callMethod($simpleInstance,
+                  'checkExistence', $params)) === false)
                return false;
             elseif($val === null)
                $val = 0;
          if(($checkFor & self::CHECK_READING) !== 0) {
-            if(($newVal = $simpleInstance->checkReading($fileName, $fullName)) === false)
+            if(($newVal = \fim\Autoboxing::callMethod($simpleInstance,
+                  'checkReading', $params)) === false)
                return false;
             elseif($newVal != 0) # or null
                if($val === 0)
@@ -138,7 +113,8 @@ namespace {
                   $val = true;
          }
          if(($checkFor & self::CHECK_LISTING) !== 0) {
-            if(($newVal = $simpleInstance->checkListing($fileName, $fullName)) === false)
+            if(($newVal = \fim\Autoboxing::callMethod($simpleInstance,
+                  'checkListing', $params)) === false)
                return false;
             elseif($newVal !== 0) # or null
                if($val === 0)
@@ -223,9 +199,10 @@ namespace {
          $obj = "$folder/fim.rules.php";
          $absObj = Router::convertFIMToFilesystem($obj, false);
          if(!isset(self::$singletons[$obj]))
-            if(is_file($absObj))
-               self::$singletons[$obj] = fim\requireClosure($absObj);
-            else
+            if((@include $absObj) !== false) {
+               $class = str_replace('/', '\\', substr($folder, 1)) . '\\Rules';
+               self::$singletons[$obj] = new $class();
+            }else
                self::$singletons[$obj] = false;
          if(($obj = self::$singletons[$obj]) === false)
             if(($obj = self::buildSimpleCache("$folder/fim.rules.txt")) === null)
@@ -233,10 +210,11 @@ namespace {
          $fullName = ($fileName === '.') ? $folder : "$folder/$fileName";
          static $functions = [self::CHECK_EXISTENCE => 'checkExistence',
             self::CHECK_READING => 'checkReading', self::CHECK_LISTING => 'checkListing'];
-         $chdir = new fim\chdirHelper($folder);
+         $chdir = new fim\chdirHelper(dirname($absObj));
          $previousConnection = Database::getActiveConnection(false);
          \Database::setActiveConnection('.');
-         $ret = $obj->{$functions[$checkFor]}($fileName, $fullName);
+         $ret = \fim\Autoboxing::callMethod($obj, $functions[$checkFor],
+               ['fileName' => $fileName, 'fullName' => $fullName]);
          Database::restoreConnection($previousConnection);
          return $ret;
       }
@@ -346,7 +324,8 @@ namespace {
          $absRulesFile = \Router::convertFIMToFilesystem($rulesFile, false);
          if(!is_file($absRulesFile))
             return null;
-         $cacheFile = 'cache/rules/' . md5($rulesFile) . '.php';
+         $hash = md5($rulesFile);
+         $cacheFile = "cache/rules/$hash.php";
          if(isset(self::$singletons[$cacheFile]))
             return self::$singletons[$cacheFile];
          $absCacheFile = CodeDir . $cacheFile;
@@ -356,9 +335,14 @@ namespace {
                'cache', 'writeError', 'directory']));
          $rulesTimestamp = filemtime($absRulesFile);
          $cacheTimestamp = @filemtime($absCacheFile);
-         if($cacheTimestamp === $rulesTimestamp)
-            return self::$singletons[$cacheFile] = fim\requireClosure($absCacheFile);
+         $namespace = "cache\\rules\\_$hash";
+         $class = "$namespace\\Rules";
+         if($cacheTimestamp === $rulesTimestamp) {
+            require $absCacheFile;
+            return self::$singletons[$cacheFile] = new $class();
+         }
          $now = date('Y-m-d H:i:s');
+         $directory = "'" . addcslashes(dirname($rulesFile), "\\'") . "'";
          $cacheContent = <<<Cache
 <?php
 
@@ -368,7 +352,13 @@ namespace {
  * Date of generation: $now.
  */
 
-return new Rules(
+namespace $namespace;
+
+class Rules extends \\Rules {
+
+   protected function __construct() {
+      \$this->directory = $directory;
+   }
 Cache;
          $rulesContent = file($absRulesFile, FILE_SKIP_EMPTY_LINES);
          if(isset($rulesContent[0]) && strcasecmp(trim($rulesContent[0]),
@@ -384,27 +374,19 @@ Cache;
          static $sections = ['Existence', 'Reading', 'Listing'];
          self::$currentFileName = $rulesFile;
          self::$parsingCache = [];
-         $directory = "'" . addcslashes(dirname($rulesFile), "\\'") . "'";
-         foreach($sections as $section) {
-            $sectionValue = self::parseRulesSection($rulesContent, $section);
-            if($sectionValue === '')
-               $cacheContent .= "
-   null,";
-            else
-               $cacheContent .= "
-   function(\$fileName, \$fullName) {{$sectionValue}
-   },";
-         }
-         $cacheContent .= "
-   $directory);";
+         foreach($sections as $section)
+            $cacheContent .= '
+
+' . self::parseRulesSection($rulesContent,
+                  $section);
+         $cacheContent .= '
+}';
          if(@file_put_contents($absCacheFile, $cacheContent) === false)
             throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules',
-               'cache',
-               'writeError', 'content'], [$cacheFile]));
+               'cache', 'writeError', 'content'], [$cacheFile]));
          if(!touch($absCacheFile, $rulesTimestamp))
             throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules',
-               'cache',
-               'writeError', 'timestamp'], [$cacheFile]));
+               'cache', 'writeError', 'timestamp'], [$cacheFile]));
          # Now try to call all three functions to see whether there is a regex
          # error or something similar. An exception will be thrown. If there is a
          # parsing error, make use of the shutdown function which will write this
@@ -416,10 +398,8 @@ Cache;
                   true);
             });
          try {
-            $obj = fim\requireClosure($absCacheFile);
-            $obj->checkExistence('', '');
-            $obj->checkReading('', '');
-            $obj->checkListing('', '');
+            require $absCacheFile;
+            $obj = new $class();
          }catch(Exception $e) {
             # No parsing error, only an exception
             Config::unregisterShutdownFunction($shutdownKey);
@@ -447,15 +427,17 @@ Cache;
                continue;
             elseif($line[0] === '[') {
                if($startIdx !== -1)
-                  return self::$parsingCache[$lowerName] = self::parseRulesArray(array_slice($fullContent,
-                           $startIdx, $idx - $startIdx), $fullContent);
+                  return self::$parsingCache[$lowerName] = "   public function check$sectionName(\$fileName, \$fullName) {" . self::parseRulesArray(array_slice($fullContent,
+                           $startIdx, $idx - $startIdx), $fullContent) . '
+   }';
                elseif(strcasecmp($line, "[$sectionName]") === 0)
                   $startIdx = $idx + 1;
             }
          }
          if($startIdx !== -1)
-            return self::$parsingCache[$lowerName] = self::parseRulesArray(array_slice($fullContent,
-                     $startIdx), $fullContent);
+            return self::$parsingCache[$lowerName] = "   public function check$sectionName(\$fileName, \$fullName) {" . self::parseRulesArray(array_slice($fullContent,
+                     $startIdx), $fullContent) . '
+   }';
       }
 
       private static function parseRulesArray(array $content, array $fullContent) {
@@ -464,8 +446,15 @@ Cache;
             $line = rtrim($content[$i]);
             if($line === '')
                continue;
-            elseif(preg_match('/^\s*(-?+\d++|true|false|match)\s*+=\s*+(c|r|e)\s*+(.++)$/i',
+            elseif(preg_match('/^\s*(-?+\d++|true|false|match)\s*+(?:=\s*+(c|r|e)\s*+(.++))?+$/i',
                   $line, $group) === 1) {
+               if(!isset($group[2])) {
+                  if($group[1] === 'match')
+                     continue;
+                  $result .= "
+      return {$group[1]};";
+                  continue;
+               }
                if($group[2] !== 'e' && $group[2] !== 'E')
                   $cmp = "'" . addcslashes(trim($group[3]), "\\'") . "'";
                $cmpTo = ($group[2] === 'c' || $group[2] === 'r' || $group[2] === 'e')
@@ -531,20 +520,6 @@ Cache;
          return $result;
       }
 
-   }
-
-}
-
-namespace fim {
-
-   /**
-    * This helper function only requires a given file. It is only needed due to
-    * a bug in PHP.
-    * @param string $file
-    * @return mixed
-    */
-   function requireClosure($file) {
-      return require $file;
    }
 
 }

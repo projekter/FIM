@@ -108,7 +108,9 @@ namespace fim {
          $closureFile = "{$cacheFile}_functions.php";
          $cacheFile .= '.php';
          $cacheNamespace = "cache\\autoboxing\\_$hash";
-         if(in_array($cacheFile, get_included_files(), true))
+         if(in_array(DIRECTORY_SEPARATOR === '/' ? $cacheFile : str_replace('/',
+                     DIRECTORY_SEPARATOR, $cacheFile), get_included_files(),
+               true))
             return $cacheNamespace;
          $currentTimestamp = filemtime($absClassFile);
          $cacheTimestamp = @filemtime($cacheFile);
@@ -123,7 +125,7 @@ namespace fim {
                   'cache', 'writeError', 'timestamp'], [$classFile]));
             @unlink($closureFile);
          }
-         require_once $cacheFile;
+         require $cacheFile;
          return $cacheNamespace;
       }
 
@@ -238,12 +240,20 @@ abstract class {$class->getShortName()} {
 
    public static function __callStatic(\$name, \$arguments) {";
             $parentClass = $class->getParentClass();
-            if($parentClass === false || dirname($parentClass->getFileName()) === __DIR__)
+            if($parentClass === false || (dirname($fn = $parentClass->getFileName()) === __DIR__ && $rules = basename($fn) !== 'rules.php'))
                $cacheContent .= "
       # Sadly, we cannot trigger a fatal error, which would be the exact equivalent to this situation
       throw new \BadMethodCallException('Call to undefined method ' . \\fim\\Autoboxing::\$currentlyCalling . \"::\$name\");
    }";
-            else
+            elseif(isset($rules)) {
+               $cacheContent .= "
+      if(\$name !== 'checkExistence' && \$name !== 'checkReading' && \$name !== 'checkListing')
+         # Sadly, we cannot trigger a fatal error, which would be the exact equivalent to this situation
+         throw new \BadMethodCallException('Call to undefined method ' . \\fim\\Autoboxing::\$currentlyCalling . \"::\$name\");
+      else
+         return null;
+   }";
+            }else
                $cacheContent .= "
       return \\fim\\Autoboxing::callMethod(\$arguments[1], \$name, \$arguments[0], '\\{$parentClass->name}');
    }";
@@ -298,8 +308,8 @@ abstract class {$class->getShortName()} {
          $checks = '';
          foreach($m->getParameters() as $parameter) {
             $name = $parameter->name;
+            $lower = strtolower($name);
             if(isset($values[$name]) && $values[$name] !== '') {
-               $lower = strtolower($name);
                $values[$name] = strtolower($values[$name]);
                if(substr($values[$name], 0, 6) === 'param|') {
                   $values[$name] = substr($values[$name], 6);
@@ -378,7 +388,7 @@ abstract class {$class->getShortName()} {
                         $value = $values[$name];
                }
             }else
-               $value = "(isset(\$arguments['$name']) || array_key_exists('$name', \$arguments)) ? \$arguments['$name'] : \\Request::get('$name')";
+               $value = "(isset(\$arguments['$lower']) || array_key_exists('$lower', \$arguments)) ? \$arguments['$lower'] : \\Request::get('$name')";
             $parseTypeHint = true;
             if(isset($types[$name])) {
                $type = strtolower($types[$name]);
