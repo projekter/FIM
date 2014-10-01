@@ -404,26 +404,26 @@ abstract class Request {
    }
 
    /**
-    * Saves the current uri so that it can be restored in further processing.
+    * Saves the current url so that it can be restored in further processing.
     * As this will be saved for new requests until it is restored, this function
-    * can e.g. be used to redirect to an unaccessible page after login.
+    * can e.g. be used to redirect to an inaccessible page after login.
     */
-   public static final function saveURI() {
-      Session::set('__OLD_URI', self::getFullURL());
+   public static final function saveURL() {
+      Session::set('__OLD_URL', self::getFullURL());
    }
 
    /**
-    * Performs a redirect to the uri that was saved with ::saveURI(). Execution
+    * Performs a redirect to the url that was saved with ::saveURL(). Execution
     * will not be halted!
-    * @return boolean false if there was no available uri
+    * @return boolean false if there was no available url
     */
-   public static final function restoreURI() {
-      $uri = Session::get('__OLD_URI');
-      if($uri === null)
+   public static final function restoreURL() {
+      $url = Session::get('__OLD_URL');
+      if($url === null)
          return false;
       else{
-         Session::delete('__OLD_URI');
-         Response::set('Location', $uri);
+         Session::delete('__OLD_URL');
+         Response::set('Location', $url);
          return true;
       }
    }

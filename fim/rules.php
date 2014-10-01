@@ -494,9 +494,16 @@ Cache;
                      $line = rtrim($content[$i]);
                      if($line === '')
                         continue;
-                     elseif(!preg_match('/^\s++(-?+\d++|true|false)\s*+=\s*+(.++)$/i',
-                           $line, $group)) {
+                     elseif(preg_match('/^\s++(-?+\d++|true|false)\s*+(?:=\s*+(.++))?$/i',
+                           $line, $group) !== 1) {
                         --$i;
+                        break;
+                     }elseif(!isset($group[2])) {
+                        $result .= "
+      $indent" . ($elseif ? 'else
+         ' : 'if($match)
+         ') . "return {$group[1]};";
+                        $isMatch = false;
                         break;
                      }else{
                         $result .= "
