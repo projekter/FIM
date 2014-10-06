@@ -1,206 +1,206 @@
-root {
-   autoboxing {
-      cache {
-         readError { "Reading the cache file \"{0}\" failed." }
-         writeError {
-            content { "Writing the cache file \"{0}\" failed." }
-            directory { "Creating the cache directory \"cache/autoboxing/\" failed." }
-            timestamp { "Writing the timestamp of the cache file \"{0}\" failed." }
+root:table {
+   autoboxing:table {
+      cache:table {
+         readError:string { "Reading the cache file \"{0}\" failed." }
+         writeError:table {
+            content:string { "Writing the cache file \"{0}\" failed." }
+            directory:string { "Creating the cache directory \"cache/autoboxing/\" failed." }
+            timestamp:string { "Writing the timestamp of the cache file \"{0}\" failed." }
          }
       }
-      failed { "Autoboxing {0}->{1}(${2})" }
-      internalFunction { "The function \"{0}\" cannot be accessed with autoboxing as it is an internal function." }
-      invalidTypehint { "The function \"{0}\" in the file \"{1}\" was accessed via autoboxing. The parameter \"{2}\" must not use the type hint \"callable\" and must not be passed by reference." }
-      reflectionException { "Processing the autoboxing type \"{0}\" of the function \"{1}\" in the file \"{2}\" failed." }
+      failed:string { "Autoboxing {0}->{1}(${2})" }
+      internalFunction:string { "The function \"{0}\" cannot be accessed with autoboxing as it is an internal function." }
+      invalidTypehint:string { "The function \"{0}\" in the file \"{1}\" was accessed via autoboxing. The parameter \"{2}\" must not use the type hint \"callable\" and must not be passed by reference." }
+      reflectionException:string { "Processing the autoboxing type \"{0}\" of the function \"{1}\" in the file \"{2}\" failed." }
    }
-   config {
-      doubleInitialization { "\\Config::initialize() was already called." }
-      set {
-         readonly { "Error while setting a configuration entry: The property \"{0}\" can only be set in the initialization function." }
-         unknown { "Error while setting a configuration entry: The property \"{0}\" did not exist." }
+   config:table {
+      doubleInitialization:string { "\\Config::initialize() was already called." }
+      set:table {
+         readonly:string { "Error while setting a configuration entry: The property \"{0}\" can only be set in the initialization function." }
+         unknown:string { "Error while setting a configuration entry: The property \"{0}\" did not exist." }
       }
-      validation {
-         doublePlugins { "Error in the configuration: The Plugin \"{0}\" was registered more than once." }
-         invalidType { "Error in the configuration: {0} has to be of type {1}." }
-         invalidValue { "Error in the configuration: {0} has to be one of {1}." }
-         notFound { "Error in the configuration: The following setting does not exist: {0}" }
-         subdomain {
-            baseErrorNotFound { "Error in the configuration: The file specified by subdomainBaseError was not found." }
-            baseErrorRequiresBase { "Error in the configuration: If subdomainBaseError is specified, subdomainBase is required as well." }
-            baseMismatchesURL { "Error in the configuration: The given subdomainBase did not match the URL." }
-            depthRequiresBase { "Error in the configuration: If subdomainDepth != 0, subdomainBase is required." }
-            documentRoot { "Error in the configuration: If subdomainDepth != 0, the content has to be located directly in the document root." }
+      validation:table {
+         doublePlugins:string { "Error in the configuration: The Plugin \"{0}\" was registered more than once." }
+         invalidType:string { "Error in the configuration: {0} has to be of type {1}." }
+         invalidValue:string { "Error in the configuration: {0} has to be one of {1}." }
+         notFound:string { "Error in the configuration: The following setting does not exist: {0}" }
+         subdomain:table {
+            baseErrorNotFound:string { "Error in the configuration: The file specified by subdomainBaseError was not found." }
+            baseErrorRequiresBase:string { "Error in the configuration: If subdomainBaseError is specified, subdomainBase is required as well." }
+            baseMismatchesURL:string { "Error in the configuration: The given subdomainBase did not match the URL." }
+            depthRequiresBase:string { "Error in the configuration: If subdomainDepth != 0, subdomainBase is required." }
+            documentRoot:string { "Error in the configuration: If subdomainDepth != 0, the content has to be located directly in the document root." }
          }
       }
    }
-   database {
-      cache {
-         semanticError {
-            doubleKey { "There was a semantic error in the connection file \"{0}\": The key \"{1}\" appeared more than once." }
-            invalidValue { "There was a semantic error in the connection file \"{0}\". The key \"{1}\" only allows these values: {2}. Line content: {3}" }
-            invalidKey { "There was a semantic error in the connection file \"{0}\". The key \"{1}\" does not exist." }
+   database:table {
+      cache:table {
+         semanticError:table {
+            doubleKey:string { "There was a semantic error in the connection file \"{0}\": The key \"{1}\" appeared more than once." }
+            invalidValue:string { "There was a semantic error in the connection file \"{0}\". The key \"{1}\" only allows these values: {2}. Line content: {3}" }
+            invalidKey:string { "There was a semantic error in the connection file \"{0}\". The key \"{1}\" does not exist." }
          }
-         syntaxError {
-            hard { "There was a syntax error in the connection file \"{0}\", which lead to an invalid cache file. For debugging purposes, the cache file \"{1}\" might be examined." }
-            general { "There was a syntax error in the connection file \"{0}\". Line content: {1}" }
+         syntaxError:table {
+            hard:string { "There was a syntax error in the connection file \"{0}\", which lead to an invalid cache file. For debugging purposes, the cache file \"{1}\" might be examined." }
+            general:string { "There was a syntax error in the connection file \"{0}\". Line content: {1}" }
          }
-         unlinkError {
-            cache { "Deleting the cache file \"{0}\" failed." }
-            rules { "Deleting the connection file \"{0}\" failed." }
+         unlinkError:table {
+            cache:string { "Deleting the cache file \"{0}\" failed." }
+            rules:string { "Deleting the connection file \"{0}\" failed." }
          }
-         writeError {
-            content { "Writing the cache file \"{0}\" failed." }
-            directory { "Creating the cache directory \"cache/connections/\" failed." }
-            timestamp { "Writing the timestamp of the cache file \"{0}\" failed." }
-         }
-      }
-      invalidFilenameScope { "An attempt was made to load the database file \"{0}\" which lies beyond the {1}/ directory." }
-      unestablishedConnection { "Database functions were accessed without having specified the required connection information in a connection file." }
-   }
-   databaseConnection {
-      bindError {
-         object { "Binding an object to a database statement failed." }
-         unknown { "Binding a variable to a database statement failed: unknown variable type." }
-      }
-      connectionFailed { "The database connection could not be established as given in the connection file \"{0}\". The following error was returned: {1}" }
-      data {
-         invalid { "There were invalid connection information. The DSN string in the connection file \"{0}\" was invalid." }
-         missing { "There were invalid connection information. The database driver {0} requires the field \"{1}\". The involved connection file was {2}." }
-         wrong {
-            driver { "There were invalid connection information. The database driver \"{0}\" does not exist. The involved connection file was {1}." }
-            firebird { "There were invalid connection information. The database driver Firebird requires a host if a port is given. The involved connection file was {0}." }
-            odbc { "There were invalid connection information. The database driver ODBC requires entering the whole DSN manually. The involved connection file was {0}." }
-            oracle { "There were invalid connection information. The database driver Oracle requires a host if a port is given. The involved connection file was {0}." }
+         writeError:table {
+            content:string { "Writing the cache file \"{0}\" failed." }
+            directory:string { "Creating the cache directory \"cache/connections/\" failed." }
+            timestamp:string { "Writing the timestamp of the cache file \"{0}\" failed." }
          }
       }
-      sql {
-         selectError { "The database routine select() could not get a result." }
-         updateError { "The database routine update() was called with erroneous parameters." }
+      invalidFilenameScope:string { "An attempt was made to load the database file \"{0}\" which lies beyond the {1}/ directory." }
+      unestablishedConnection:string { "Database functions were accessed without having specified the required connection information in a connection file." }
+   }
+   databaseConnection:table {
+      bindError:table {
+         object:string { "Binding an object to a database statement failed." }
+         unknown:string { "Binding a variable to a database statement failed: unknown variable type." }
+      }
+      connectionFailed:string { "The database connection could not be established as given in the connection file \"{0}\". The following error was returned: {1}" }
+      data:table {
+         invalid:string { "There were invalid connection information. The DSN string in the connection file \"{0}\" was invalid." }
+         missing:string { "There were invalid connection information. The database driver {0} requires the field \"{1}\". The involved connection file was {2}." }
+         wrong:table {
+            driver:string { "There were invalid connection information. The database driver \"{0}\" does not exist. The involved connection file was {1}." }
+            firebird:string { "There were invalid connection information. The database driver Firebird requires a host if a port is given. The involved connection file was {0}." }
+            odbc:string { "There were invalid connection information. The database driver ODBC requires entering the whole DSN manually. The involved connection file was {0}." }
+            oracle:string { "There were invalid connection information. The database driver Oracle requires a host if a port is given. The involved connection file was {0}." }
+         }
+      }
+      sql:table {
+         selectError:string { "The database routine select() could not get a result." }
+         updateError:string { "The database routine update() was called with erroneous parameters." }
       }
    }
-   executor {
-      directoryListing {
-         atime { "Access time" }
-         creationTime { "Creation time" }
-         ctime { "Inode change time" }
-         directories { "Directories" }
-         empty { "The directory is empty." }
-         filename { "Name" }
-         files { "Files" }
-         mtime { "Modification time" }
-         size { "Size" }
-         title { "Directory content" }
+   executor:table {
+      directoryListing:table {
+         atime:string { "Access time" }
+         creationTime:string { "Creation time" }
+         ctime:string { "Inode change time" }
+         directories:string { "Directories" }
+         empty:string { "The directory is empty." }
+         filename:string { "Name" }
+         files:string { "Files" }
+         mtime:string { "Modification time" }
+         size:string { "Size" }
+         title:string { "Directory content" }
       }
-      error {
-         log { "The error {0,number} was triggered while invoking the URI {1}{2, select, none {.} other { with additional information:\n{2}\n====}}{3, select, none {} other {\nThe following stacktrace is given:\n{3}}}" }
-         production { "The error {0,number} occurred while processing the request." }
+      error:table {
+         log:string { "The error {0,number} was triggered while invoking the URI {1}{2, select, none {.} other { with additional information:\n{2}\n====}}{3, select, none {} other {\nThe following stacktrace is given:\n{3}}}" }
+         production:string { "The error {0,number} occurred while processing the request." }
       }
    }
-   fileUtils {
-      corruptHelper { "The FIM helper application FileHelper for gathering file information is not compatible with this version of FIM or is not available." }
-      directoryIterator { "fimDirectoryIterator is used but might return wrong results. The extension COM is required or the function 'exec' has to be available." }
-      size { "The fileUtils::fileSize routine is used but might return wrong results. One of the extensions cURL or COM (Windows) is required or the function 'exec' has to be available." }
+   fileUtils:table {
+      corruptHelper:string { "The FIM helper application FileHelper for gathering file information is not compatible with this version of FIM or is not available." }
+      directoryIterator:string { "fimDirectoryIterator is used but might return wrong results. The extension COM is required or the function 'exec' has to be available." }
+      size:string { "The fileUtils::fileSize routine is used but might return wrong results. One of the extensions cURL or COM (Windows) is required or the function 'exec' has to be available." }
    }
-   i18n {
-      doubleInitialization { "\\I18N::initialize() was already called." }
-      format {
-         invalidDateFormat { "The format that was given to format a date was invalid." }
-         invalidTimeFormat { "The format that was given to format a time was invalid." }
+   i18n:table {
+      doubleInitialization:string { "\\I18N::initialize() was already called." }
+      format:table {
+         invalidDateFormat:string { "The format that was given to format a date was invalid." }
+         invalidTimeFormat:string { "The format that was given to format a time was invalid." }
       }
-      get {
-         internalNotFound { "The internal language key \"{0}\" was not found." }
-         noLanguage { "No language files were found, but an attempt was made to get the language key \"{0}\"." }
-         notFound { "The language key \"{0}\" was not found." }
+      get:table {
+         internalNotFound:string { "The internal language key \"{0}\" was not found." }
+         noLanguage:string { "No language files were found, but an attempt was made to get the language key \"{0}\"." }
+         notFound:string { "The language key \"{0}\" was not found." }
       }
-      translatePathNotFound { "No translation of the path \"{0}\" could be found." }
+      translatePathNotFound:string { "No translation of the path \"{0}\" could be found." }
    }
-   log {
-      exception { "An unhandled exception of type {0} was thrown. Details:\n{1}" }
-      initFailed { "The logs/ directory could not be created. Please assure that a subdirectory of the framework named 'logs' exists. The recommended chmod value is 0700." }
-      mail {
-         custom { "Hint: This is an auto-generated message.\nAn error message was raised manually. The following message was returned:\n====\n{0}\n====\nYou can review this error in the file \"customError.log\" within the \"logs\" directory as well.\nThe content of the _SERVER variable was as follows:\n====\n{1}\n====The following stack is given:\n====\n{2}" }
-         error { "Hint: This is an auto-generated message.\nAn uncritical error occurred within FIM due to configuration issues. The following message was returned:\n====\n{0}\n====\nYou can review this error in the file \"error.log\" within the \"logs\" directory as well.\nThe content of the _SERVER variable was as follows:\n====\n{1}\n====The following stack is given:\n====\n{2}" }
-         failed { "Internal error within FIM: Automatic error notification via mail failed. Error message: {0}" }
-         internal { "Hint: This is an auto-generated message.\nAn internal error occurred within FIM. Please file a bug if necessary. The following message was returned:\n====\n{0}\n====\nYou can review this error in the file \"internalError.log\" within the \"logs\" directory as well.\nThe content of the _SERVER variable was as follows:\n====\n{1}\n====The following stack is given:\n====\n{2}" }
-         subject { "Error on {0}" }
+   log:table {
+      exception:string { "An unhandled exception of type {0} was thrown. Details:\n{1}" }
+      initFailed:string { "The logs/ directory could not be created. Please assure that a subdirectory of the framework named 'logs' exists. The recommended chmod value is 0700." }
+      mail:table {
+         custom:string { "Hint: This is an auto-generated message.\nAn error message was raised manually. The following message was returned:\n====\n{0}\n====\nYou can review this error in the file \"customError.log\" within the \"logs\" directory as well.\nThe content of the _SERVER variable was as follows:\n====\n{1}\n====The following stack is given:\n====\n{2}" }
+         error:string { "Hint: This is an auto-generated message.\nAn uncritical error occurred within FIM due to configuration issues. The following message was returned:\n====\n{0}\n====\nYou can review this error in the file \"error.log\" within the \"logs\" directory as well.\nThe content of the _SERVER variable was as follows:\n====\n{1}\n====The following stack is given:\n====\n{2}" }
+         failed:string { "Internal error within FIM: Automatic error notification via mail failed. Error message: {0}" }
+         internal:string { "Hint: This is an auto-generated message.\nAn internal error occurred within FIM. Please file a bug if necessary. The following message was returned:\n====\n{0}\n====\nYou can review this error in the file \"internalError.log\" within the \"logs\" directory as well.\nThe content of the _SERVER variable was as follows:\n====\n{1}\n====The following stack is given:\n====\n{2}" }
+         subject:string { "Error on {0}" }
       }
-      message { "An error occurred and execution was halted. Please notify an administrator about error #{0}." }
+      message:string { "An error occurred and execution was halted. Please notify an administrator about error #{0}." }
    }
-   memcachedStandalone {
-      invalidProtocol { "The Memcached server runs an unsupported protocol version." }
-      saslUnsupported { "The FIM memcached standalone wrapper cannot emulate SASL authentification. The MemcacheD extension is required for this purpose." }
+   memcachedStandalone:table {
+      invalidProtocol:string { "The Memcached server runs an unsupported protocol version." }
+      saslUnsupported:string { "The FIM memcached standalone wrapper cannot emulate SASL authentification. The MemcacheD extension is required for this purpose." }
    }
-   memcachedWrapper {
-      saslUnsupported { "The FIM memcached wrapper cannot emulate SASL authentification. The MemcacheD extension is required for this purpose." }
+   memcachedWrapper:table {
+      saslUnsupported:string { "The FIM memcached wrapper cannot emulate SASL authentification. The MemcacheD extension is required for this purpose." }
    }
-   module {
-      redirectInvalid { "A redirect to the address \"{0}\" was triggered, but no URL could be mapped to this address." }
-      templateException { "A template error occurred while processing the file \"{0}\"." }
+   module:table {
+      redirectInvalid:string { "A redirect to the address \"{0}\" was triggered, but no URL could be mapped to this address." }
+      templateException:string { "A template error occurred while processing the file \"{0}\"." }
    }
-   primaryTable {
-      callUnknown { "The table \"{0}\" does not contain a method named \"{1}\"." }
-      create {
-         failed { "Inserting a PrimaryTable object into the database failed." }
-         parameters { "The constructor of a PrimaryTable object was called with an invalid count of parameters." }
-         virtualNoAI { "An attempt was made to create a virtual PrimaryTable object without AutoIncrement value." }
+   primaryTable:table {
+      callUnknown:string { "The table \"{0}\" does not contain a method named \"{1}\"." }
+      create:table {
+         failed:string { "Inserting a PrimaryTable object into the database failed." }
+         parameters:string { "The constructor of a PrimaryTable object was called with an invalid count of parameters." }
+         virtualNoAI:string { "An attempt was made to create a virtual PrimaryTable object without AutoIncrement value." }
       }
-      dataHelperUnbound { "An attempt was made to access a DataHelper object which was not bound to a table entry (any more)." }
-      definitionInvalid { "An invalid specification of the field \"{0}\" was given in the table class \"{1}\"." }
-      field {
-         invalid { "An invalid value was assigned to the field \"{0}\" of the table \"{1}\"." }
-         readOnly { "The key field \"{0}\" of the table \"{1}\" is read-only." }
+      dataHelperUnbound:string { "An attempt was made to access a DataHelper object which was not bound to a table entry (any more)." }
+      definitionInvalid:string { "An invalid specification of the field \"{0}\" was given in the table class \"{1}\"." }
+      field:table {
+         invalid:string { "An invalid value was assigned to the field \"{0}\" of the table \"{1}\"." }
+         readOnly:string { "The key field \"{0}\" of the table \"{1}\" is read-only." }
       }
-      translateFailed { "An invalid statement was passed to the function PrimaryTable::translateStatement." }
-      unserialize { "An attempt was made to deserialize an invalid PrimaryTable object." }
+      translateFailed:string { "An invalid statement was passed to the function PrimaryTable::translateStatement." }
+      unserialize:string { "An attempt was made to deserialize an invalid PrimaryTable object." }
 
    }
-   response {
-      cliRedirect { "Please call the script once again with the URL \"{0}\"." }
-      negotiationLacksStar { "\\Response::contentNegotiation() was called without an alternative entry." }
-      unknownStatus { "Unknown HTTP status code: {0,number}". }
+   response:table {
+      cliRedirect:string { "Please call the script once again with the URL \"{0}\"." }
+      negotiationLacksStar:string { "\\Response::contentNegotiation() was called without an alternative entry." }
+      unknownStatus:string { "Unknown HTTP status code: {0,number}." }
    }
-   rules {
-      cache {
-         semanticError {
-            invalidRegex { "There was a semantic error in the rules file \"{0}\": A regular expression was invalid. Line content: {1}" }
-            recursion { "There was a semantic error in the rules file \"{0}\": The clone directive in the section \"{1}\" was used in a manner that leads to infinite recursion." }
+   rules:table {
+      cache:table {
+         semanticError:table {
+            invalidRegex:string { "There was a semantic error in the rules file \"{0}\": A regular expression was invalid. Line content: {1}" }
+            recursion:string { "There was a semantic error in the rules file \"{0}\": The clone directive in the section \"{1}\" was used in a manner that leads to infinite recursion." }
          }
-         syntaxError {
-            hard { "There was a syntax error in the rules file \"{0}\", which lead to an invalid cache file. For debugging purposes, the cache file \"{1}\" might be examined." }
-            general { "There was a syntax error in the rules file \"{0}\". Line content: {1}" }
-            matchC { "There was a syntax error in the rules file \"{0}\": The match modifier does not allow the modes of comparison \"c\" and \"C\". Line content: {1}" }
+         syntaxError:table {
+            hard:string { "There was a syntax error in the rules file \"{0}\", which lead to an invalid cache file. For debugging purposes, the cache file \"{1}\" might be examined." }
+            general:string { "There was a syntax error in the rules file \"{0}\". Line content: {1}" }
+            matchC:string { "There was a syntax error in the rules file \"{0}\": The match modifier does not allow the modes of comparison \"c\" and \"C\". Line content: {1}" }
          }
-         unlinkError {
-            cache { "Deleting the cache file \"{0}\" failed." }
-            rules { "Deleting the rules file \"{0}\" failed." }
+         unlinkError:table {
+            cache:string { "Deleting the cache file \"{0}\" failed." }
+            rules:string { "Deleting the rules file \"{0}\" failed." }
          }
-         writeError {
-            content { "Writing the cache file \"{0}\" failed." }
-            directory { "Creating the cache directory \"cache/rules/\" failed." }
-            timestamp { "Writing the timestamp of the cache file \"{0}\" failed." }
+         writeError:table {
+            content:string { "Writing the cache file \"{0}\" failed." }
+            directory:string { "Creating the cache directory \"cache/rules/\" failed." }
+            timestamp:string { "Writing the timestamp of the cache file \"{0}\" failed." }
          }
       }
-      callNotFound { "The method {0} of a rules class was not found." }
-      invalidFilenameScope { "An attempt was made to find rules for the file \"{0}\", which lies beyond the {1}/ directory." }
+      callNotFound:string { "The method {0} of a rules class was not found." }
+      invalidFilenameScope:string { "An attempt was made to find rules for the file \"{0}\", which lies beyond the {1}/ directory." }
    }
-   serialization {
-      unserializeInvalid { "An attempt was made to deserialize an invalid string." }
+   serialization:table {
+      unserializeInvalid:string { "An attempt was made to deserialize an invalid string." }
    }
-   session {
-      cli { "Accessing session functions is not possible in command line mode." }
+   session:table {
+      cli:string { "Accessing session functions is not possible in command line mode." }
    }
-   smarty {
-      url { "The URL function was called with the address \"{0}\" by the template \"{1}\". However, this address is not available from the outside." }
-      urlRelative { "The URL function was called with the relative address \"{0}\" by the template \"{1}\". Therefore this template has to be of resource type \"fim\" or \"file\", but is \"{2}\" instead." }
+   smarty:table {
+      url:string { "The URL function was called with the address \"{0}\" by the template \"{1}\". However, this address is not available from the outside." }
+      urlRelative:string { "The URL function was called with the relative address \"{0}\" by the template \"{1}\". Therefore this template has to be of resource type \"fim\" or \"file\", but is \"{2}\" instead." }
    }
-   table {
-      definitionInvalid { "The property $columns was not assigned to the table class \"{0}\"." }
-      deleted { "An attempt was made to access a deleted entry of the table \"{0}\"." }
-      field {
-         readOnly { "The field \"{0}\" of the table \"{1}\" is read-only." }
-         unknown { "The table \"{0}\" does not contain the field \"{1}\"." }
+   table:table {
+      definitionInvalid:string { "The property $columns was not assigned to the table class \"{0}\"." }
+      deleted:string { "An attempt was made to access a deleted entry of the table \"{0}\"." }
+      field:table {
+         readOnly:string { "The field \"{0}\" of the table \"{1}\" is read-only." }
+         unknown:string { "The table \"{0}\" does not contain the field \"{1}\"." }
       }
-      serialize { "An attempt was made to serialize a table object with help of the PHP method serialize(). It is required to use fimSerialize() instead." }
-      unserialize { "An attempt was made to deserialize a table object with help of the PHP method unserialize(). It is required to use fimUnserialize() instead." }
+      serialize:string { "An attempt was made to serialize a table object with help of the PHP method serialize(). It is required to use fimSerialize() instead." }
+      unserialize:string { "An attempt was made to deserialize a table object with help of the PHP method unserialize(). It is required to use fimUnserialize() instead." }
    }
 }

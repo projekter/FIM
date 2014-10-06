@@ -1,205 +1,205 @@
-de {
-   autoboxing {
-      cache {
-         readError { "Das Lesen der Cache-Datei \"{0}\" ist fehlgeschlagen." }
-         writeError {
-            content { "Das Schreiben der Cache-Datei \"{0}\" ist fehlgeschlagen." }
-            directory { "Das Erstellen des Cache-Verzeichnisses \"cache/autoboxing/\" ist fehlgeschlagen." }
-            timestamp { "Das Schreiben des Zeitstempels der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+de:table {
+   autoboxing:table {
+      cache:table {
+         readError:string { "Das Lesen der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+         writeError:table {
+            content:string { "Das Schreiben der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+            directory:string { "Das Erstellen des Cache-Verzeichnisses \"cache/autoboxing/\" ist fehlgeschlagen." }
+            timestamp:string { "Das Schreiben des Zeitstempels der Cache-Datei \"{0}\" ist fehlgeschlagen." }
          }
       }
-      failed { "Autoboxing {0}->{1}(${2})" }
-      internalFunction { "Auf die Funktion \"{0}\" kann nicht mit Autoboxing zugegriffen werden, da sie eine interne Funktion ist." }
-      invalidTypehint { "Auf die Funktion \"{0}\" der Datei \"{1}\" wurde durch Autoboxing zugegriffen. Der Parameter \"{2}\" darf den Typehint \"callable\" nicht verwenden und nicht per Referenz übergeben werden müssen." }
-      reflectionException { "Das Verarbeiten des Autoboxing-Types \"{0}\" der Funktion \"{1}\" in der Datei \"{2}\" ist fehlgeschlagen." }
+      failed:string { "Autoboxing {0}->{1}(${2})" }
+      internalFunction:string { "Auf die Funktion \"{0}\" kann nicht mit Autoboxing zugegriffen werden, da sie eine interne Funktion ist." }
+      invalidTypehint:string { "Auf die Funktion \"{0}\" der Datei \"{1}\" wurde durch Autoboxing zugegriffen. Der Parameter \"{2}\" darf den Typehint \"callable\" nicht verwenden und nicht per Referenz übergeben werden müssen." }
+      reflectionException:string { "Das Verarbeiten des Autoboxing-Types \"{0}\" der Funktion \"{1}\" in der Datei \"{2}\" ist fehlgeschlagen." }
    }
-   config {
-      doubleInitialization { "\\Config::initialize() wurde bereits aufgerufen." }
-      set {
-         readonly { "Fehler beim Setzen eines Konfigurationseintrags: Die Einstellung \"{0}\" kann nur in der Initialisierungsfunktion gesetzt werden." }
-         unknown { "Fehler beim Setzen eines Konfigurationseintrags: Die Einstellung \"{0}\" existiert nicht." }
+   config:table {
+      doubleInitialization:string { "\\Config::initialize() wurde bereits aufgerufen." }
+      set:table {
+         readonly:string { "Fehler beim Setzen eines Konfigurationseintrags: Die Einstellung \"{0}\" kann nur in der Initialisierungsfunktion gesetzt werden." }
+         unknown:string { "Fehler beim Setzen eines Konfigurationseintrags: Die Einstellung \"{0}\" existiert nicht." }
       }
-      validation {
-         doublePlugins { "Fehler in der Konfiguration: Das Plugin \"{0}\" wurde mehr als einmal registriert." }
-         invalidType { "Fehler in der Konfiguration: {0} muss vom Typ {1} sein." }
-         invalidValue { "Fehler in der Konfiguration: {0} muss einen der folgenden Werte annehmen: {1}." }
-         notFound { "Fehler in der Konfiguration: Die folgende Einstellung existiert nicht: {0}" }
-         subdomain {
-            baseErrorNotFound { "Fehler in der Konfiguration: Die unter subdomainBaseError angegebene Datei wurde nicht gefunden." }
-            baseErrorRequiresBase { "Fehler in der Konfiguration: Wenn subdomainBaseError angegeben ist, muss auch subdomainBase angegeben werden." }
-            baseMismatchesURL { "Fehler in der Konfiguration: Die angegebene subdomainBase passt nicht zur URL." }
-            depthRequiresBase { "Fehler in der Konfiguration: Wenn subdomainDepth != 0 ist, muss auch subdomainBase angegeben werden." }
-            documentRoot { "Fehler in der Konfiguration: Wenn subdomainDepth != 0 ist, muss der gesamte Inhalt direkt im DocumentRoot liegen." }
+      validation:table {
+         doublePlugins:string { "Fehler in der Konfiguration: Das Plugin \"{0}\" wurde mehr als einmal registriert." }
+         invalidType:string { "Fehler in der Konfiguration: {0} muss vom Typ {1} sein." }
+         invalidValue:string { "Fehler in der Konfiguration: {0} muss einen der folgenden Werte annehmen: {1}." }
+         notFound:string { "Fehler in der Konfiguration: Die folgende Einstellung existiert nicht: {0}" }
+         subdomain:table {
+            baseErrorNotFound:string { "Fehler in der Konfiguration: Die unter subdomainBaseError angegebene Datei wurde nicht gefunden." }
+            baseErrorRequiresBase:string { "Fehler in der Konfiguration: Wenn subdomainBaseError angegeben ist, muss auch subdomainBase angegeben werden." }
+            baseMismatchesURL:string { "Fehler in der Konfiguration: Die angegebene subdomainBase passt nicht zur URL." }
+            depthRequiresBase:string { "Fehler in der Konfiguration: Wenn subdomainDepth != 0 ist, muss auch subdomainBase angegeben werden." }
+            documentRoot:string { "Fehler in der Konfiguration: Wenn subdomainDepth != 0 ist, muss der gesamte Inhalt direkt im DocumentRoot liegen." }
          }
       }
    }
-   database {
-      cache {
-         semanticError {
-            doubleKey { "Es wurde ein semantischer Fehler in der Verbindungsdatei \"{0}\" gefunden: Der Schlüssel \"{1}\" kam mehr als einmal vor." }
-            invalidValue { "Es wurde ein semantischer Fehler in der Verbindungsdatei \"{0}\" gefunden. Für den Schlüssel \"{1}\" sind nur die folgenden Werte zulässig: {2}. Zeileninhalt: {3}" }
-            invalidKey { "Es wurde ein semantischer Fehler in der Verbindungsdatei \"{0}\" gefunden. Der Schlüssel \"{1}\" existiert nicht." }
+   database:table {
+      cache:table {
+         semanticError:table {
+            doubleKey:string { "Es wurde ein semantischer Fehler in der Verbindungsdatei \"{0}\" gefunden: Der Schlüssel \"{1}\" kam mehr als einmal vor." }
+            invalidValue:string { "Es wurde ein semantischer Fehler in der Verbindungsdatei \"{0}\" gefunden. Für den Schlüssel \"{1}\" sind nur die folgenden Werte zulässig: {2}. Zeileninhalt: {3}" }
+            invalidKey:string { "Es wurde ein semantischer Fehler in der Verbindungsdatei \"{0}\" gefunden. Der Schlüssel \"{1}\" existiert nicht." }
          }
-         syntaxError {
-            hard { "Es wurde ein Syntaxfehler in der Verbindungsdatei \"{0}\" gefunden, so dass eine ungültige Cache-Datei erzeugt wurde. Zu Debugzwecken kann die Cache-Datei \"{1}\" untersucht werden." }
-            general { "Es wurde ein Syntaxfehler in der Verbindungsdatei \"{0}\" gefunden. Zeileninhalt: {1}" }
+         syntaxError:table {
+            hard:string { "Es wurde ein Syntaxfehler in der Verbindungsdatei \"{0}\" gefunden, so dass eine ungültige Cache-Datei erzeugt wurde. Zu Debugzwecken kann die Cache-Datei \"{1}\" untersucht werden." }
+            general:string { "Es wurde ein Syntaxfehler in der Verbindungsdatei \"{0}\" gefunden. Zeileninhalt: {1}" }
          }
-         unlinkError {
-            cache { "Das Löschen der Cache-Datei \"{0}\" ist fehlgeschlagen." }
-            rules { "Das Löschen der Verbindungsdatei \"{0}\" ist fehlgeschlagen." }
+         unlinkError:table {
+            cache:string { "Das Löschen der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+            rules:string { "Das Löschen der Verbindungsdatei \"{0}\" ist fehlgeschlagen." }
          }
-         writeError {
-            content { "Das Schreiben der Cache-Datei \"{0}\" ist fehlgeschlagen." }
-            directory { "Das Erstellen des Cache-Verzeichnisses \"cache/connections/\" ist fehlgeschlagen." }
-            timestamp { "Das Schreiben des Zeitstempels der Cache-Datei \"{0}\" ist fehlgeschlagen." }
-         }
-      }
-      invalidFilenameScope { "Es wurde versucht, die Datenbankdatei \"{0}\" zu laden, welche außerhalb des {1}/-Verzeichnisses liegt." }
-      unestablishedConnection { "Es wurde Zugriff auf Datenbankfunktionen genommen, ohne dass die nötigen Verbindungsinformationen in Form einer Verbindungsdatei zur Verfügung gestellt wurden." }
-   }
-   databaseConnection {
-      bindError {
-         object { "Das Binden eines Objekts an ein Datenbankstatement ist fehlgeschlagen." }
-         unknown { "Das Binden einer Variable an ein Datenbankstatement ist fehlgeschlagen: unbekannter Variablentyp." }
-      }
-      connectionFailed { "Es konnte keine Datenbankverbindung gemäß der Verbindungsdatei \"{0}\" aufgebaut werden. Folgender Fehler wurde zurückgegeben: {1}" }
-      data {
-         invalid { "Es wurden ungültige Verbindungsinformationen gefunden. Der DSN-String in der Verbindungsdatei \"{0}\" war ungültig." }
-         missing { "Es wurden ungültige Verbindungsinformationen gefunden. Der Datenbanktreiber {0} erfordert das Feld \"{1}\". Die betroffene Verbindungsdatei war {2}." }
-         wrong {
-            driver { "Es wurden ungültige Verbindungsinformationen gefunden. Der Datenbanktreiber \"{0}\" existiert nicht. Die betroffene Verbindungsdatei war {1}." }
-            firebird { "Es wurden ungültige Verbindungsinformationen gefunden. Der Datenbanktreiber Firebird erfordert, dass bei Angabe eines Ports auch der zugehörige Host spezifiziert wird. Die betroffene Verbindungsdatei war {0}." }
-            odbc { "Es wurden ungültige Verbindungsinformationen gefunden. Bei Verwendung des Datenbanktreibers ODBC muss der komplette DSN manuell angegeben werden. Die betroffene Verbindungsdatei war {0}." }
-            oracle { "Es wurden ungültige Verbindungsinformationen gefunden. Der Datenbanktreiber Oracle erfordert, dass bei Angabe eines Ports auch der zugehörige Host spezifiziert wird. Die betroffene Verbindungsdatei war {0}." }
+         writeError:table {
+            content:string { "Das Schreiben der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+            directory:string { "Das Erstellen des Cache-Verzeichnisses \"cache/connections/\" ist fehlgeschlagen." }
+            timestamp:string { "Das Schreiben des Zeitstempels der Cache-Datei \"{0}\" ist fehlgeschlagen." }
          }
       }
-      sql {
-         selectError { "Die Datenbankroutine select() konnte kein Ergebnis ermittlen." }
-         updateError { "Die Datenbankroutine update() wurde mit fehlerhaften Parametern aufgerufen." }
+      invalidFilenameScope:string { "Es wurde versucht, die Datenbankdatei \"{0}\" zu laden, welche außerhalb des {1}/-Verzeichnisses liegt." }
+      unestablishedConnection:string { "Es wurde Zugriff auf Datenbankfunktionen genommen, ohne dass die nötigen Verbindungsinformationen in Form einer Verbindungsdatei zur Verfügung gestellt wurden." }
+   }
+   databaseConnection:table {
+      bindError:table {
+         object:string { "Das Binden eines Objekts an ein Datenbankstatement ist fehlgeschlagen." }
+         unknown:string { "Das Binden einer Variable an ein Datenbankstatement ist fehlgeschlagen: unbekannter Variablentyp." }
       }
-   }
-   executor {
-      directoryListing {
-         atime { "Zugriffsdatum" }
-         creationTime { "Erstelldatum" }
-         ctime { "Inode Änderungsdatum" }
-         directories { "Verzeichnisse" }
-         empty { "Das Verzeichnis ist leer." }
-         filename { "Name" }
-         files { "Dateien" }
-         mtime { "Änderungsdatum" }
-         size { "Größe" }
-         title { "Verzeichnisinhalt" }
-      }
-      error {
-         log { "Es ist der Fehler {0,number} beim Aufruf der URI {1} {2, select, none {ausgelöst worden.} other {mit folgenden Zusatzangaben ausgelöst worden:\n{2}\n====}}{3, select, none {} other {\nFolgender Stacktrace liegt vor:\n{3}}}" }
-         production { "Beim Verarbeiten der Anforderung ist Fehler {0,number} aufgetreten." }
-      }
-   }
-   fileUtils {
-      corruptHelper { "Die FIM-Hilfsanwendung FileHelper zur Ermittlung von Informationen über Dateien ist inkompatibel mit dieser Version von FIM oder konnte nicht gefunden werden." }
-      directoryIterator { "Der fimDirectoryIterator wird verwendet, kann jedoch fehlerhafte Resultate liefern. Es ist die Funktionalität der Erweiterung COM erforderlich oder die Funktion 'exec' muss verfügbar sein." }
-      size { "Die fileUtils::fileSize-Routine wird verwendet, kann jedoch fehlerhafte Resultate liefern. Es ist die Funktionalität einer der Erweiterungen cURL oder COM (Windows) erforderlich oder die Funktion 'exec' muss verfügbar sein." }
-   }
-   i18n {
-      doubleInitialization { "\\I18N::initialize() wurde bereits aufgerufen." }
-      format {
-         invalidDateFormat { "Das Format, das zur Formatierung eines Datums übergeben wurde, war ungültig." }
-         invalidTimeFormat { "Das Format, das zur Formatierung einer Zeit übergeben wurde, war ungültig." }
-      }
-      get {
-         internalNotFound { "Der interne Sprachschlüssel \"{0}\" wurde nicht gefunden." }
-         noLanguage { "Es wurden keine Sprachdateien gefunden; dennoch wurde versucht, auf den Sprachschlüssel \"{0}\" zuzugreifen." }
-         notFound { "Der Sprachschlüssel \"{0}\" wurde nicht gefunden." }
-      }
-      translatePathNotFound { "Für den Pfad \"{0}\" wurde keine Entsprechung gefunden." }
-   }
-   log {
-      exception { "Es ist eine unbehandelte Exception vom Typ {0} aufgetreten. Details:\n{1}" }
-      initFailed { "Das logs/-Verzeichnis konnte nicht erstellt werden. Bitte stellen Sie sicher, dass es ein Unterverzeichnis zum Framework mit dem Namen 'logs' gibt. Der empfohlene chmod-Wert ist 0700." }
-      mail {
-         custom { "Hinweis: Dies ist eine automatisch generierte Meldung.\nIn FIM wurde manuell eine Fehlermeldung erzeugt. Die folgende Meldung wurde zurückgegeben:\n====\n{0}\n====\nSie können diesen Fehler auch im \"logs\"-Verzeichnis in der Datei \"customError.log\" nachlesen.\nNachfolgend wird der Inhalt der _SERVER-Variable dargestellt:\n====\n{1}\n====Es liegt folgender Stack vor:\n====\n{2}" }
-         error { "Hinweis: Dies ist eine automatisch generierte Meldung.\nIn FIM trat ein unkritischer Fehler auf, der durch Konfigurationsmängel hervorgerufen wurde. Die folgende Meldung wurde zurückgegeben:\n====\n{0}\n====\nSie können diesen Fehler auch im \"logs\"-Verzeichnis in der Datei \"error.log\" nachlesen.\nNachfolgend wird der Inhalt der _SERVER-Variable dargestellt:\n====\n{1}\n====Es liegt folgender Stack vor:\n====\n{2}" }
-         failed { "Interner Fehler in FIM: Es konnte keine automatische Fehlerbenachrichtigung per Mail gesendet werden. Fehlermeldung: {0}" }
-         internal { "Hinweis: Dies ist eine automatisch generierte Meldung.\nIn FIM trat ein interner Fehler auf. Bitte melden Sie dies ggf. als Bug. Die folgende Meldung wurde zurückgegeben:\n====\n{0}\n====\nSie können diesen Fehler auch im \"logs\"-Verzeichnis in der Datei \"internalError.log\" nachlesen.\nNachfolgend wird der Inhalt der _SERVER-Variable dargestellt:\n====\n{1}\n====Es liegt folgender Stack vor:\n====\n{2}" }
-         subject { "Fehlermeldung auf {0}" }
-      }
-      message { "Es ist ein Fehler aufgetreten und die Ausführung wurde beendet. Bitte informieren Sie einen Administrator über Fehler #{0}." }
-   }
-   memcachedStandalone {
-      invalidProtocol { "Der Memcached-Server arbeitet mit einer nicht unterstüzten Protokoll-Version." }
-      saslUnsupported { "Der FIM-Memcached-Standalone-Wrapper kann keine SASL-Authentifizierung emulieren. Hierfür die die MemcacheD-Erweiterung unerlässlich." }
-   }
-   memcachedWrapper {
-      saslUnsupported { "Der FIM-Memcached-Wrapper kann keine SASL-Authentifizierung emulieren. Hierfür die die MemcacheD-Erweiterung unerlässlich." }
-   }
-   module {
-      redirectInvalid { "Es wurde eine Weiterleitung auf die Adresse \"{0}\" ausgelöst, der jedoch keine URL zugeordnet werden konnte." }
-      templateException { "Es ist ein Templatefehler beim Verarbeiten der Datei \"{0}\" aufgetreten." }
-   }
-   primaryTable {
-      callUnknown { "Die Tabelle \"{0}\" besitzt keine Methode mit dem Namen \"{1}\"." }
-      create {
-         failed { "Das Einfügen eines PrimaryTable-Objekts in die Datenbank ist fehlgeschlagen." }
-         parameters { "Der Konstruktor eines PrimaryTable-Objekts wurde mit einer ungültigen Zahl von Parametern aufgerufen." }
-         virtualNoAI { "Es wurde versucht, ein virtuelles PrimaryTable-Objekt ohne AutoIncrement-Wert zu erstellen." }
-      }
-      dataHelperUnbound { "Es wurde versucht, auf ein DataHelper-Objekt zuzugreifen, das an keinen Tabelleneintrag (mehr) gebunden war." }
-      definitionInvalid { "Der Tabellenklasse \"{1}\" wurde eine fehlerhafte Definition des Feldes \"{0}\" übergeben." }
-      field {
-         invalid { "Dem Feld \"{0}\" der Tabelle \"{1}\" wurde ein ungültiger Wert zugewiesen." }
-         readOnly { "Das Schlüsselfeld \"{0}\" der Tabelle \"{1}\" gestattet keinen Schreibzugriff." }
-      }
-      translateFailed { "Der Funktion PrimaryTable::translateStatement wurde ein ungültiges Statement übergeben." }
-      unserialize { "Es wurde versucht, ein ungültiges PrimaryTable-Objekt zu deserialisieren." }
-   }
-   response {
-      cliRedirect { "Bitte rufen Sie das Skript erneut mit der URL \"{0}\" auf." }
-      negotiationLacksStar { "\\Response::contentNegotiation() wurde ohne Alternativ-Eintrag aufgerufen." }
-      unknownStatus { "Unbekannter HTTP-Statuscode: {0,number}". }
-   }
-   rules {
-      cache {
-         semanticError {
-            invalidRegex { "Es wurde ein semantischer Fehler in der Regeldatei \"{0}\" gefunden: Ein regulärer Ausdruck war ungültig. Zeileninhalt: {1}" }
-            recursion { "Es wurde ein semantischer Fehler in der Regeldatei \"{0}\" gefunden: Die clone-Direktive wurde in der Sektion \"{1}\" so verwendet, dass sie zu einer endlosen Rekursion führt." }
-         }
-         syntaxError {
-            hard { "Es wurde ein Syntaxfehler in der Regeldatei \"{0}\" gefunden, so dass eine ungültige Cache-Datei erzeugt wurde. Zu Debugzwecken kann die Cache-Datei \"{1}\" untersucht werden." }
-            general { "Es wurde ein Syntaxfehler in der Regeldatei \"{0}\" gefunden. Zeileninhalt: {1}" }
-            matchC { "Es wurde ein Syntaxfehler in der Regeldatei \"{0}\" gefunden: Der match-Modifizierer erlaubt die Vergleichsmodi \"c\" und \"C\" nicht. Zeileninhalt: {1}" }
-         }
-         unlinkError {
-            cache { "Das Löschen der Cache-Datei \"{0}\" ist fehlgeschlagen." }
-            rules { "Das Löschen der Regeldatei \"{0}\" ist fehlgeschlagen." }
-         }
-         writeError {
-            content { "Das Schreiben der Cache-Datei \"{0}\" ist fehlgeschlagen." }
-            directory { "Das Erstellen des Cache-Verzeichnisses \"cache/rules/\" ist fehlgeschlagen." }
-            timestamp { "Das Schreiben des Zeitstempels der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+      connectionFailed:string { "Es konnte keine Datenbankverbindung gemäß der Verbindungsdatei \"{0}\" aufgebaut werden. Folgender Fehler wurde zurückgegeben: {1}" }
+      data:table {
+         invalid:string { "Es wurden ungültige Verbindungsinformationen gefunden. Der DSN-String in der Verbindungsdatei \"{0}\" war ungültig." }
+         missing:string { "Es wurden ungültige Verbindungsinformationen gefunden. Der Datenbanktreiber {0} erfordert das Feld \"{1}\". Die betroffene Verbindungsdatei war {2}." }
+         wrong:table {
+            driver:string { "Es wurden ungültige Verbindungsinformationen gefunden. Der Datenbanktreiber \"{0}\" existiert nicht. Die betroffene Verbindungsdatei war {1}." }
+            firebird:string { "Es wurden ungültige Verbindungsinformationen gefunden. Der Datenbanktreiber Firebird erfordert, dass bei Angabe eines Ports auch der zugehörige Host spezifiziert wird. Die betroffene Verbindungsdatei war {0}." }
+            odbc:string { "Es wurden ungültige Verbindungsinformationen gefunden. Bei Verwendung des Datenbanktreibers ODBC muss der komplette DSN manuell angegeben werden. Die betroffene Verbindungsdatei war {0}." }
+            oracle:string { "Es wurden ungültige Verbindungsinformationen gefunden. Der Datenbanktreiber Oracle erfordert, dass bei Angabe eines Ports auch der zugehörige Host spezifiziert wird. Die betroffene Verbindungsdatei war {0}." }
          }
       }
-      callNotFound { "Die Methode {0} einer Regelklasse wurde nicht gefunden." }
-      invalidFilenameScope { "Es wurde versucht, Regeln für die Datei \"{0}\" zu finden, welche außerhalb des {1}/-Verzeichnisses liegt." }
-   }
-   serialization {
-      unserializeInvalid { "Es wurde versucht, einen ungültigen String zu deserialisieren." }
-   }
-   session {
-      cli { "Der Zugriff auf die Session-Funktionen ist im Kommandozeilenmodus nicht möglich." }
-   }
-   smarty {
-      url { "Im Template \"{1}\" wurde die URL-Funktion mit der Adresse \"{0}\" aufgerufen, die jedoch nicht von außen erreichbar ist." }
-      urlRelative { "Im Template \"{1}\" wurde die URL-Funktion mit der relativen Adresse \"{0}\" aufgerufen. Demzufolge muss das Template vom Ressourcentyp \"fim\" oder \"file\" sein, nicht jedoch \"{2}\"." }
-   }
-   table {
-      definitionInvalid { "Der Tabellenklasse \"{0}\" wurde die Eigenschaft $columns nicht zugewiesen." }
-      deleted { "Es wurde versucht, auf einen bereits gelöschten Eintrag der Tabelle \"{0}\" zuzugreifen." }
-      field {
-         readOnly { "Das Feld \"{0}\" der Tabelle \"{1}\" gestattet keinen Schreibzugriff." }
-         unknown { "Die Tabelle \"{0}\" besitzt kein Feld \"{1}\"." }
+      sql:table {
+         selectError:string { "Die Datenbankroutine select() konnte kein Ergebnis ermittlen." }
+         updateError:string { "Die Datenbankroutine update() wurde mit fehlerhaften Parametern aufgerufen." }
       }
-      serialize { "Es wurde versucht, ein Tabellenobjekt mit der PHP-Methode serialize() zu serialisieren. Hierfür muss fimSerialize() verwendet werden." }
-      unserialize { "Es wurde versucht, ein Tabellenobjekt mit der PHP-Methode unserialize() zu deserialisieren. Hierfür muss fimUnserialize() verwendet werden." }
+   }
+   executor:table {
+      directoryListing:table {
+         atime:string { "Zugriffsdatum" }
+         creationTime:string { "Erstelldatum" }
+         ctime:string { "Inode Änderungsdatum" }
+         directories:string { "Verzeichnisse" }
+         empty:string { "Das Verzeichnis ist leer." }
+         filename:string { "Name" }
+         files:string { "Dateien" }
+         mtime:string { "Änderungsdatum" }
+         size:string { "Größe" }
+         title:string { "Verzeichnisinhalt" }
+      }
+      error:table {
+         log:string { "Es ist der Fehler {0,number} beim Aufruf der URI {1} {2, select, none {ausgelöst worden.} other {mit folgenden Zusatzangaben ausgelöst worden:\n{2}\n====}}{3, select, none {} other {\nFolgender Stacktrace liegt vor:\n{3}}}" }
+         production:string { "Beim Verarbeiten der Anforderung ist Fehler {0,number} aufgetreten." }
+      }
+   }
+   fileUtils:table {
+      corruptHelper:string { "Die FIM-Hilfsanwendung FileHelper zur Ermittlung von Informationen über Dateien ist inkompatibel mit dieser Version von FIM oder konnte nicht gefunden werden." }
+      directoryIterator:string { "Der fimDirectoryIterator wird verwendet, kann jedoch fehlerhafte Resultate liefern. Es ist die Funktionalität der Erweiterung COM erforderlich oder die Funktion 'exec' muss verfügbar sein." }
+      size:string { "Die fileUtils::fileSize-Routine wird verwendet, kann jedoch fehlerhafte Resultate liefern. Es ist die Funktionalität einer der Erweiterungen cURL oder COM (Windows) erforderlich oder die Funktion 'exec' muss verfügbar sein." }
+   }
+   i18n:table {
+      doubleInitialization:string { "\\I18N::initialize() wurde bereits aufgerufen." }
+      format:table {
+         invalidDateFormat:string { "Das Format, das zur Formatierung eines Datums übergeben wurde, war ungültig." }
+         invalidTimeFormat:string { "Das Format, das zur Formatierung einer Zeit übergeben wurde, war ungültig." }
+      }
+      get:table {
+         internalNotFound:string { "Der interne Sprachschlüssel \"{0}\" wurde nicht gefunden." }
+         noLanguage:string { "Es wurden keine Sprachdateien gefunden; dennoch wurde versucht, auf den Sprachschlüssel \"{0}\" zuzugreifen." }
+         notFound:string { "Der Sprachschlüssel \"{0}\" wurde nicht gefunden." }
+      }
+      translatePathNotFound:string { "Für den Pfad \"{0}\" wurde keine Entsprechung gefunden." }
+   }
+   log:table {
+      exception:string { "Es ist eine unbehandelte Exception vom Typ {0} aufgetreten. Details:\n{1}" }
+      initFailed:string { "Das logs/-Verzeichnis konnte nicht erstellt werden. Bitte stellen Sie sicher, dass es ein Unterverzeichnis zum Framework mit dem Namen 'logs' gibt. Der empfohlene chmod-Wert ist 0700." }
+      mail:table {
+         custom:string { "Hinweis: Dies ist eine automatisch generierte Meldung.\nIn FIM wurde manuell eine Fehlermeldung erzeugt. Die folgende Meldung wurde zurückgegeben:\n====\n{0}\n====\nSie können diesen Fehler auch im \"logs\"-Verzeichnis in der Datei \"customError.log\" nachlesen.\nNachfolgend wird der Inhalt der _SERVER-Variable dargestellt:\n====\n{1}\n====Es liegt folgender Stack vor:\n====\n{2}" }
+         error:string { "Hinweis: Dies ist eine automatisch generierte Meldung.\nIn FIM trat ein unkritischer Fehler auf, der durch Konfigurationsmängel hervorgerufen wurde. Die folgende Meldung wurde zurückgegeben:\n====\n{0}\n====\nSie können diesen Fehler auch im \"logs\"-Verzeichnis in der Datei \"error.log\" nachlesen.\nNachfolgend wird der Inhalt der _SERVER-Variable dargestellt:\n====\n{1}\n====Es liegt folgender Stack vor:\n====\n{2}" }
+         failed:string { "Interner Fehler in FIM: Es konnte keine automatische Fehlerbenachrichtigung per Mail gesendet werden. Fehlermeldung: {0}" }
+         internal:string { "Hinweis: Dies ist eine automatisch generierte Meldung.\nIn FIM trat ein interner Fehler auf. Bitte melden Sie dies ggf. als Bug. Die folgende Meldung wurde zurückgegeben:\n====\n{0}\n====\nSie können diesen Fehler auch im \"logs\"-Verzeichnis in der Datei \"internalError.log\" nachlesen.\nNachfolgend wird der Inhalt der _SERVER-Variable dargestellt:\n====\n{1}\n====Es liegt folgender Stack vor:\n====\n{2}" }
+         subject:string { "Fehlermeldung auf {0}" }
+      }
+      message:string { "Es ist ein Fehler aufgetreten und die Ausführung wurde beendet. Bitte informieren Sie einen Administrator über Fehler #{0}." }
+   }
+   memcachedStandalone:table {
+      invalidProtocol:string { "Der Memcached-Server arbeitet mit einer nicht unterstüzten Protokoll-Version." }
+      saslUnsupported:string { "Der FIM-Memcached-Standalone-Wrapper kann keine SASL-Authentifizierung emulieren. Hierfür die die MemcacheD-Erweiterung unerlässlich." }
+   }
+   memcachedWrapper:table {
+      saslUnsupported:string { "Der FIM-Memcached-Wrapper kann keine SASL-Authentifizierung emulieren. Hierfür die die MemcacheD-Erweiterung unerlässlich." }
+   }
+   module:table {
+      redirectInvalid:string { "Es wurde eine Weiterleitung auf die Adresse \"{0}\" ausgelöst, der jedoch keine URL zugeordnet werden konnte." }
+      templateException:string { "Es ist ein Templatefehler beim Verarbeiten der Datei \"{0}\" aufgetreten." }
+   }
+   primaryTable:table {
+      callUnknown:string { "Die Tabelle \"{0}\" besitzt keine Methode mit dem Namen \"{1}\"." }
+      create:table {
+         failed:string { "Das Einfügen eines PrimaryTable-Objekts in die Datenbank ist fehlgeschlagen." }
+         parameters:string { "Der Konstruktor eines PrimaryTable-Objekts wurde mit einer ungültigen Zahl von Parametern aufgerufen." }
+         virtualNoAI:string { "Es wurde versucht, ein virtuelles PrimaryTable-Objekt ohne AutoIncrement-Wert zu erstellen." }
+      }
+      dataHelperUnbound:string { "Es wurde versucht, auf ein DataHelper-Objekt zuzugreifen, das an keinen Tabelleneintrag (mehr) gebunden war." }
+      definitionInvalid:string { "Der Tabellenklasse \"{1}\" wurde eine fehlerhafte Definition des Feldes \"{0}\" übergeben." }
+      field:table {
+         invalid:string { "Dem Feld \"{0}\" der Tabelle \"{1}\" wurde ein ungültiger Wert zugewiesen." }
+         readOnly:string { "Das Schlüsselfeld \"{0}\" der Tabelle \"{1}\" gestattet keinen Schreibzugriff." }
+      }
+      translateFailed:string { "Der Funktion PrimaryTable::translateStatement wurde ein ungültiges Statement übergeben." }
+      unserialize:string { "Es wurde versucht, ein ungültiges PrimaryTable-Objekt zu deserialisieren." }
+   }
+   response:table {
+      cliRedirect:string { "Bitte rufen Sie das Skript erneut mit der URL \"{0}\" auf." }
+      negotiationLacksStar:string { "\\Response::contentNegotiation() wurde ohne Alternativ-Eintrag aufgerufen." }
+      unknownStatus:string { "Unbekannter HTTP-Statuscode: {0,number}." }
+   }
+   rules:table {
+      cache:table {
+         semanticError:table {
+            invalidRegex:string { "Es wurde ein semantischer Fehler in der Regeldatei \"{0}\" gefunden: Ein regulärer Ausdruck war ungültig. Zeileninhalt: {1}" }
+            recursion:string { "Es wurde ein semantischer Fehler in der Regeldatei \"{0}\" gefunden: Die clone-Direktive wurde in der Sektion \"{1}\" so verwendet, dass sie zu einer endlosen Rekursion führt." }
+         }
+         syntaxError:table {
+            hard:string { "Es wurde ein Syntaxfehler in der Regeldatei \"{0}\" gefunden, so dass eine ungültige Cache-Datei erzeugt wurde. Zu Debugzwecken kann die Cache-Datei \"{1}\" untersucht werden." }
+            general:string { "Es wurde ein Syntaxfehler in der Regeldatei \"{0}\" gefunden. Zeileninhalt: {1}" }
+            matchC:string { "Es wurde ein Syntaxfehler in der Regeldatei \"{0}\" gefunden: Der match-Modifizierer erlaubt die Vergleichsmodi \"c\" und \"C\" nicht. Zeileninhalt: {1}" }
+         }
+         unlinkError:table {
+            cache:string { "Das Löschen der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+            rules:string { "Das Löschen der Regeldatei \"{0}\" ist fehlgeschlagen." }
+         }
+         writeError:table {
+            content:string { "Das Schreiben der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+            directory:string { "Das Erstellen des Cache-Verzeichnisses \"cache/rules/\" ist fehlgeschlagen." }
+            timestamp:string { "Das Schreiben des Zeitstempels der Cache-Datei \"{0}\" ist fehlgeschlagen." }
+         }
+      }
+      callNotFound:string { "Die Methode {0} einer Regelklasse wurde nicht gefunden." }
+      invalidFilenameScope:string { "Es wurde versucht, Regeln für die Datei \"{0}\" zu finden, welche außerhalb des {1}/-Verzeichnisses liegt." }
+   }
+   serialization:table {
+      unserializeInvalid:string { "Es wurde versucht, einen ungültigen String zu deserialisieren." }
+   }
+   session:table {
+      cli:string { "Der Zugriff auf die Session-Funktionen ist im Kommandozeilenmodus nicht möglich." }
+   }
+   smarty:table {
+      url:string { "Im Template \"{1}\" wurde die URL-Funktion mit der Adresse \"{0}\" aufgerufen, die jedoch nicht von außen erreichbar ist." }
+      urlRelative:string { "Im Template \"{1}\" wurde die URL-Funktion mit der relativen Adresse \"{0}\" aufgerufen. Demzufolge muss das Template vom Ressourcentyp \"fim\" oder \"file\" sein, nicht jedoch \"{2}\"." }
+   }
+   table:table {
+      definitionInvalid:string { "Der Tabellenklasse \"{0}\" wurde die Eigenschaft $columns nicht zugewiesen." }
+      deleted:string { "Es wurde versucht, auf einen bereits gelöschten Eintrag der Tabelle \"{0}\" zuzugreifen." }
+      field:table {
+         readOnly:string { "Das Feld \"{0}\" der Tabelle \"{1}\" gestattet keinen Schreibzugriff." }
+         unknown:string { "Die Tabelle \"{0}\" besitzt kein Feld \"{1}\"." }
+      }
+      serialize:string { "Es wurde versucht, ein Tabellenobjekt mit der PHP-Methode serialize() zu serialisieren. Hierfür muss fimSerialize() verwendet werden." }
+      unserialize:string { "Es wurde versucht, ein Tabellenobjekt mit der PHP-Methode unserialize() zu deserialisieren. Hierfür muss fimUnserialize() verwendet werden." }
    }
 }
