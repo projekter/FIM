@@ -1281,7 +1281,7 @@ abstract class Response {
    public static final function contentNegotiation(array $contentTypes,
       $charset = null) {
       if(!isset($contentTypes['*']))
-         throw new ResponseException(I18N::getInternalLanguage()->get(['response',
+         throw new ResponseException(I18N::getInternalLocale()->get(['response',
             'negotiationLacksStar']));
       if($charset !== null)
          $encoding = "; charset=$charset";
@@ -1345,7 +1345,7 @@ abstract class Response {
          return;
       if(self::has('Location')) {
          if(CLI)
-            echo I18N::getInternalLanguage()->get(['response', 'cliRedirect'],
+            echo I18N::getInternalLocale()->get(['response', 'cliRedirect'],
                [self::get('Location')]);
          else
             header('Location: ' . self::get('Location'));
@@ -1374,7 +1374,7 @@ abstract class Response {
             $text = self::$responseCodes[self::$responseCode];
          else{
             @header('Content-Type: text/plain');
-            exit(I18N::getInternalLanguage()->get(['response', 'unknownStatus'],
+            exit(I18N::getInternalLocale()->get(['response', 'unknownStatus'],
                   [self::$responseCode]));
          }
          self::set('Content-Type',

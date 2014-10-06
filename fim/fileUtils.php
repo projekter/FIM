@@ -60,7 +60,7 @@ abstract class fileUtils {
          if(isset($return[0]) && $return[0] === 'notfound')
             return false;
          else
-            throw new FIMInternalException(I18N::getInternalLanguage()->get(['fileUtils',
+            throw new FIMInternalException(I18N::getInternalLocale()->get(['fileUtils',
                'corruptHelper']));
       $sub = array_slice($return, 9);
       foreach($sub as &$value)
@@ -193,7 +193,7 @@ abstract class fileUtils {
       # results for files that exceed the 4 GB limit.
       # It's the webmaster's responsibility to add at least one of the reliable
       # functionalities used above, so give them a clue by logging this action.
-      Log::reportInternalError(I18N::getInternalLanguage()->get(['fileUtils', 'size'],
+      Log::reportInternalError(I18N::getInternalLocale()->get(['fileUtils', 'size'],
             true));
       if(($size = @filesize($codedName)) === false)
          return false;
@@ -515,7 +515,7 @@ if(OS === 'Windows') {
             # It's the webmaster's responsibility to add at least one of the
             # reliable functionalities used above, so give them a clue by
             # logging this not-found error which may be wrong.
-            Log::reportInternalError(I18N::getInternalLanguage()->get(['fileUtils',
+            Log::reportInternalError(I18N::getInternalLocale()->get(['fileUtils',
                   'directoryIterator'], true));
             throw new UnexpectedValueException("File not found: $path");
          }
@@ -558,7 +558,7 @@ if(OS === 'Windows') {
             if($failed) # We got at least one file or directory that cannot be
             # accessed. Do not throw an exception, as most of the process may
             # have been successful, but report this incident.
-               Log::reportInternalError(I18N::getInternalLanguage()->get(['fileUtils',
+               Log::reportInternalError(I18N::getInternalLocale()->get(['fileUtils',
                      'directoryIterator'], true));
          }
          array_unshift($this->subItems,

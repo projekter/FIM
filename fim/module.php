@@ -107,7 +107,7 @@ abstract class Module {
                ->assignGlobal('__moduleResourceArray', $ma)
                ->fetch($templateFile);
       }catch(SmartyException $e) {
-         throw new ModuleException(I18N::getInternalLanguage()->get(['module',
+         throw new ModuleException(I18N::getInternalLocale()->get(['module',
             'templateException'], [$templateFile]), 0, $e);
       }
    }
@@ -277,7 +277,7 @@ abstract class Module {
     */
    protected final function redirect($to, array $parameters = []) {
       if(($to = Router::mapPathToURL($to, $parameters)) === false)
-         throw new ModuleException(I18N::getInternalLanguage()->get(['module',
+         throw new ModuleException(I18N::getInternalLocale()->get(['module',
             'redirectInvalid'], [$to]));
       Response::set('Location', $to);
       throw new ForwardException();

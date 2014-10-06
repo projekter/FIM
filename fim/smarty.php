@@ -152,7 +152,7 @@ namespace fim {
          # most likely be dynamic, the path itself should be static; so let's
          # accept this performance drawback here.
          if($this->cwd === false) {
-            $return = "<?php \$path={$this->path}; if(@\$path[0] !== '/') throw new FIMException(I18N::getInternalLanguage()->get(['smarty', 'urlRelative'], ['" .
+            $return = "<?php \$path={$this->path}; if(@\$path[0] !== '/') throw new FIMException(I18N::getInternalLocale()->get(['smarty', 'urlRelative'], ['" .
                addcslashes($this->resourceName, "\\'") . "', \$path, '" .
                addcslashes($this->resourceType, "\\'") . "'])); echo ";
             $path = '$path';
@@ -226,7 +226,7 @@ namespace fim {
          # $urls now is either a string (output directly) or an array - or the
          # url is completely inaccessible.
          if($urls === false) {
-            \Log::reportError(\I18N::getInternalLanguage()->get(['smarty', 'url'],
+            \Log::reportError(\I18N::getInternalLocale()->get(['smarty', 'url'],
                   [$staticPath, $this->resourceName]));
             return '';
          }elseif(is_string($urls))
@@ -257,7 +257,7 @@ namespace fim {
          if(($staticPath = $this->parseStaticString($this->path)) === false)
             return $this->returnFullyDynamic($translate);
          if($this->cwd === false && @$staticPath[0] !== '/')
-            throw new \FIMException(\I18N::getInternalLanguage()->get(['smarty',
+            throw new \FIMException(\I18N::getInternalLocale()->get(['smarty',
                'urlRelative'],
                [$this->resourceName, $staticPath, $this->resourceType]));
          $staticParameters = [];

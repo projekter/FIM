@@ -36,7 +36,7 @@ abstract class Database {
    private static final function loadConnectionFile($connectionFile) {
       $hierarchy = Router::normalizeFIM($connectionFile, true);
       if(empty($hierarchy) || $hierarchy[0] !== ResourceDir)
-         throw new DatabaseException(I18N::getInternalLanguage()->get(['database',
+         throw new DatabaseException(I18N::getInternalLocale()->get(['database',
             'invalidFilenameScope'],
             ['//' . implode('/', $hierarchy), CLI ? 'script' : 'content']));
       $connections = &self::$connections;
@@ -72,8 +72,9 @@ abstract class Database {
       $cacheFile = 'cache/connections/' . md5($connectionFile) . '.php';
       $absCacheFile = CodeDir . $cacheFile;
       $absConnectionFile = CodeDir . $connectionFile;
-      if(!is_dir(CodeDir . 'cache/connections') && !mkdir(CodeDir . 'cache/connections', 0700, true))
-         throw new FIMInternalException(I18N::getInternalLanguage()->get(['database',
+      if(!is_dir(CodeDir . 'cache/connections') && !mkdir(CodeDir . 'cache/connections',
+            0700, true))
+         throw new FIMInternalException(I18N::getInternalLocale()->get(['database',
             'cache', 'writeError', 'directory']));
       $connectionTimestamp = filemtime($absConnectionFile);
       $cacheTimestamp = @filemtime($absCacheFile);
@@ -84,10 +85,10 @@ abstract class Database {
       if(isset($connectionContent[0]) && strcasecmp(trim($connectionContent[0]),
             'delete') === 0) {
          if(is_file($absCacheFile) && !@unlink($absCacheFile))
-            Log::reportInternalError(I18N::getInternalLanguage()->get(['database',
+            Log::reportInternalError(I18N::getInternalLocale()->get(['database',
                   'cache', 'unlinkError', 'cache'], [$cacheFile]));
          if(!@unlink($absConnectionFile))
-            Log::reportInternalError(I18N::getInternalLanguage()->get(['database',
+            Log::reportInternalError(I18N::getInternalLocale()->get(['database',
                   'cache', 'unlinkError', 'rules'], ["//$connectionFile"]));
          return false;
       }
@@ -96,7 +97,8 @@ abstract class Database {
                "\\'") . "'";
       else
          $parentConnectionFile = 'null';
-      $parsed = self::parseConnectionFile($connectionContent, "//$connectionFile");
+      $parsed = self::parseConnectionFile($connectionContent,
+            "//$connectionFile");
       $connectionFileStr = "'//" . addcslashes($connectionFile, "\\'") . "'";
       $cacheContent = <<<Cache
 <?php
@@ -110,18 +112,19 @@ abstract class Database {
 return new DatabaseConnection($parsed, $connectionFileStr, $parentConnectionFile);
 Cache;
       if(@file_put_contents($absCacheFile, $cacheContent) === false)
-         throw new FIMInternalException(I18N::getInternalLanguage()->get(['database',
+         throw new FIMInternalException(I18N::getInternalLocale()->get(['database',
             'cache', 'writeError', 'content'], [$cacheFile]));
       if(!touch($absCacheFile, $connectionTimestamp))
-         throw new FIMInternalException(I18N::getInternalLanguage()->get(['database',
+         throw new FIMInternalException(I18N::getInternalLocale()->get(['database',
             'cache', 'writeError', 'timestamp'], [$cacheFile]));
       # Now try to include the cache file to see whether there is a syntax
       # error. There will be no checking for connection errors.
       # If there is a parsing error, make use of the shutdown function which
       # will write this error to the log
       $shutdownKey = Config::registerShutdownFunction(function() use ($cacheFile, $connectionFile) {
-            Log::reportInternalError(I18N::getInternalLanguage()->get(['database',
-                  'cache', 'syntaxError', 'hard'], ["//$connectionFile", $cacheFile]));
+            Log::reportInternalError(I18N::getInternalLocale()->get(['database',
+                  'cache', 'syntaxError', 'hard'],
+                  ["//$connectionFile", $cacheFile]));
          });
       try {
          $ret = require $absCacheFile;
@@ -140,18 +143,18 @@ Cache;
          if($line === '')
             continue;
          if(!preg_match('/^\s*+([^=\s]++)\s*+=\s*+(\S*+)\s*+$/', $line, $matches))
-            throw new DatabaseException(I18N::getInternalLanguage()->get(['database',
+            throw new DatabaseException(I18N::getInternalLocale()->get(['database',
                'cache', 'syntaxError'], [$currentFileName, $line]));
          $key = strtolower($matches[1]);
          if(isset($result[$key]))
-            throw new DatabaseException(I18N::getInternalLanguage()->get(['database',
+            throw new DatabaseException(I18N::getInternalLocale()->get(['database',
                'cache', 'semanticError', 'doubleKey'], [$currentFileName, $key]));
          $value = strtolower($matches[2]);
          switch($key) {
             case 'recursive':
             case 'persistent':
                if($value !== 'true' && $value !== 'false')
-                  throw new DatabaseException(I18N::getInternalLanguage()->get(['database',
+                  throw new DatabaseException(I18N::getInternalLocale()->get(['database',
                      'cache', 'semanticError', 'invalidValue'],
                      [$currentFileName, $key, 'true, false', $line]));
                $result[$key] = "'$key' => $value";
@@ -162,7 +165,7 @@ Cache;
                   'oracle' => true, 'odbc' => true, 'pgsql' => true, 'sqlite' => true,
                   'sqlsrv' => true, 'sybase' => true];
                if(!isset($drivers[$value]))
-                  throw new DatabaseException(I18N::getInternalLanguage()->get(['database',
+                  throw new DatabaseException(I18N::getInternalLocale()->get(['database',
                      'cache', 'semanticError', 'invalidKey'],
                      [$currentFileName, $key, implode(',', array_keys($drivers)),
                      $line]));
@@ -178,7 +181,7 @@ Cache;
                $result['port'] = "'$key' => " . (int)$value;
                break;
             default:
-               throw new DatabaseException(I18N::getInternalLanguage()->get(['database',
+               throw new DatabaseException(I18N::getInternalLocale()->get(['database',
                   'cache', 'semanticError', 'invalidKey'],
                   [$currentFileName, $key]));
          }
@@ -207,7 +210,7 @@ Cache;
    public static final function getActiveConnection($require = true) {
       if(self::$activeConnection === null) {
          if($require)
-            throw new DatabaseException(I18N::getInternalLanguage()->get(['database',
+            throw new DatabaseException(I18N::getInternalLocale()->get(['database',
                'unestablishedConnection']));
       }else
          self::$activeConnection->getConnection();

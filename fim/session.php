@@ -51,7 +51,7 @@ namespace {
          }
 
          public static final function __callStatic($name, $arguments) {
-            throw new SessionException(I18N::getInternalLanguage()->get(['session',
+            throw new SessionException(I18N::getInternalLocale()->get(['session',
                'cli']));
          }
 

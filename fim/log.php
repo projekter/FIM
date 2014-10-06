@@ -33,7 +33,7 @@ abstract class Log {
    private static function createLogHandles() {
       $dir = CodeDir . 'logs';
       if(!is_dir($dir) && !mkdir($dir, 0700))
-         throw new FIMInternalException(I18N::getInternalLanguage()->get(['log',
+         throw new FIMInternalException(I18N::getInternalLocale()->get(['log',
             'initFailed']));
       self::$internalErrors = fopen("$dir/internalError.log", 'a+');
       self::$errors = fopen("$dir/error.log", 'a+');
@@ -72,7 +72,7 @@ abstract class Log {
          self::createLogHandles();
       if(self::$inMail) {
          @fwrite(self::$internalErrors,
-               I18N::getInternalLanguage()->get(['log', 'mail', 'failed'],
+               I18N::getInternalLocale()->get(['log', 'mail', 'failed'],
                   [$message]));
          return;
       }
@@ -83,7 +83,7 @@ abstract class Log {
       try {
          if(!$noMail && (($mailError = Config::get('mailErrorsTo')) != false)) {
             # No strict compare. Configuration might not be set up
-            $language = I18N::getInternalLanguage();
+            $language = I18N::getInternalLocale();
             if($language === null)
                Response::mail($mailError, 'Error on ' . Request::getFullURL(),
                   "Hint: This is an auto-generated message.\nAn internal error occurred within FIM. Please file a bug if necessary. The following message was returned:\n====\n" .
@@ -100,7 +100,7 @@ abstract class Log {
          }
       }catch(Exception $e) {
          @fwrite(self::$internalErrors,
-               I18N::getInternalLanguage()->get(['log', 'mail', 'failed'],
+               I18N::getInternalLocale()->get(['log', 'mail', 'failed'],
                   [(string)$e]));
       }# finally (but we need to support PHP 5.4)
       self::$inMail = false;
@@ -116,7 +116,7 @@ abstract class Log {
          self::createLogHandles();
       @fwrite(self::$errors, "$message\r\n");
       if(!$noMail && (($mailError = Config::get('mailErrorsTo')) !== false)) {
-         $language = I18N::getInternalLanguage();
+         $language = I18N::getInternalLocale();
          Response::mail($mailError,
             $language->get(['log', 'mail', 'subject'], [Request::getFullURL()]),
             $language->get(['log', 'mail', 'error'],
@@ -135,7 +135,7 @@ abstract class Log {
          self::createLogHandles();
       @fwrite(self::$customErrors, "$message\r\n");
       if(!$noMail && (($mailError = Config::get('mailErrorsTo')) !== false)) {
-         $language = I18N::getInternalLanguage();
+         $language = I18N::getInternalLocale();
          Response::mail($mailError,
             $language->get(['log', 'mail', 'subject'], [Request::getFullURL()]),
             $language->get(['log', 'mail', 'custom'],
@@ -190,8 +190,7 @@ abstract class Log {
             case E_CORE_ERROR:
             case E_COMPILE_ERROR:
             case E_USER_ERROR:
-               echo I18N::getInternalLanguage()->get(['log', 'message'],
-                  [$errid]);
+               echo I18N::getInternalLocale()->get(['log', 'message'], [$errid]);
                if(!$shutdown)
                   exit;
          }
@@ -207,7 +206,7 @@ abstract class Log {
     */
    public static final function exceptionHandler(Exception $e) {
       $errid = date('Y-m-d H:i') . '-' . uniqid();
-      if(($l = I18N::getInternalLanguage()) === null) {
+      if(($l = I18N::getInternalLocale()) === null) {
          # Language is not set up. This is only possible in a very early state
          # of FIM's initialization.
          self::reportInternalError("[$errid] An unhandled exception of type " .

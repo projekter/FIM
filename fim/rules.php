@@ -229,7 +229,7 @@ namespace {
       public static final function check($fileName, $checkFor) {
          $hierarchy = Router::normalizeFIM($fileName, true);
          if(empty($hierarchy) || $hierarchy[0] !== ResourceDir)
-            throw new RulesException(I18N::getInternalLanguage()->get(['rules', 'invalidFilenameScope'],
+            throw new RulesException(I18N::getInternalLocale()->get(['rules', 'invalidFilenameScope'],
                [$fileName, CLI ? 'script' : 'content']));
          $folder = '//' . ResourceDir;
          $absFolder = \Router::convertFIMToFilesystem($folder, false);
@@ -288,7 +288,7 @@ namespace {
       public static final function checkFilterExistence($fileName) {
          $hierarchy = Router::normalizeFIM($fileName, true);
          if(empty($hierarchy) || $hierarchy[0] !== ResourceDir)
-            throw new RulesException(I18N::getInternalLanguage()->get(['rules', 'invalidFilenameScope'],
+            throw new RulesException(I18N::getInternalLocale()->get(['rules', 'invalidFilenameScope'],
                [$fileName, CLI ? 'script' : 'content']));
          $folder = CodeDir . ResourceDir;
          array_shift($hierarchy);
@@ -331,7 +331,7 @@ namespace {
          $absCacheFile = CodeDir . $cacheFile;
          if(!is_dir(CodeDir . 'cache/rules') && !mkdir(CodeDir . 'cache/rules',
                0700, true))
-            throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules',
+            throw new FIMInternalException(I18N::getInternalLocale()->get(['rules',
                'cache', 'writeError', 'directory']));
          $rulesTimestamp = filemtime($absRulesFile);
          $cacheTimestamp = @filemtime($absCacheFile);
@@ -364,10 +364,10 @@ Cache;
          if(isset($rulesContent[0]) && strcasecmp(trim($rulesContent[0]),
                'delete') === 0) {
             if(is_file($absCacheFile) && !@unlink($absCacheFile))
-               Log::reportInternalError(I18N::getInternalLanguage()->get(['rules',
+               Log::reportInternalError(I18N::getInternalLocale()->get(['rules',
                      'cache', 'unlinkError', 'cache'], [$cacheFile]));
             if(!@unlink($absRulesFile))
-               Log::reportInternalError(I18N::getInternalLanguage()->get(['rules',
+               Log::reportInternalError(I18N::getInternalLocale()->get(['rules',
                      'cache', 'unlinkError', 'rules'], [$rulesFile]));
             return null;
          }
@@ -377,15 +377,14 @@ Cache;
          foreach($sections as $section)
             $cacheContent .= '
 
-' . self::parseRulesSection($rulesContent,
-                  $section);
+' . self::parseRulesSection($rulesContent, $section);
          $cacheContent .= '
 }';
          if(@file_put_contents($absCacheFile, $cacheContent) === false)
-            throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules',
+            throw new FIMInternalException(I18N::getInternalLocale()->get(['rules',
                'cache', 'writeError', 'content'], [$cacheFile]));
          if(!touch($absCacheFile, $rulesTimestamp))
-            throw new FIMInternalException(I18N::getInternalLanguage()->get(['rules',
+            throw new FIMInternalException(I18N::getInternalLocale()->get(['rules',
                'cache', 'writeError', 'timestamp'], [$cacheFile]));
          # Now try to call all three functions to see whether there is a regex
          # error or something similar. An exception will be thrown. If there is a
@@ -393,7 +392,7 @@ Cache;
          # error to the log
          $shutdownKey = Config::registerShutdownFunction(function() use ($cacheFile, $rulesFile) {
                Log::errorHandler(E_ERROR,
-                  I18N::getInternalLanguage()->get(['rules', 'cache', 'syntaxError',
+                  I18N::getInternalLocale()->get(['rules', 'cache', 'syntaxError',
                      'hard'], [$rulesFile, $cacheFile]), $cacheFile, 0, null,
                   true);
             });
@@ -413,7 +412,7 @@ Cache;
       private static function parseRulesSection(array $fullContent, $sectionName) {
          if(isset(self::$parsingCache[$lowerName = strtolower($sectionName)]))
             if(self::$parsingCache[$lowerName] === true)
-               throw new RulesException(I18N::getInternalLanguage()->get(['rules',
+               throw new RulesException(I18N::getInternalLocale()->get(['rules',
                   'cache', 'semanticError', 'recursion'],
                   [self::$currentFileName, $lowerName]));
             else
@@ -464,7 +463,7 @@ Cache;
                   case 'c':
                   case 'C':
                      if($isMatch)
-                        throw new RulesException(I18N::getInternalLanguage()->get(['rules',
+                        throw new RulesException(I18N::getInternalLocale()->get(['rules',
                            'cache', 'syntaxError', 'matchC'],
                            [self::$currentFileName, $line]));
                      $result .= "
@@ -473,7 +472,7 @@ Cache;
                   case 'r':
                   case 'R':
                      if(@preg_match(trim($group[3]), '') === false)
-                        throw new RulesException(I18N::getInternalLanguage()->get(['rules',
+                        throw new RulesException(I18N::getInternalLocale()->get(['rules',
                            'cache', 'semanticError', 'invalidRegex'],
                            [self::$currentFileName, $line]));
                      $result .= "
@@ -519,7 +518,7 @@ Cache;
                   $line, $group) === 1) {
                $result .= self::parseRulesSection($fullContent, $group[1]);
             }else{
-               throw new RulesException(I18N::getInternalLanguage()->get(['rules',
+               throw new RulesException(I18N::getInternalLocale()->get(['rules',
                   'cache', 'syntaxError', 'general'],
                   [self::$currentFileName, $line]));
             }

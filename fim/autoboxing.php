@@ -85,7 +85,7 @@ namespace fim {
             return self::callMethod(get_class($function), '__invoke');
          $reflection = new \ReflectionFunction($function);
          if(!$reflection->isUserDefined())
-            throw new \AutoboxingException(\I18N::getInternalLanguage()->get(['autoboxing',
+            throw new \AutoboxingException(\I18N::getInternalLocale()->get(['autoboxing',
                'internalFunction'], [(string)$function]));
          self::$currentlyCalling = $reflection->name;
          self::setupFileCache(new \ReflectionFile($reflection->getFileName()));
@@ -118,10 +118,10 @@ namespace fim {
             if(@file_put_contents($cacheFile,
                   self::generateAutoboxingCache($file, $cacheNamespace,
                      $classFile)) === false)
-               throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
+               throw new FIMInternalException(I18N::getInternalLocale()->get(['autoboxing',
                   'cache', 'writeError', 'content'], [$classFile]));
             if(!touch($cacheFile, $currentTimestamp))
-               throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
+               throw new FIMInternalException(I18N::getInternalLocale()->get(['autoboxing',
                   'cache', 'writeError', 'timestamp'], [$classFile]));
             @unlink($closureFile);
          }
@@ -150,7 +150,7 @@ namespace fim {
             $lock = new \Semaphore($cacheFile);
             $lock->lock();
             if(($cacheContent = @file_get_contents($cacheFile)) === false)
-               throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
+               throw new FIMInternalException(I18N::getInternalLocale()->get(['autoboxing',
                   'cache', 'readError'], [$classFile]));
          }else{
             $lock = new \Semaphore($cacheFile);
@@ -201,7 +201,7 @@ Cache;
       $code
    }", $cacheContent);
          if(@file_put_contents($cacheFile, $cacheContent) === false)
-            throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
+            throw new FIMInternalException(I18N::getInternalLocale()->get(['autoboxing',
                'cache', 'writeError', 'content'], [$classFile]));
          $lock->unlock();
          if($include === false)
@@ -216,7 +216,7 @@ Cache;
          $namespace, $fileName) {
          if(!is_dir(CodeDir . 'cache/autoboxing') && !mkdir(CodeDir . 'cache/autoboxing',
                0700, true))
-            throw new FIMInternalException(I18N::getInternalLanguage()->get(['autoboxing',
+            throw new FIMInternalException(I18N::getInternalLocale()->get(['autoboxing',
                'cache', 'writeError', 'directory']));
          $now = date('Y-m-d H:i:s');
          $cacheContent = <<<Cache
@@ -240,7 +240,8 @@ abstract class {$class->getShortName()} {
 
    public static function __callStatic(\$name, \$arguments) {";
             $parentClass = $class->getParentClass();
-            if($parentClass === false || (dirname($fn = $parentClass->getFileName()) === __DIR__ && $rules = basename($fn) !== 'rules.php'))
+            if($parentClass === false || (dirname($fn = $parentClass->getFileName()) === __DIR__ && $rules =
+               basename($fn) !== 'rules.php'))
                $cacheContent .= "
       # Sadly, we cannot trigger a fatal error, which would be the exact equivalent to this situation
       throw new \BadMethodCallException('Call to undefined method ' . \\fim\\Autoboxing::\$currentlyCalling . \"::\$name\");
@@ -452,7 +453,7 @@ abstract class {$class->getShortName()} {
                               $val = "\$$name";
                            $parseTypeHint = false;
                         }catch(\ReflectionException $e) {
-                           \Log::reportInternalError(\I18N::getInternalLanguage()->get(['autoboxing',
+                           \Log::reportInternalError(\I18N::getInternalLocale()->get(['autoboxing',
                                  'reflectionException'],
                                  [$types[$name], $fileName, $m->name]));
                         }
@@ -464,7 +465,7 @@ abstract class {$class->getShortName()} {
                            $parseTypeHint = false;
                         }
                      }catch(\ReflectionException $e) {
-                        \Log::reportInternalError(\I18N::getInternalLanguage()->get(['autoboxing',
+                        \Log::reportInternalError(\I18N::getInternalLocale()->get(['autoboxing',
                               'reflectionException'],
                               [$types[$name], $fileName, $m->name]));
                      }
@@ -476,7 +477,7 @@ abstract class {$class->getShortName()} {
                elseif($parameter->isArray())
                   $val = "(array)($value)";
                elseif($parameter->isCallable() || !$parameter->canBePassedByValue())
-                  return "throw new \\AutoboxingException(\\I18N::getInternalLanguage()->get(['autoboxing', 'invalidTypehint'], ['{$m->name}', '$fileName', '$name']));";
+                  return "throw new \\AutoboxingException(\\I18N::getInternalLocale()->get(['autoboxing', 'invalidTypehint'], ['{$m->name}', '$fileName', '$name']));";
                else
                   $val = $value;
             }
@@ -486,7 +487,7 @@ abstract class {$class->getShortName()} {
                else
                   $checks .= "if(!((\$$name = $val) instanceof \\{$typeHint->name}))";
                $checks .= "
-         throw new \\FIMErrorException(\\I18N::getInternalLanguage()->get(['autoboxing', 'failed'], ['$fileName', '{$m->name}', '$name']), [404]);
+         throw new \\FIMErrorException(\\I18N::getInternalLocale()->get(['autoboxing', 'failed'], ['$fileName', '{$m->name}', '$name']), [404]);
       ";
                $parameters[] = "\$$name";
             }else

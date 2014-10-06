@@ -221,7 +221,7 @@ abstract class Executor {
       }
       $path = implode('/', $path);
       $it = new \fimDirectoryIterator($path);
-      $intLanguage = \I18N::getInternalLanguage();
+      $intLanguage = \I18N::getInternalLocale();
       $language = \I18N::getLocale();
       $resultFile = $resultDir = [];
       $details = \Config::equals('directoryListing',
@@ -765,7 +765,7 @@ listing;
          \Response::$responseCode = (\Response::translateHTTPCode($errno) !== null)
                ? $errno : 500;
          \Response::set('Content-Type', 'text/plain');
-         $language = \I18N::getInternalLanguage();
+         $language = \I18N::getInternalLocale();
          $logStr = $language->get(['executor', 'error', 'log'],
             [$errno, \Request::getFullURL(),
             empty($details) ? 'none' : implode(', ', $details),

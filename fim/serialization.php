@@ -48,11 +48,13 @@ function fimSerialize($arg) {
 
 function fimUnserialize($serialized) {
    if($serialized == '')
-      throw new SerializationException(I18N::getInternalLanguage()->get(['serialization', 'unserializeInvalid']));
+      throw new SerializationException(I18N::getInternalLocale()->get(['serialization',
+         'unserializeInvalid']));
    elseif($serialized[0] === 'f') {
       $unserialized = unserialize(substr($serialized, 1));
       if(!is_array($unserialized))
-         throw new SerializationException(I18N::getInternalLanguage()->get(['serialization', 'unserializeInvalid']));
+         throw new SerializationException(I18N::getInternalLocale()->get(['serialization',
+            'unserializeInvalid']));
       return $unserialized[0]::fimUnserialize($unserialized[1]);
    }else{
       $unserialization = unserialize($serialized);

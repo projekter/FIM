@@ -1380,7 +1380,7 @@ class Memcached {
     * @throws BadMethodCallException
     */
    public function setSaslAuthData($username, $password) {
-      throw new BadMethodCallException(I18N::getInternalLanguage()->get(['memcachedWrapper',
+      throw new BadMethodCallException(I18N::getInternalLocale()->get(['memcachedWrapper',
          'saslUnsupported']));
    }
 

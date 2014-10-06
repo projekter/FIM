@@ -529,7 +529,7 @@ class Memcached {
          $header);
       if($header['Magic'] !== 0x81) {
          $this->status = self::RES_PROTOCOL_ERROR;
-         Log::reportInternalError(I18N::getInternalLanguage()->get(['memcachedStandalone',
+         Log::reportInternalError(I18N::getInternalLocale()->get(['memcachedStandalone',
                'invalidProtocol']), true);
          return false;
       }
@@ -548,7 +548,7 @@ class Memcached {
          return false;
       if($return['opcode'] !== $opcode) {
          $this->status = self::RES_PROTOCOL_ERROR;
-         Log::reportInternalError(I18N::getInternalLanguage()->get(['memcachedStandalone',
+         Log::reportInternalError(I18N::getInternalLocale()->get(['memcachedStandalone',
                'invalidProtocol']), true);
          return false;
       }
@@ -582,7 +582,7 @@ class Memcached {
             return false;
          default:
             $this->status = self::RES_PROTOCOL_ERROR;
-            Log::reportInternalError(I18N::getInternalLanguage()->get(['memcachedStandalone',
+            Log::reportInternalError(I18N::getInternalLocale()->get(['memcachedStandalone',
                   'invalidProtocol']), true);
             return false;
       }
@@ -1527,7 +1527,7 @@ class Memcached {
    public function setSaslAuthData($username, $password) {
       # SASL is only supported in Memcached with binary protocol; you should
       # really consider to use the proper Memcached extension if you need SASL
-      throw new BadMethodCallException(I18N::getInternalLanguage()->get(['memcachedStandalone',
+      throw new BadMethodCallException(I18N::getInternalLocale()->get(['memcachedStandalone',
          'saslUnsupported']));
    }
 
