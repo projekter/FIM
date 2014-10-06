@@ -30,8 +30,8 @@ abstract class Config {
       'defaultAccessGranted' => true,
       'defaultEncoding' => 'utf-8',
       'directoryListing' => 'development',
-      'languageCodedFallback' => false,
-      'languageInternal' => 'en',
+      'localeRawFallback' => false,
+      'localeInternal' => 'en',
       'mailErrorsTo' => false,
       'mailFrom' => 'Framework <noreply@framework.log>',
       'memcachedConnection' => [],
@@ -79,9 +79,9 @@ abstract class Config {
       $config = array_merge(self::$configDefaults, $config);
 
       # Try to make I18N work
-      if(!is_string($config['languageInternal']))
-         throw new ConfigurationException('Error in configuration: languageInternal must be of type string');
-      \I18N::initialize($config['languageInternal']);
+      if(!is_string($config['localeInternal']))
+         throw new ConfigurationException('Error in configuration: localeInternal must be of type string');
+      \I18N::initialize($config['localeInternal']);
 
       # Now all messages can be localized. Validate configuration entries
       self::validateKeys($config);
@@ -159,9 +159,9 @@ abstract class Config {
       if(!is_string($config['defaultEncoding']))
          throw new ConfigurationException(I18N::getInternalLocale()->get(['config',
             'validation', 'invalidType'], ['defaultEncoding', 'string']));
-      if(!is_bool($config['languageCodedFallback']))
+      if(!is_bool($config['localeRawFallback']))
          throw new ConfigurationException(I18N::getInternalLocale()->get(['config',
-            'validation', 'invalidType'], ['languageCodedFallback', 'boolean']));
+            'validation', 'invalidType'], ['localeRawFallback', 'boolean']));
       if($config['mailErrorsTo'] !== false && !is_string($config['mailErrorsTo']))
          throw new ConfigurationException(I18N::getInternalLocale()->get(['config',
             'validation', 'invalidType'], ['mailErrorsTo', 'string|false']));
@@ -356,7 +356,7 @@ abstract class Config {
     * @param mixed $value
     */
    public static final function set($key, $value) {
-      if($key === 'languageInternal' || $key === 'languageCodedFallback' || $key === 'subdomainBase' || $key === 'subdomainBaseError' || $key === 'subdomainDefault' || $key === 'subdomainDepth' || $key === 'plugins')
+      if($key === 'localeInternal' || $key === 'localeRawFallback' || $key === 'subdomainBase' || $key === 'subdomainBaseError' || $key === 'subdomainDefault' || $key === 'subdomainDepth' || $key === 'plugins')
          throw new ConfigurationException(I18N::getInternalLocale()->get(['config',
             'set', 'readonly'], [$key]));
       elseif(!isset(self::$configDefaults[$key]))

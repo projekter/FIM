@@ -273,7 +273,7 @@ namespace {
          if($val === null) {
             static $fallback = null;
             if($fallback === null)
-               $fallback = Config::get('languageCodedFallback');
+               $fallback = Config::get('localeRawFallback');
             if($fallback)
                $val = $key;
             else{

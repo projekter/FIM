@@ -1415,7 +1415,7 @@ abstract class Response {
    public static final function mail($to, $subject, $message, $from = null,
       $html = false, array $attachments = []) {
       $sendmail = new PHPMailer();
-      $sendmail->setLanguage(Config::get('languageInternal'));
+      $sendmail->setLanguage(Config::get('localeInternal'));
       $sendmail->isMail();
       if(is_array($to))
          $sendmail->addAddress($to[1], $to[0]);
