@@ -390,7 +390,7 @@ abstract class Config {
     * @param callable $callable
     * @return string An id that you may use to unregister the function again
     */
-   public static final function registerShutdownFunction($callable) {
+   public static final function registerShutdownFunction(callable $callable) {
       while(isset(self::$shutdownFunctions[$id = uniqid()]));
       self::$shutdownFunctions[$id] = $callable;
       return $id;
