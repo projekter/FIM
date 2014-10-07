@@ -190,8 +190,7 @@ abstract class Autoboxing {
 }
 Cache;
          }
-         $code = 'if(!empty($arguments))
-         $arguments = \array_change_key_case($arguments, CASE_LOWER);
+         $code = '
       ' . self::generateAutoboxingMethod($function, $classFile);
          $cacheContent = str_replace('#   // < new content >#',
             "   // < new content >
@@ -269,8 +268,6 @@ abstract class {$class->getShortName()} {
                $cacheContent .= "
 
    public static function $name(array \$arguments" . ($method->isStatic() ? '' : ', $obj') . ") {
-      if(!empty(\$arguments))
-         \$arguments = \\array_change_key_case(\$arguments, CASE_LOWER);
       $code
    }";
             }
@@ -309,12 +306,11 @@ abstract class {$class->getShortName()} {
          $checks = '';
          foreach($m->getParameters() as $parameter) {
             $name = $parameter->name;
-            $lower = strtolower($name);
             if(isset($values[$name]) && $values[$name] !== '') {
                $values[$name] = strtolower($values[$name]);
                if(substr($values[$name], 0, 6) === 'param|') {
                   $values[$name] = substr($values[$name], 6);
-                  $param = "(isset(\$arguments['$lower']) || array_key_exists('$lower', \$arguments)) ? \$arguments['$lower'] : ";
+                  $param = "(isset(\$arguments['$name']) || array_key_exists('$name', \$arguments)) ? \$arguments['$name'] : ";
                }else
                   $param = '';
                switch(strtolower($values[$name])) {
@@ -323,9 +319,9 @@ abstract class {$class->getShortName()} {
                         $value = $param . var_export($parameter->getDefaultValue(),
                               true);
                      else{
-                        $value = "\$arguments['$lower']";
-                        $checks .= "if(!isset(\$arguments['$lower']) && !array_key_exists('$lower', \$arguments))
-         throw new \\BadMethodCallException('Missing argument \"$lower\" for ' . \\fim\\Autoboxing::\$currentlyCalling . '" .
+                        $value = "\$arguments['$name']";
+                        $checks .= "if(!isset(\$arguments['$name']) && !array_key_exists('$name', \$arguments))
+         throw new \\BadMethodCallException('Missing argument \"$name\" for ' . \\fim\\Autoboxing::\$currentlyCalling . '" .
                            ($m instanceof \ReflectionMethod ? "::{$m->getShortName()}"
                                  : '') . "()');
       ";
@@ -351,9 +347,8 @@ abstract class {$class->getShortName()} {
                      if(preg_match('/(get|param|post|session|file|fileStream|fileString)\\s*+:\\s*+(.*+)/i',
                            $values[$name], $matches) === 1) {
                         $key = addcslashes($matches[2], "\\'");
-                        $lower = strtolower($key);
                         if($param !== '')
-                           $param = "(isset(\$arguments['$lower']) || (array_key_exists('$lower', \$arguments)) ? \$arguments['$lower'] : ";
+                           $param = "(isset(\$arguments['$key']) || (array_key_exists('$key', \$arguments)) ? \$arguments['$key'] : ";
                         switch(strtolower($matches[1])) {
                            case 'get':
                               $value = "$param\\Request::get('$key')";
@@ -363,9 +358,9 @@ abstract class {$class->getShortName()} {
                                  $value = $param . var_export($parameter->getDefaultValue(),
                                        true);
                               else{
-                                 $value = "\$arguments['$lower']";
-                                 $checks .= "if(!isset(\$arguments['$lower']) && !array_key_exists('$lower', \$arguments))
-         throw new \\BadMethodCallException('Missing argument \"$lower\" for ' . \\fim\\Autoboxing::\$currentlyCalling . '" .
+                                 $value = "\$arguments['$key']";
+                                 $checks .= "if(!isset(\$arguments['$key']) && !array_key_exists('$key', \$arguments))
+         throw new \\BadMethodCallException('Missing argument \"$key\" for ' . \\fim\\Autoboxing::\$currentlyCalling . '" .
                                     ($m instanceof \ReflectionMethod ? "::{$m->getShortName()}"
                                           : '') . "()');
       ";
@@ -389,7 +384,7 @@ abstract class {$class->getShortName()} {
                         $value = $values[$name];
                }
             }else
-               $value = "(isset(\$arguments['$lower']) || array_key_exists('$lower', \$arguments)) ? \$arguments['$lower'] : \\Request::get('$name')";
+               $value = "(isset(\$arguments['$name']) || array_key_exists('$name', \$arguments)) ? \$arguments['$name'] : \\Request::get('$name')";
             $parseTypeHint = true;
             if(isset($types[$name])) {
                $type = strtolower($types[$name]);
