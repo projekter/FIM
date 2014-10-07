@@ -95,13 +95,13 @@ namespace {
          #    the weightiest allowance cannot dominate - not even true.
          $val = 0;
          if(($checkFor & self::CHECK_EXISTENCE) !== 0)
-            if(($val = \fim\Autoboxing::callMethod($simpleInstance,
+            if(($val = Autoboxing::callMethod($simpleInstance,
                   'checkExistence', $params)) === false)
                return false;
             elseif($val === null)
                $val = 0;
          if(($checkFor & self::CHECK_READING) !== 0) {
-            if(($newVal = \fim\Autoboxing::callMethod($simpleInstance,
+            if(($newVal = Autoboxing::callMethod($simpleInstance,
                   'checkReading', $params)) === false)
                return false;
             elseif($newVal != 0) # or null
@@ -113,7 +113,7 @@ namespace {
                   $val = true;
          }
          if(($checkFor & self::CHECK_LISTING) !== 0) {
-            if(($newVal = \fim\Autoboxing::callMethod($simpleInstance,
+            if(($newVal = Autoboxing::callMethod($simpleInstance,
                   'checkListing', $params)) === false)
                return false;
             elseif($newVal !== 0) # or null
@@ -213,7 +213,7 @@ namespace {
          $chdir = new fim\chdirHelper(dirname($absObj));
          $previousConnection = Database::getActiveConnection(false);
          \Database::setActiveConnection('.');
-         $ret = \fim\Autoboxing::callMethod($obj, $functions[$checkFor],
+         $ret = Autoboxing::callMethod($obj, $functions[$checkFor],
                ['fileName' => $fileName, 'fullName' => $fullName]);
          Database::restoreConnection($previousConnection);
          return $ret;

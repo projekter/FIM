@@ -179,7 +179,7 @@ abstract class Executor {
             chdir(CodeDir);
             self::error(404, $path);
          }else
-            Autoboxing::callMethod($module, 'execute');
+            \Autoboxing::callMethod($module, 'execute');
       }catch(\ForwardException $e) {
          # not an exception
       }catch(\FIMErrorException $e) {
