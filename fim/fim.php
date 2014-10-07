@@ -78,7 +78,10 @@ unset($basedir, $os, $osses);
 function fimInitialize(array $config = []) {
    require FrameworkPath . 'autoloader.php';
 
-   Config::initialize($config);
+   $init = Closure::bind(function() use ($config) {
+         self::initialize($config);
+      }, null, 'Config');
+   $init();
 
    # FIM can be set up in a web-only or console-only manner
    if(!is_dir(CodeDir . ResourceDir))

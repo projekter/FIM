@@ -67,7 +67,7 @@ abstract class Config {
 
    }
 
-   public static final function initialize(array $config) {
+   private static final function initialize(array $config) {
       if(self::$config !== null)
          throw new FIMInternalException(I18N::getInternalLocale()->get(['config',
             'doubleInitialization']));
