@@ -72,8 +72,36 @@ abstract class Config {
          throw new FIMInternalException(I18N::getInternalLocale()->get(['config',
             'doubleInitialization']));
       register_shutdown_function(function() {
-         foreach(self::$shutdownFunctions as $f)
-            $f();
+         foreach(self::$shutdownFunctions as $func)
+         # Speed up call_user_func_array with this monster
+            if(!isset($func[1]))
+               $ret = $func[0]();
+            elseif(isset($func[3])) {
+               if(isset($func[5])) {
+                  if(isset($func[7])) {
+                     if(isset($func[9]))
+                        $ret = call_user_func_array(array_shift($func), $func);
+                     elseif(isset($func[8]))
+                        $ret = $func[0]($func[1], $func[2], $func[3], $func[4],
+                           $func[5], $func[6], $func[7], $func[8]);
+                     else
+                        $ret = $func[0]($func[1], $func[2], $func[3], $func[4],
+                           $func[5], $func[6], $func[7]);
+                  }elseif(isset($func[6]))
+                     $ret = $func[0]($func[1], $func[2], $func[3], $func[4],
+                        $func[5], $func[6]);
+                  else
+                     $ret = $func[0]($func[1], $func[2], $func[3], $func[4],
+                        $func[5]);
+               }elseif(isset($func[4]))
+                  $ret = $func[0]($func[1], $func[2], $func[3], $func[4]);
+               else
+                  $ret = $func[0]($func[1], $func[2], $func[3]);
+            }elseif(isset($func[2]))
+               $ret = $func[0]($func[1], $func[2]);
+            else
+               $ret = $func[0]($func[1]);
+         # End speed up
          Log::finalize(); # This has to be the really last function
       });
       $config = array_merge(self::$configDefaults, $config);
@@ -356,7 +384,7 @@ abstract class Config {
     * @param mixed $value
     */
    public static final function set($key, $value) {
-      if($key === 'localeInternal' || $key === 'localeRawFallback' || $key === 'subdomainBase' || $key === 'subdomainBaseError' || $key === 'subdomainDefault' || $key === 'subdomainDepth' || $key === 'plugins')
+      if($key === 'localeRawFallback' || $key === 'localeInternal' || $key === 'memcachedConnection' || $key === 'redisConnection' || $key === 'redisOptions' || $key === 'subdomainBase' || $key === 'subdomainBaseError' || $key === 'subdomainDefault' || $key === 'subdomainDepth' || $key === 'plugins')
          throw new ConfigurationException(I18N::getInternalLocale()->get(['config',
             'set', 'readonly'], [$key]));
       elseif(!isset(self::$configDefaults[$key]))
@@ -387,12 +415,14 @@ abstract class Config {
 
    /**
     * Registers a function that will be performed at the very end of everything.
-    * @param callable $callable
+    * @param callable $callback
+    * @param mixed $parameter, ... Optional parameters that will be passed to
+    *    the function
     * @return string An id that you may use to unregister the function again
     */
-   public static final function registerShutdownFunction(callable $callable) {
+   public static final function registerShutdownFunction(callable $callback) {
       while(isset(self::$shutdownFunctions[$id = uniqid()]));
-      self::$shutdownFunctions[$id] = $callable;
+      self::$shutdownFunctions[$id] = func_get_args();
       return $id;
    }
 
@@ -419,7 +449,7 @@ abstract class Config {
       # process requires three function calls.
       $suffix = substr($val, -1);
       $value = substr($val, 0, -1);
-      if(ctype_digit($value)) {
+      if(ctype_digit($value))
          if((string)(int)$suffix === $suffix)
             return (int)$val;
          elseif($suffix === 'm' || $suffix === 'M')
@@ -428,7 +458,6 @@ abstract class Config {
             return $value * 1024;
          elseif($suffix === 'g' || $suffix === 'G')
             return $value * 1073741824;
-      }
       return $val;
    }
 

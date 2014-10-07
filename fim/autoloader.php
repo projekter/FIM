@@ -89,9 +89,15 @@ spl_autoload_register(function($class) {
       static $plugins = null;
       if($plugins === null)
          $plugins = \Config::get('plugins');
-      if(isset($plugins[$lower]))
-         require (CodeDir . $plugins[$lower]);
-      else
+      if(isset($plugins[$lower])) {
+         $path = $plugins[$lower];
+         if($path[0] === '#')
+            require substr($path, 1);
+         else{
+            $cwd = new chdirHelper(CodeDir . 'plugins');
+            require \Router::convertFIMToFilesystem($path);
+         }
+      }else
          @include (CodeDir . "plugins/$dirname/{$pathInfo['basename']}");
    }
 });
