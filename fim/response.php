@@ -1136,7 +1136,7 @@ abstract class Response {
    }
 
    /**
-    * Lists all headers that will be sent or replaces them alltogether
+    * Lists all headers that will be sent or replaces them altogether
     * @param array $new Set this associate array to replace ALL headers
     * @return array Returns all the headers that will be sent
     */
