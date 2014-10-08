@@ -258,7 +258,7 @@ abstract class Module {
       $keepTemplateVars = true, $checkRules = true) {
       if(!$keepTemplateVars)
          self::$templateVars = [];
-      if(isset($parameters))
+      if($parameters !== null)
          $_GET = $parameters;
       \fim\Executor::handlePath($to, false, $checkRules);
       throw new ForwardException();
