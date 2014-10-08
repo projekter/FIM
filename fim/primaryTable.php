@@ -653,9 +653,6 @@ namespace {
        * @param array $bind Numeric or associative array (depending on the
        *    WHERE-clause) that specifies all bindings that will be applied to
        *    the query. Mind the datatypes!
-       * @param array $columns An array that defines which columns
-       *    will be returned. If you do not define this array, all columns will
-       *    be retrieved.
        * @param string $order_by (default null) Specify this string to sort the
        *    result in the desired way. Ensure that all column names are escaped
        *    properly. <code>'"lastname" ASC, "firstname" ASC'</code>
@@ -672,11 +669,10 @@ namespace {
        * @return static[]
        */
       protected static final function getBy($where = null, array $bind = null,
-         array $columns = [], $order_by = null, $group_by_having = null,
-         $limit = null, $join = '') {
+         $order_by = null, $group_by_having = null, $limit = null, $join = '') {
          return static::translateStatement(Database::getActiveConnection()->select(static::getStaticStorage('tableName'),
-                  $where, $bind, $columns, $order_by, $group_by_having, $limit,
-                  $join, true));
+                  $where, $bind, [], $order_by, $group_by_having, $limit, $join,
+                  true));
       }
 
       /**
@@ -701,9 +697,6 @@ namespace {
        * @param array $bind Numeric or associative array (depending on the
        *    WHERE-clause) that specifies all bindings that will be applied to
        *    the query. Mind the datatypes!
-       * @param array $columns An array that defines which columns
-       *    will be returned. If you do not define this array, all columns will
-       *    be retrieved.
        * @param string $order_by (default null) Specify this string to sort the
        *    result in the desired way. Ensure that all column names are escaped
        *    properly. <code>'"lastname" ASC, "firstname" ASC'</code>
@@ -720,10 +713,10 @@ namespace {
        * @return static|null
        */
       protected static final function getOneBy($where = null,
-         array $bind = null, array $columns = [], $order_by = null,
-         $group_by_having = null, $limit = null, $join = '') {
-         $return = static::getBy($where, $bind, $columns, $order_by,
-               $group_by_having, $limit, $join);
+         array $bind = null, $order_by = null, $group_by_having = null,
+         $limit = null, $join = '') {
+         $return = static::getBy($where, $bind, $order_by, $group_by_having,
+               $limit, $join);
          return reset($return) ? : null;
       }
 
