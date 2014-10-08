@@ -303,8 +303,8 @@ namespace {
       }
 
       /**
-       * Clears the cache for checked rules. Calling this might be necessary after
-       * an update of login credentials or similar operators.
+       * Clears the cache for checked rules. Calling this might be necessary
+       * after an update of login credentials or similar operators.
        * @param int $checkCache A bitmask of which caches to clear. Might be any
        *    combination of the \Rules::CHECK_-constants. Clears all caches by
        *    default.

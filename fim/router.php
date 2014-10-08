@@ -330,7 +330,7 @@ namespace {
       }
 
       /**
-       * Converts a given url to a normalized path respecing given routings.
+       * Converts a given url to a normalized path respecting given routings.
        * @param string $url
        * @param array &$parameters Outgoing parameter array
        * @param bool &$noRouting This will be true when no routing will ever
