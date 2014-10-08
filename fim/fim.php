@@ -94,11 +94,15 @@ function fimInitialize(array $config = []) {
    }
    fim\sessionInitialize();
 
+   ob_start();
+
    @include (CodeDir . ResourceDir . '/fim.startup.php');
 
    fim\Executor::execute();
 
    @include (CodeDir . ResourceDir . '/fim.shutdown.php');
+
+   \Response::$responseText .= ob_get_clean();
 
    Response::doSend();
 }

@@ -119,7 +119,8 @@ abstract class Module {
     *    to the module's path
     */
    protected final function displayTemplate($templateFile) {
-      Response::$responseText = $this->fetchTemplate($templateFile);
+      ob_clean();
+      echo $this->fetchTemplate($templateFile);
    }
 
    /**

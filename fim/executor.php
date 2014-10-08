@@ -169,7 +169,6 @@ abstract class Executor {
     */
    private static final function executeModule($className) {
       self::$executedModules = true;
-      ob_start();
       $module = new $className();
       $path = substr($module->getModulePath(), 2);
       try {
@@ -189,7 +188,6 @@ abstract class Executor {
          chdir(CodeDir);
          self::exception($path, $e);
       }
-      \Response::$responseText .= ob_get_clean();
    }
 
    /**
@@ -326,7 +324,7 @@ abstract class Executor {
          }elseif(empty($resultDir))
             $result .= "\r\n\r\n" . $intLanguage->get(['executor', 'directoryListing',
                   'empty']);
-         \Response::$responseText = $result;
+         echo $result;
       }else{
          header('Content-Type: text/html');
          $result = implode('', $resultDir) . implode('', $resultFile);
@@ -350,7 +348,7 @@ abstract class Executor {
             $result = "<ul>$result</ul>";
          $title = htmlspecialchars($intLanguage->get(['executor', 'directoryListing',
                'title']));
-         \Response::$responseText .= // <editor-fold desc="Directory Listing code" defaultstate="collapsed">
+         echo // <editor-fold desc="Directory Listing code" defaultstate="collapsed">
             <<<listing
 <!DOCTYPE html>
 <html>
@@ -771,13 +769,7 @@ listing;
             empty($details) ? 'none' : implode(', ', $details),
             isset(\FIMErrorException::$last) ?
                \FIMErrorException::$last->getTraceAsString() : 'none']);
-         if(ob_get_level() === 0)
-            if(!\Config::get('production'))
-               \Response::$responseText .= $language->get(['executor', 'error', 'production'],
-                  [$errno]);
-            else
-               \Response::$responseText .= $logStr;
-         elseif(!\Config::get('production')) {
+         if(!\Config::get('production')) {
             echo $language->get(['executor', 'error', 'production'], [$errno]);
             \Log::reportError($logStr, true);
          }else
