@@ -40,10 +40,7 @@ abstract class Log {
       self::$customErrors = fopen("$dir/customError.log", 'a+');
    }
 
-   /**
-    * This function must not be called. It closes all open file handles
-    */
-   public static final function finalize() {
+   private static final function finalize() {
       $e = error_get_last();
       if(($e !== null) && in_array($e['type'],
             [E_ERROR, E_PARSE,

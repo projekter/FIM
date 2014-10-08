@@ -102,7 +102,10 @@ abstract class Config {
             else
                $ret = $func[0]($func[1]);
          # End speed up
-         Log::finalize(); # This has to be the really last function
+         $finalizeLog = Closure::bind(function() {
+               self::finalize();
+            }, null, 'Log');
+         $finalizeLog(); # This has to be the really last function
       });
       $config = array_merge(self::$configDefaults, $config);
 
