@@ -315,7 +315,7 @@ namespace {
        * Returns the complete locale of this object
        * @return string
        */
-      public final function getLocaleName() {
+      public final function getLocaleId() {
          return $this->locale;
       }
 
@@ -323,7 +323,7 @@ namespace {
        * Returns the language part of this locale
        * @return string
        */
-      public final function getLocaleLanguage() {
+      public final function getLanguageId() {
          return Locale::getPrimaryLanguage($this->locale);
       }
 
@@ -331,7 +331,7 @@ namespace {
        * Returns the region part of this locale
        * @return string
        */
-      public final function getLocaleRegion() {
+      public final function getRegionId() {
          return Locale::getRegion($this->locale);
       }
 
@@ -339,25 +339,25 @@ namespace {
        * Returns the script part of this locale
        * @return string
        */
-      public final function getLocaleScript() {
+      public final function getScriptId() {
          return Locale::getScript($this->locale);
-      }
-
-      /**
-       * Returns the name of the language of this locale
-       * @return string
-       */
-      public final function getDisplayLanguage() {
-         return Locale::getDisplayLanguage($this->locale,
-               self::$activeLocale->locale);
       }
 
       /**
        * Returns the name of this locale
        * @return string
        */
-      public final function getDisplayName() {
+      public final function getLocaleName() {
          return Locale::getDisplayName($this->locale,
+               self::$activeLocale->locale);
+      }
+
+      /**
+       * Returns the name of the language of this locale
+       * @return string
+       */
+      public final function getLanguageName() {
+         return Locale::getDisplayLanguage($this->locale,
                self::$activeLocale->locale);
       }
 
@@ -365,7 +365,7 @@ namespace {
        * Returns the name of the region of this locale
        * @return string
        */
-      public final function getDisplayRegion() {
+      public final function getRegionName() {
          return Locale::getDisplayRegion($this->locale,
                self::$activeLocale->locale);
       }
@@ -374,7 +374,7 @@ namespace {
        * Returns the name of the script of this locale
        * @return string
        */
-      public final function getDisplayScript() {
+      public final function getScriptName() {
          return Locale::getDisplayScript($this->locale,
                self::$activeLocale->locale);
       }
@@ -383,7 +383,7 @@ namespace {
        * Returns the name of the variant of this locale
        * @return string
        */
-      public final function getDisplayVariant() {
+      public final function getVariantName() {
          return Locale::getDisplayVariant($this->locale,
                self::$activeLocale->locale);
       }

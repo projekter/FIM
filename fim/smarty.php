@@ -484,8 +484,8 @@ namespace {
    function i18nURL($checkFor, array $path = null) {
       static $functions = [I18N::SUPPORTED_LOCALES => 'Name', I18N::SUPPORTED_LANGUAGES => 'Language',
          I18N::SUPPORTED_REGIONS => 'Region', I18N::SUPPORTED_SCRIPTS => 'Script'];
-      $getName = "getLocale{$functions[$checkFor]}";
-      $getDisplay = "getDisplay{$functions[$checkFor]}";
+      $getName = "get{$functions[$checkFor]}Id";
+      $getDisplay = "get{$functions[$checkFor]}Name";
 
       $currentLocale = I18N::getLocale();
       $currentName = $currentLocale->$getName();
