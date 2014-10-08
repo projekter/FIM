@@ -72,7 +72,7 @@ abstract class fileUtils {
          'accessTime' => (int)$return[3],
          'modificationTime' => (int)$return[4],
          'executable' => (bool)$return[5],
-         'size' => (string)$return[6],
+         'size' => 0 + $return[6],
          'readOnly' => (bool)$return[7],
          'type' => (string)$return[8], # 'file' or 'dir'
          'sub' => $sub,
@@ -131,7 +131,7 @@ abstract class fileUtils {
          curl_close($cURL);
          if(isset($data) && $data !== false && preg_match('/Content-Length: (\\d+)/',
                $data, $match))
-            return (string)$match[1];
+            return 0 + $match[1];
       }
       try {
          $codedName = self::encodeFilename($fileName);
@@ -149,10 +149,10 @@ abstract class fileUtils {
             flock($handle, LOCK_UN);
             fclose($handle);
             if($pos >= 0) # Only for speed
-               return (string)$pos;
+               return 0 + $pos;
             else
             # So now we know the size is greater than 2 GB but less than 4 GB
-               return sprintf('%u', $pos);
+               return 0 + sprintf('%u', $pos);
          }
          flock($handle, LOCK_UN);
          fclose($handle);
@@ -171,7 +171,7 @@ abstract class fileUtils {
          if(self::$hasExec) {
             $size = trim(exec('stat -Lc%s ' . escapeshellarg($fileName)));
             if($size && ctype_digit($size))
-               return (string)$size;
+               return 0 + $size;
          }
       }else{
          # So on Windows, we cannot resolve symbolic links in every occasion,
@@ -198,9 +198,9 @@ abstract class fileUtils {
       if(($size = @filesize($codedName)) === false)
          return false;
       elseif($size >= 0)
-         return (string)$size;
+         return $size;
       else
-         return sprintf('%u', $size);
+         return 0 + sprintf('%u', $size);
    }
 
    /**
@@ -317,37 +317,37 @@ abstract class fileUtils {
     * the current CodePage, an exception is thrown.<br />
     * If the current operating system is not Windows, the input string will be
     * given back.
-    * @param string $utf8Filename
+    * @param string $utf8FileName
     * @param boolean $mask (default false) Set this to true if you wish to
     *    replace all illegal characters by a question mark instead of throwing
     *    an exception.
     * @return string
     * @throws UnexpectedValueException
     */
-   public static function encodeFilename($utf8Filename, $mask = false) {
+   public static function encodeFilename($utf8FileName, $mask = false) {
       if(OS !== 'Windows')
-         return $utf8Filename;
+         return $utf8FileName;
       # If the filename is plain ASCII, we can return it without having to do
       # any of the conversions or CodePage stuff
-      if(preg_match("/[\x80-\xff]/", $utf8Filename) === 0)
-         return $utf8Filename;
+      if(preg_match("/[\x80-\xff]/", $utf8FileName) === 0)
+         return $utf8FileName;
       if(self::$codepage === null)
          self::initCodepage();
       if(($codepage = self::$codepage) === false)
-         return $utf8Filename;
+         return $utf8FileName;
       # Now we have to transform our filename, which is supposed to be UTF-8
       # encoded, to a valid CodePage equivalent.
       $encodedPath = '';
-      $len = strlen($utf8Filename);
+      $len = strlen($utf8FileName);
       for($i = 0; $i < $len; ++$i) {
-         $b1 = ord($utf8Filename[$i]);
+         $b1 = ord($utf8FileName[$i]);
          if(($b1 & 0x80) === 0)
             $val = $b1;
          elseif(($b1 & 0xE0) == 0xC0)
-            $val = (($b1 & 0x1F) << 6) | (ord($utf8Filename[++$i]) & 0x3F);
+            $val = (($b1 & 0x1F) << 6) | (ord($utf8FileName[++$i]) & 0x3F);
          else{
-            $b2 = ord($utf8Filename[++$i]);
-            $val = (($b1 & 0x0F) << 12) | (($b2 & 0x3F) << 6) | (ord($utf8Filename[++$i]) & 0x3F);
+            $b2 = ord($utf8FileName[++$i]);
+            $val = (($b1 & 0x0F) << 12) | (($b2 & 0x3F) << 6) | (ord($utf8FileName[++$i]) & 0x3F);
          }
          if(isset($codepage[$val]))
             $encodedPath .= chr($codepage[$val]);
@@ -356,7 +356,7 @@ abstract class fileUtils {
          else
          # Now we know for sure that our native PHP methods will fail,
          # we cannot even tell whether the file exists.
-            throw new UnexpectedValueException("Filename beyond allowed character range: $utf8Filename");
+            throw new UnexpectedValueException("Filename beyond allowed character range: $utf8FileName");
       }
       return $encodedPath;
    }
@@ -367,29 +367,29 @@ abstract class fileUtils {
     * the current CodePage, an exception is thrown.<br />
     * If the current operating system is not Windows, the input string will be
     * given back.
-    * @param string $codepageFilename
+    * @param string $codepageFileName
     * @return string
     * @throws UnexpectedValueException
     */
-   public static function decodeFilename($codepageFilename) {
+   public static function decodeFilename($codepageFileName) {
       if(OS !== 'Windows')
-         return $codepageFilename;
+         return $codepageFileName;
       # If the filename is plain ASCII, we can return it without having to do
       # any of the conversions or CodePage stuff
-      if(preg_match("/[\x80-\xff]/", $codepageFilename) === 0)
-         return $codepageFilename;
+      if(preg_match("/[\x80-\xff]/", $codepageFileName) === 0)
+         return $codepageFileName;
       if(self::$codepage === null)
          self::initCodepage();
       if(($codepage = self::$reverseCodepage) === false)
-         return $codepageFilename;
-      $len = strlen($codepageFilename);
+         return $codepageFileName;
+      $len = strlen($codepageFileName);
       $decodedPath = '';
       for($i = 0; $i < $len; ++$i) {
-         $b = ord($codepageFilename[$i]);
+         $b = ord($codepageFileName[$i]);
          if(!isset($codepage[$b]) && ( ++$i < $len)) {
-            $b = ($b << 4) | ord($codepageFilename[$i]);
+            $b = ($b << 4) | ord($codepageFileName[$i]);
             if(!isset($codepage[$b]))
-               throw new UnexpectedValueException("Filename beyond allowed character range: $codepageFilename");
+               throw new UnexpectedValueException("Filename beyond allowed character range: $codepageFileName");
          }
          $code = $codepage[$b];
          if($code < 0 || $code > 65535)
@@ -492,7 +492,7 @@ if(OS === 'Windows') {
          try {
             $this->data = ['atime' => $sfi->getATime(), 'ctime' => $sfi->getCTime(),
                'mtime' => $sfi->getMTime(), 'perms' => $sfi->getPerms(),
-               'size' => sprintf('%u', $sfi->getSize()), 'target' => fileUtils::decodeFilename($sfi->getLinkTarget()),
+               'size' => 0 + sprintf('%u', $sfi->getSize()), 'target' => fileUtils::decodeFilename($sfi->getLinkTarget()),
                'type' => $sfi->getType(),
                'readable' => $sfi->isReadable(), 'writable' => $sfi->isWritable()];
             $this->path = fileUtils::decodeFilename($sfi->getRealPath());
@@ -696,7 +696,7 @@ if(OS === 'Windows') {
        * (PHP 5 &gt;= 5.1.2)<br/>
        * Gets file size
        * @link http://php.net/manual/en/splfileinfo.getsize.php
-       * @return int The filesize in bytes.
+       * @return int|double The filesize in bytes.
        */
       public function getSize() {
          return $this->data['size'];
@@ -1025,7 +1025,7 @@ if(OS === 'Windows') {
        * (PHP 5 &gt;= 5.1.2)<br/>
        * Gets file size
        * @link http://php.net/manual/en/splfileinfo.getsize.php
-       * @return int The filesize in bytes.
+       * @return int|double The filesize in bytes.
        */
       public function getSize() {
          return fileUtils::size($this->getPathname());
