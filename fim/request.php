@@ -194,7 +194,7 @@ abstract class Request {
 
    /**
     * Retrieves a valid fopen handle to a given file. As this is a temporary
-    * file it will be openend with 'rb' privileges.
+    * file it will be opened with 'rb' privileges.
     * @param string $param The name of the parameter
     * @return resource|false
     */
