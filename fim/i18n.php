@@ -244,6 +244,26 @@ namespace {
       }
 
       /**
+       * Calculates the prefered locale according to the user's browser. The
+       * locale has to be included in $acceptedLocales
+       * @param array $acceptedLocales This array contains all valid locales.
+       *    If null, all supported locales are used.
+       * @param string $fallback This locale string will be returned when there
+       *    is no match
+       * @return string A locale string
+       */
+      public static final function detectBrowserLocale(array $acceptedLocales = null,
+         $fallback = 'en') {
+         if($acceptedLocales === null)
+            $acceptedLocales = self::getSupportedLocales();
+         $lang = Locale::acceptFromHttp(@$_SERVER['HTTP_ACCEPT_LANGUAGE']);
+         if($lang !== null)
+            return Locale::lookup($acceptedLocales, $lang, true, $fallback);
+         else
+            return $fallback;
+      }
+
+      /**
        * Formats a language key.
        * @param string|array $key The language key identifier
        * @param array $args Parameters that will be passed to
@@ -709,26 +729,6 @@ namespace {
          $this->calendar = $calendar;
          foreach($this->dateFormatters as $dF)
             $dF->setCalendar($calendar);
-      }
-
-      /**
-       * Calculates the prefered locale according to the user's browser. The
-       * locale has to be included in $acceptedLocales
-       * @param array $acceptedLocales This array contains all valid locales.
-       *    If null, all supported locales are used.
-       * @param string $fallback This locale string will be returned when there
-       *    is no match
-       * @return string A locale string
-       */
-      public static final function detectBrowserLocale(array $acceptedLocales = null,
-         $fallback = 'en') {
-         if($acceptedLocales === null)
-            $acceptedLocales = self::getSupportedLocales();
-         $lang = Locale::acceptFromHttp(@$_SERVER['HTTP_ACCEPT_LANGUAGE']);
-         if($lang !== null)
-            return Locale::lookup($acceptedLocales, $lang, true, $fallback);
-         else
-            return $fallback;
       }
 
    }
