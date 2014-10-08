@@ -22,8 +22,9 @@ namespace {
    if(CLI) {
 
       /**
-       * This class provides all functionalities for dealing with objects and values
-       * that have to persist in a longer context than the current request.
+       * This class provides all functionalities for dealing with objects and
+       * values that have to persist in a longer context than the current
+       * request.
        */
       abstract class Session {
 
@@ -32,8 +33,8 @@ namespace {
           * memcache library) which is connected according to the
           * memcachedConnection configuration.
           * Null, if there is no given memcachedConnection.
-          * If there was no memcached extension found, a php-only fallback is used.
-          * This should not be considered speedy...
+          * If there was no memcached extension found, a php-only fallback is
+          * used. This should not be considered speedy...
           * @var Memcached
           */
          public static $memcached;
@@ -60,8 +61,9 @@ namespace {
    }else{
 
       /**
-       * This class provides all functionalities for dealing with objects and values
-       * that have to persist in a longer context than the current request.
+       * This class provides all functionalities for dealing with objects and
+       * values that have to persist in a longer context than the current
+       * request.
        */
       abstract class Session {
 
@@ -134,8 +136,8 @@ namespace {
           * Sets a session variable
           * @param string $name The variable name
           * @param mixed $value The variable value
-          * @param bool $overwrite (default true) Set this to false if you do not want
-          *    to overwrite an existing variable of the same name
+          * @param bool $overwrite (default true) Set this to false if you do
+          *    not want to overwrite an existing variable of the same name
           */
          public static function set($name, $value, $overwrite = true) {
             $sname = "fim$name";
@@ -156,8 +158,9 @@ namespace {
 
          /**
           * Removes all the session variables
-          * @param bool $onlyStatic (default true) If false, flash variables will be
-          *    deleted too. If true, only static variables will be removed.
+          * @param bool $onlyStatic (default true) If false, flash variables
+          *    will be deleted too. If true, only static variables will be
+          *    removed.
           */
          public static function clear($onlyStatic = true) {
             foreach($_SESSION as $key => $value)
@@ -175,7 +178,8 @@ namespace {
           * @param string $name The variable name
           * @param mixed $default A default value that will be returned if the
           *    requested variable is not accessible
-          * @param boolean $extend Automatically call extendFlash() for this variable
+          * @param boolean $extend Automatically call extendFlash() for this
+          *    variable
           * @return mixed
           */
          public static function getFlash($name, $default = null, $extend = false) {
@@ -204,12 +208,12 @@ namespace {
          }
 
          /**
-          * Sets a temporary session variable that will only be accessible within the
-          * very next request
+          * Sets a temporary session variable that will only be accessible
+          * within the very next request
           * @param string $name The variable name
           * @param mixed $value The variable value
-          * @param bool $overwrite (default true) Set this to false if you do not want
-          *    to overwrite an existing variable of the same name
+          * @param bool $overwrite (default true) Set this to false if you do
+          *    not want to overwrite an existing variable of the same name
           */
          public static function setFlash($name, $value, $overwrite = true) {
             $sname = "Fim$name";
@@ -225,14 +229,14 @@ namespace {
           * Removes a temporary session variable
           * @param string $name The variable name
           */
-         public static function deleteFlash($name) {
+            public static function deleteFlash($name) {
             unset($_SESSION["Fim$name"], self::$sessionFlash[$name],
                self::$extendedFlashs[$name]);
          }
 
          /**
-          * Extends the lifetime of a temporary session variable so it will stay one
-          * more request alilfe
+          * Extends the lifetime of a temporary session variable so it will stay
+          * one more request alive
           * @param string $name The variable name
           */
          public static function extendFlash($name) {
@@ -309,16 +313,17 @@ namespace {
          }
 
          /**
-          * @return string Returns the current session id
+          * Returns the current session id
+          * @return string
           */
          public static function getId() {
             return session_id();
          }
 
          /**
-          * Renews the session id with respect to the session transition. Renewal
-          * is not possible when the current session is a transition session which
-          * was already replaced by another one.
+          * Renews the session id with respect to the session transition.
+          * Renewal is not possible when the current session is a transition
+          * session which was already replaced by another one.
           * @return string|false The new session id
           */
          public static function renewId() {
@@ -373,10 +378,11 @@ namespace {
          }
 
          /**
-          * Sets the lifetime of the session cookie used by the framework. A lifetime
-          * of zero means that the cookie expires when the browser window closes
-          * (default). All other values are in seconds, calculated from now. This
-          * does not have anything to do with the session configuration.
+          * Sets the lifetime of the session cookie used by the framework. A
+          * lifetime of zero means that the cookie expires when the browser
+          * window closes (default). All other values are in seconds, calculated
+          * from now. This does not have anything to do with the session
+          * configuration.
           * @param int $lifetime
           * @return bool True on success, false when the current session is a
           *    transition session which was already replaced by another one.
