@@ -109,12 +109,7 @@ namespace {
          $this->locale = $name;
       }
 
-      /**
-       * Internal function. Do not use.
-       * @param string $locale
-       * @throws I18NException
-       */
-      public static final function initialize($locale) {
+      private static final function initialize($locale) {
          if(self::$internalLocale !== null)
             throw new FIMInternalException(self::$internalLocale->get(['i18n',
                'doubleInitialization']));

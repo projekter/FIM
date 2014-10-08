@@ -109,7 +109,10 @@ abstract class Config {
       # Try to make I18N work
       if(!is_string($config['localeInternal']))
          throw new ConfigurationException('Error in configuration: localeInternal must be of type string');
-      \I18N::initialize($config['localeInternal']);
+      $i18nInit = Closure::bind(function($li) {
+            self::initialize($li);
+         }, null, 'I18N');
+      $i18nInit($config['localeInternal']);
 
       # Now all messages can be localized. Validate configuration entries
       self::validateKeys($config);
