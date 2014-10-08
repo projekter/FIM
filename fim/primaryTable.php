@@ -716,7 +716,7 @@ namespace {
          array $bind = null, $order_by = null, $group_by_having = null,
          $limit = null, $join = '') {
          $return = static::getBy($where, $bind, $order_by, $group_by_having,
-               $limit, $join);
+               $limit === null ? '0, 1' : $limit, $join);
          return reset($return) ? : null;
       }
 
