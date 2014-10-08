@@ -162,10 +162,10 @@ namespace {
       protected $virtual = false;
 
       /**
-       * Initializes the static storage. In this storage, all details as the table
-       * name or other variables that would have been declared as static in the
-       * actual subclass are put. Setting a value is only possible by overwriting
-       * this initialization function.<br />
+       * Initializes the static storage. In this storage, all details as the
+       * table name or other variables that would have been declared as static
+       * in the actual subclass are put. Setting a value is only possible by
+       * overwriting this initialization function.<br />
        * Do not forget to call the parent function!
        * @param array &$storage
        */
@@ -440,8 +440,8 @@ namespace {
       }
 
       /**
-       * Turns the "virtual" table entry into one that really is represented in the
-       * database. The id will change.
+       * Turns the "virtual" table entry into one that really is represented in
+       * the database. The id will change.
        * @return static
        */
       protected function makeDBRepresentation() {
@@ -502,9 +502,10 @@ namespace {
       }
 
       /**
-       * This function creates a new table entry.
-       * All the parameters have to be given in exactly the same order as declared.
-       * An autoincrement key must not be given.
+       * This function creates a new table entry.<br />
+       * All the parameters have to be given in exactly the same order as
+       * declared.<br />
+       * An autoincrement key must not be given.<br />
        * If there is one parameter more than expected and this last parameter is
        * true, a virtual entry will be created which has no database
        * representation. You may as well give false in order to specify database
@@ -582,8 +583,8 @@ namespace {
       }
 
       /**
-       * This function converts the results from a database statement into objects
-       * of the current class.
+       * This function converts the results from a database statement into
+       * objects of the current class.
        * @param PDOStatement $result
        * @return static[]
        * @throws PrimaryTableException if a database entry was invalid
@@ -632,7 +633,8 @@ namespace {
       }
 
       /**
-       * Returns an array of objects of this class that fulfil given expectations
+       * Returns an array of objects of this class that fulfill given
+       * expectations
        * @param array $where (default empty)
        * @param string|null $orderBy A valid SQL order string or null
        * @return static[]
@@ -643,16 +645,17 @@ namespace {
       }
 
       /**
-       * Returns an array of objects of this class that fulfil given expectations
+       * Returns an array of objects of this class that fulfill given
+       * expectations
        * @param string $where String that will be assigned to the WHERE-clause.
        *    If you do not define this string, there will not be any WHERE
        *    restriction.
        * @param array $bind Numeric or associative array (depending on the
-       *    WHERE-clause) that specifies all bindings that will be applied to the
-       *    query. Mind the datatypes!
+       *    WHERE-clause) that specifies all bindings that will be applied to
+       *    the query. Mind the datatypes!
        * @param array $columns An array that defines which columns
-       *    will be returned. If you do not define this array, all columns will be
-       *    retrieved.
+       *    will be returned. If you do not define this array, all columns will
+       *    be retrieved.
        * @param string $order_by (default null) Specify this string to sort the
        *    result in the desired way. Ensure that all column names are escaped
        *    properly. <code>'"lastname" ASC, "firstname" ASC'</code>
@@ -677,8 +680,8 @@ namespace {
       }
 
       /**
-       * Returns the first object of this class that fulfils given expectations or
-       * null if there is none.
+       * Returns the first object of this class that fulfils given expectations
+       * or null if there is none.
        * @param array $where
        * @param string|null $orderBy A valid SQL order string or null
        * @return static|null
@@ -690,17 +693,17 @@ namespace {
       }
 
       /**
-       * Returns the first object of this class that fulfils given expectations or
-       * null if there is none
+       * Returns the first object of this class that fulfils given expectations
+       * or null if there is none
        * @param string $where String that will be assigned to the WHERE-clause.
        *    If you do not define this string, there will not be any WHERE
        *    restriction.
        * @param array $bind Numeric or associative array (depending on the
-       *    WHERE-clause) that specifies all bindings that will be applied to the
-       *    query. Mind the datatypes!
+       *    WHERE-clause) that specifies all bindings that will be applied to
+       *    the query. Mind the datatypes!
        * @param array $columns An array that defines which columns
-       *    will be returned. If you do not define this array, all columns will be
-       *    retrieved.
+       *    will be returned. If you do not define this array, all columns will
+       *    be retrieved.
        * @param string $order_by (default null) Specify this string to sort the
        *    result in the desired way. Ensure that all column names are escaped
        *    properly. <code>'"lastname" ASC, "firstname" ASC'</code>
