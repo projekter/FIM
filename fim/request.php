@@ -161,7 +161,7 @@ abstract class Request {
     * @see Request::getFileDetails()
     */
    public static final function getFileError($param) {
-      if(self::hasFile($param))
+      if(isset($_FILES[$param]))
          return $_FILES[$param]['error'];
       else
          return UPLOAD_ERR_NO_FILE;
@@ -220,7 +220,7 @@ abstract class Request {
     */
    public static final function getFileName($param, $default = null,
       $encodeName = true) {
-      if(self::has($param))
+      if(isset($_FILES[$param]))
          return $encodeName ? fileUtils::encodeFilename($_FILES[$param]['name'],
                true) : $_FILES[$param]['name'];
       else
@@ -237,7 +237,7 @@ abstract class Request {
     * @see Request::getFileDetails()
     */
    public static final function getFileSize($param, $default = null) {
-      if(self::has($param))
+      if(isset($_FILES[$param]))
          return $_FILES[$param]['size'];
       else
          return $default;
@@ -254,7 +254,7 @@ abstract class Request {
     * @see Request::getFileDetails()
     */
    public static final function getFileType($param, $default = null) {
-      if(self::has($param))
+      if(isset($_FILES[$param]))
          return $_FILES[$param]['type'];
       else
          return $default;
@@ -270,7 +270,7 @@ abstract class Request {
     * @see Request::getFileDetails()
     */
    public static final function getFileTemporaryName($param, $default = null) {
-      if(self::has($param))
+      if(isset($_FILES[$param]))
          return $_FILES[$param]['tmp_name'];
       else
          return $default;
@@ -295,7 +295,7 @@ abstract class Request {
     * @see Request::getFileTemporaryName()
     */
    public static final function getFileDetails($param, $encodeName = true) {
-      if(self::has($param)) {
+      if(isset($_FILES[$param])) {
          if($encodeName) {
             $result = $_FILES[$param];
             $result['name'] = fileUtils::encodeFilename($result['name'], true);
@@ -529,7 +529,7 @@ abstract class Request {
    }
 
    /**
-    * Gets the maximum number of bytes that can be uploaded. This is the minium
+    * Gets the maximum number of bytes that can be uploaded. This is the minimum
     * value of php.ini's upload_max_filesize, post_max_size and memory_limit
     * @return int
     */
