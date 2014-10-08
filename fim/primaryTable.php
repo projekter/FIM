@@ -114,7 +114,7 @@ namespace {
 
       /**
        * Call this function in order to store the given value in the database.
-       * Requires bouding state
+       * Requires state to be bound
        * @param mixed $value
        * @throws DataHelperPrimitiveException
        */
