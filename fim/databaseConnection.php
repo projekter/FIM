@@ -259,6 +259,7 @@ final class DatabaseConnection {
    }
 
    /**
+    * Returns the current PDO instance.
     * @return PDO
     */
    public final function getConnection() {
