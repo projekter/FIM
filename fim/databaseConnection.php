@@ -139,7 +139,10 @@ final class DatabaseConnection {
                   throw new DatabaseException(I18N::getInternalLocale()->get(['databaseConnection',
                      'data', 'missing'],
                      ['SQLite', 'database', $this->connectionFile]));
-               $dsn = "sqlite:{$data['database']}";
+               if($data['database'] === ':memory:')
+                  $dsn = 'sqlite::memory:';
+               else
+                  $dsn = 'sqlite:' . Router::convertFIMToFilesystem($data['database']);
                break;
             case 'odbc':
                throw new DatabaseException(I18N::getInternalLocale()->get(['databaseConnection',
