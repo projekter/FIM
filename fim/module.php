@@ -148,7 +148,7 @@ abstract class Module {
          Response::contentNegotiation($newMIMEType, $newCharset);
       else{
          if(strpos($newMIMEType, '/') === false)
-            $newMIMEType = Response::getMIMEType(".$newMIMEType");
+            $newMIMEType = Response::getMIMEType($newMIMEType);
          Response::set('Content-Type', "$newMIMEType$encoding");
       }
       Smarty::$_CHARSET = $newCharset;

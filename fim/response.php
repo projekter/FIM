@@ -1295,7 +1295,7 @@ abstract class Response {
       }
       foreach($contentTypes as &$m)
          if(strpos($m, '/') === false)
-            $m = self::getMIMEType(".$m");
+            $m = self::getMIMEType($m);
          else
             $m = strtolower($m);
       if(isset($_SERVER['HTTP_ACCEPT'])) {
