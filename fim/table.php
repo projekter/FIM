@@ -29,7 +29,6 @@ abstract class Table implements fimSerializable {
     * @var array
     */
    protected $fields;
-   private static $staticStorage = [];
 
    protected function __construct() {
       if(!isset(static::$columns))
@@ -130,14 +129,12 @@ abstract class Table implements fimSerializable {
     * @return array
     */
    protected static final function getStaticStorage($singleValue = null) {
+      # Static variables in functions will be different for each subclass unlike
+      # static class members
       static $storage = null;
       if($storage === null) {
-         # Access by reference will suppress the error if the key does not exist
-         $storage = &self::$staticStorage[get_called_class()];
-         if($storage === null) {
-            $storage = [];
-            static::initializeStaticStorage($storage);
-         }
+         $storage = [];
+         static::initializeStaticStorage($storage);
       }
       if($singleValue !== null)
          return $storage[$singleValue];
