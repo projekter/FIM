@@ -230,7 +230,7 @@ namespace {
       private function update($name, $value, $fieldValue = null) {
          $data = static::getStaticStorage();
          if(!$this->virtual)
-            Database::getActiveConnection()->update($data['tableName'],
+            Database::getActiveConnection()->simpleUpdate($data['tableName'],
                array($name => $value),
                array_intersect_key($this->fields, $data['keys']));
          if($fieldValue === null)
@@ -491,7 +491,7 @@ namespace {
             return true;
          $data = static::getStaticStorage();
          if(!$this->virtual)
-            if(!Database::getActiveConnection()->delete($data['tableName'],
+            if(!Database::getActiveConnection()->simpleDelete($data['tableName'],
                   array_intersect_key($this->fields, $data['keys'])))
                return false;
          foreach($data['dataHelpers'] as $key => $true)
@@ -740,7 +740,7 @@ namespace fim {
          \Closure::bind(function() use ($key, $helper) {
             $data = static::getStaticStorage();
             if(!$this->virtual)
-               \Database::getActiveConnection()->update($data['tableName'],
+               \Database::getActiveConnection()->simpleUpdate($data['tableName'],
                   array($key => $helper->getStorageValue()),
                   array_intersect_key($this->fields, $data['keys']));
          }, $to, $to));

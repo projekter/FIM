@@ -497,6 +497,35 @@ final class DatabaseConnection {
     * @param string $table The table name
     * @param array $newValues An associative array that connects column names
     *    with their values
+    * @param string $where String that will be assigned to the WHERE-clause.
+    *    If you do not define this string, there will not be any WHERE
+    *    restriction.
+    * @param array $bind <u>Numeric</u> array (named parameters are not
+    *    supported in the WHERE-clause) that specifies all bindings that will be
+    *    applied to the query (except for those in $newValues). Mind the
+    *    datatypes!
+    * @return bool True on success
+    * @throws DatabaseException
+    */
+   public final function update($table, array $newValues, $where = null,
+      array $bind = null) {
+      if(empty($newValues))
+         return true;
+      $sql = "UPDATE \"$table\" SET \"" . implode('" = ?, "',
+            array_keys($newValues)) . '" = ?';
+      $params = array_values($newValues);
+      if(!empty($where))
+         $sql .= " WHERE $where";
+      if(!empty($bind))
+         $params = array_merge($params, array_values($bind));
+      return $this->execute($this->connection->prepare($sql), $params);
+   }
+
+   /**
+    * Executes an update statement with simple conditions to the database.
+    * @param string $table The table name
+    * @param array $newValues An associative array that connects column names
+    *    with their values
     * @param array $whereColumns Either this is a same structured associative
     *    array with conditions for the update or this is a simple enumerating
     *    array for which the keys will be assumed in the same order as in
@@ -505,12 +534,8 @@ final class DatabaseConnection {
     * @return bool True on success
     * @throws DatabaseException
     */
-   public final function update($table, array $newValues, array $whereColumns) {
-      if(empty($newValues))
-         return null;
-      $sql = "UPDATE \"$table\" SET \"" . implode('" = ?, "',
-            array_keys($newValues)) . '" = ?';
-      $params = array_values($newValues);
+   public final function simpleUpdate($table, array $newValues,
+      array $whereColumns) {
       if(!empty($whereColumns)) {
          reset($whereColumns);
          if(is_int(key($whereColumns))) {
@@ -523,25 +548,43 @@ final class DatabaseConnection {
                   'sql', 'updateError']));
          }else
             $keys = array_keys($whereColumns);
-         $sql .= ' WHERE "' . implode('" = ? AND "', $keys) . '" = ?';
-         $params = array_merge($params, array_values($whereColumns));
-      }
-      return $this->execute($this->connection->prepare($sql), $params);
+         $where = '"' . implode('" = ? AND "', $keys) . '" = ?';
+      }else
+         $where = '';
+      return $this->update($table, $newValues, $where, $whereColumns);
    }
 
    /**
     * Executes a delete statement to the database.
     * @param string $from The table name
+    * @param string $where String that will be assigned to the WHERE-clause.
+    *    If you do not define this string, there will not be any WHERE
+    *    restriction.
+    * @param array $bind Numeric or associative array (depending on the
+    *    WHERE-clause) that specifies all bindings that will be applied to the
+    *    query. Mind the datatypes!
+    * @return bool True on success
+    */
+   public final function delete($from, $where = null, $bind = null) {
+      $sql = "DELETE FROM \"$from\"";
+      if(!empty($where))
+         $sql .= " WHERE $where";
+      return $this->execute($this->connection->prepare($sql), $bind);
+   }
+
+   /**
+    * Executes a delete statement with simple conditions to the database.
+    * @param string $from The table name
     * @param array $whereColumns An associative array that connects column names
     *    with their values
     * @return bool True on success
     */
-   public final function delete($from, array $whereColumns) {
-      $sql = "DELETE FROM \"$from\"";
+   public final function simpleDelete($from, array $whereColumns) {
       if(!empty($whereColumns))
-         $sql .= ' WHERE "' . implode('" = ? AND "', array_keys($whereColumns)) . '" = ?';
-      return $this->execute($this->connection->prepare($sql),
-            array_values($whereColumns));
+         $where .= '"' . implode('" = ? AND "', array_keys($whereColumns)) . '" = ?';
+      else
+         $where = '';
+      return $this->delete($from, $where, array_values($whereColumns));
    }
 
    /**
