@@ -83,8 +83,8 @@ abstract class fileUtils {
     * Calculates the size of file even for files that are greater than two
     * or four GB correctly. Symbolic links will be resolved.
     * @param string $fileName
-    * @return string|bool False only if none of the extensions cURL or COM is
-    *    available, exec is disabled and the file is inaccessible.
+    * @return int|double|bool False only if none of the extensions cURL or COM
+    *    is available, exec is disabled and the file is inaccessible.
     */
    public static function size($fileName) {
       $fileName = \Router::normalizeFilesystem($fileName);
