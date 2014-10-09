@@ -308,7 +308,7 @@ abstract class Request {
    }
 
    /**
-    * Gets the current uri that was requested. This does not include subdomains
+    * Gets the current URL that was requested. This does not include subdomains
     * or the server name and no parameters as well. BaseDir will be truncated if
     * necessary. The URL will start with a slash.
     * @param bool $parameters (default false) Set this to true if GET parameters
@@ -349,7 +349,7 @@ abstract class Request {
    }
 
    /**
-    * Gets the current parameter string that is appended to the url, starting
+    * Gets the current parameter string that is appended to the URL, starting
     * with the delimiter character. An empty string if there were no
     * parameters.
     * @return string
