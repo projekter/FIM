@@ -1390,10 +1390,10 @@ abstract class Response {
    }
 
    /**
-    * This functions sends an e-mail. It therefore uses the PHPMailer script
-    * that is delivered with FIM. It is possible to use PHPMailer on your own
-    * if you need to make use of its more advanced capabilities than the ones
-    * offered in this function.
+    * This functions sends an e-mail. It uses the PHPMailer script that is
+    * delivered with FIM for this purpose. It is possible to use PHPMailer on
+    * your own if you need to make use of its more advanced capabilities than
+    * the ones offered in this function.
     * @param string|array $to The receiver of the e-mail. This can either be a
     *    string in RFC2822 format or an array ['name', 'mail@domain.com'] which
     *    will be automatically converted to 'name <mail@domain.com>'.
