@@ -370,7 +370,7 @@ final class DatabaseConnection {
 
    /**
     * Executes a select statement to the database.
-    * @param string $table
+    * @param string $from
     * @param string $where String that will be assigned to the WHERE-clause.
     *    If you do not define this string, there will not be any WHERE
     *    restriction.
@@ -403,13 +403,13 @@ final class DatabaseConnection {
     *   found
     * @throws DatabaseException
     */
-   public final function select($table, $where = null, array $bind = null,
+   public final function select($from, $where = null, array $bind = null,
       array $columns = [], $order_by = null, $group_by_having = null,
       $limit = null, $join = '', $force_statement = false) {
       if(empty($columns))
-         $sql = "SELECT * FROM \"$table\" $join";
+         $sql = "SELECT * FROM \"$from\" $join";
       else
-         $sql = 'SELECT "' . implode('", "', $columns) . "\" FROM \"$table\" $join";
+         $sql = 'SELECT "' . implode('", "', $columns) . "\" FROM \"$from\" $join";
       if($where !== null)
          $sql .= " WHERE $where";
       if($group_by_having !== null)
@@ -432,7 +432,7 @@ final class DatabaseConnection {
 
    /**
     * Executes a select statement with simple conditions to the database.
-    * @param string $table
+    * @param string $from
     * @param array $where Associative array field => value
     * @param array $columns An array that defines which columns
     *    will be returned. If you do not define this array, all columns will be
@@ -460,7 +460,7 @@ final class DatabaseConnection {
     *   found
     * @throws DatabaseException
     */
-   public final function simpleSelect($table, array $where = [],
+   public final function simpleSelect($from, array $where = [],
       array $columns = [], $order_by = null, $group_by_having = null,
       $limit = null, $join = '', $force_statement = false) {
       $wheres = $bind = [];
@@ -469,7 +469,7 @@ final class DatabaseConnection {
          $bind[] = $value;
       }
       $wheres = empty($wheres) ? null : implode(' AND ', $wheres);
-      return $this->select($table, $wheres, $bind, $columns, $order_by,
+      return $this->select($from, $wheres, $bind, $columns, $order_by,
             $group_by_having, $limit, $join, $force_statement);
    }
 
@@ -531,13 +531,13 @@ final class DatabaseConnection {
 
    /**
     * Executes a delete statement to the database.
-    * @param string $table The table name
+    * @param string $from The table name
     * @param array $whereColumns An associative array that connects column names
     *    with their values
     * @return bool True on success
     */
-   public final function delete($table, array $whereColumns) {
-      $sql = "DELETE FROM \"$table\"";
+   public final function delete($from, array $whereColumns) {
+      $sql = "DELETE FROM \"$from\"";
       if(!empty($whereColumns))
          $sql .= ' WHERE "' . implode('" = ? AND "', array_keys($whereColumns)) . '" = ?';
       return $this->execute($this->connection->prepare($sql),
