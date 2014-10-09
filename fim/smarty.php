@@ -20,6 +20,7 @@ namespace fim {
    \Module::$smarty = new \Smarty();
    \Module::$smarty->setCompileDir(CodeDir . 'cache/templates');
    \Module::$smarty->setTemplateDir([]);
+   \Module::$smarty->setCacheDir(CodeDir . 'cache/templates_c');
    \Module::$smarty->registerFilter('post', '\\fim\\initTemplate');
 
    /**
