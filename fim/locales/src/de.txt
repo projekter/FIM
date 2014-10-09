@@ -8,6 +8,7 @@ de:table {
             timestamp:string { "Das Schreiben des Zeitstempels der Cache-Datei \"{0}\" ist fehlgeschlagen." }
          }
       }
+      createFunction:string { "Auf die Funktion \"{0}\" kann nicht mit Autoboxing zugegriffen werden, da sie mit create_function() erstellt wurde." }
       failed:string { "Autoboxing {0}->{1}(${2})" }
       internalFunction:string { "Auf die Funktion \"{0}\" kann nicht mit Autoboxing zugegriffen werden, da sie eine interne Funktion ist." }
       invalidTypehint:string { "Auf die Funktion \"{0}\" der Datei \"{1}\" wurde durch Autoboxing zugegriffen. Der Parameter \"{2}\" darf den Typehint \"callable\" nicht verwenden und nicht per Referenz übergeben werden müssen." }

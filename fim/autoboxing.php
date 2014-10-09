@@ -81,7 +81,10 @@ abstract class Autoboxing {
          throw new AutoboxingException(I18N::getInternalLocale()->get(['autoboxing',
             'internalFunction'], [(string)$function]));
       self::$currentlyCalling = $reflection->name;
-      self::setupFileCache(new ReflectionFile($reflection->getFileName()));
+      if(strpos($fn = $reflection->getFileName(), ' : runtime-created function') !== false);
+         throw new AutoboxingException(I18N::getInternalLocale()->get(['autoboxing',
+            'createFunction'], [(string)$function]));
+      self::setupFileCache(new ReflectionFile($fn));
       $func = self::setupFunctionCache($reflection);
       if($reflection->isClosure())
          return $func($arguments, $function);

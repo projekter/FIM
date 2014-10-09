@@ -8,6 +8,7 @@ root:table {
             timestamp:string { "Writing the timestamp of the cache file \"{0}\" failed." }
          }
       }
+      createFunction:string { "The function \"{0}\" cannot be accessed with autoboxing as it was created with create_function()." }
       failed:string { "Autoboxing {0}->{1}(${2})" }
       internalFunction:string { "The function \"{0}\" cannot be accessed with autoboxing as it is an internal function." }
       invalidTypehint:string { "The function \"{0}\" in the file \"{1}\" was accessed via autoboxing. The parameter \"{2}\" must not use the type hint \"callable\" and must not be passed by reference." }
