@@ -170,12 +170,13 @@ abstract class Request {
    /**
     * Stores a file upload to a given location
     * @param string $param The name of the parameter
-    * @param string $to A valid target file path+name
+    * @param string $to A valid FIM target filename
     * @return boolean
     */
    public static final function saveFileUpload($param, $to) {
       if(self::hasFile($param, true))
-         return @move_uploaded_file($_FILES[$param]['tmp_name'], $to);
+         return @move_uploaded_file($_FILES[$param]['tmp_name'],
+               Router::convertFIMToFilesystem($to));
       else
          return false;
    }
