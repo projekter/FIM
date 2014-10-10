@@ -1,0 +1,49 @@
+root:table {
+   base:table {
+      appName:string { "My task list" }
+      copyright:string { "All rights reserved." }
+      switchLanguage:string { "Switch language" }
+   }
+   global:table {
+      yes:string { "Yes" }
+      no:string { "No" }
+   }
+   tasks:table {
+      title:string { "Home" }
+
+      details:table {
+         task:string { "Task" }
+         title:string { "Title" }
+         created:string { "Created" }
+         completed:string { "Completed?" }
+         delete:string { "Delete" }
+         nameRequired:string { "Please enter a task name." }
+      }
+
+      add:table {
+         submit:string { "Add" }
+         title:string { "Add new task" }
+      }
+
+      delete:table {
+         confirmation:string { "Do you want to delete the{0, select, 1 { completed} other {}} task »{1}«?" }
+         title:string { "Delete task" }
+      }
+
+      edit:table {
+         submit:string { "Save changes" }
+         title:string { "Edit task" }
+      }
+   }
+   error:table {
+      title:string { "Error {0,number} ({1})" }
+      message:string { "An error has occurred." }
+   }
+   login:table {
+      description:string { "You tried to access restricted content. Please provide login information." }
+      failed:string { "The password was not correct." }
+      password:string { "Password" }
+      submit:string { "Login" }
+      title:string { "Login required" }
+   }
+}

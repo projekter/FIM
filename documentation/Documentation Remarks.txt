@@ -1,0 +1,119 @@
+For building the documentation, several LaTeX packages are required, which are
+all available on CTAN. Minted is the exception: CTAN currently has an old
+version of minted; required is at least minted 2.0-alpha3, which can be
+downloaded from https://github.com/gpoore/minted. Minted is used for syntax
+highlighting and required Pygments to be installed. Pygments must be extended to
+support two additional languages (simply add those lines to
+pygments/lexers/other.py):
+
+============== APPEND TO other.py ==============
+class ResourceLexer(RegexLexer):
+   name = 'ResourceBundle'
+   aliases = ['resource', 'resourcebundle', 'rb']
+   filenames = ['*.txt']
+
+   flags = re.MULTILINE | re.IGNORECASE
+   tokens = {
+      'root': [
+         (r'//.*?$', Comment),
+         (r'"', String, 'string'),
+         (r'-?\d+', Number.Integer),
+         (r'[,{}]', Operator),
+         (r'([^\s{:]+)(\s*)((?::table|:array|:string|:bin|:import|:intvector|:int|:alias|)?)', bygroups(Name, Text, Keyword)),
+         (r'\s+', Text)
+      ],
+      'string': [
+         (r'(\\\\|\\"|\\{|[^"{])+', String),
+         (r'{', String.Escape, 'msgname'),
+         (r'"', String, '#pop')
+      ],
+      'msgname': [
+         (r'([^{},]+)(\s*)', bygroups(Name, String.Escape), ('#pop', 'message'))
+      ],
+      'message': [
+         (r'{', String.Escape, 'msgname'),
+         (r'}', String.Escape, '#pop'),
+         (r'(,)(\s*)([a-zA-Z]+)(\s*})', bygroups(Operator, String.Escape, Keyword, String.Escape), '#pop'),
+         (r'(,)(\s*)([a-zA-Z]+)(\s*)(,)(\s*)(offset)(\s*)(:)(\s*)(-?\d+)(\s*)', bygroups(Operator, String.Escape, Keyword, String.Escape, Operator, String.Escape, Operator.Word, String.Escape, Operator, String.Escape, Number.Integer, String.Escape), 'choice'),
+         (r'(,)(\s*)([a-zA-Z]+)(\s*)(,)(\s*)', bygroups(Operator, String.Escape, Keyword, String.Escape, Operator, String.Escape), 'choice'),
+         (r'\s+', String.Escape)
+      ],
+      'choice': [
+         (r'(=|<|>|<=|>=|!=)(-?\d+)(\s*{)', bygroups(Operator, Number.Integer, String.Escape), 'message'),
+         (r'([a-zA-Z]+)(\s*{)', bygroups(Keyword.Type, String.Escape), 'str'),
+         (r'}', String.Escape, ('#pop', '#pop')),
+         (r'\s+', String.Escape)
+      ],
+      'str': [
+         (r'}', String.Escape, '#pop'),
+         (r'{', String.Escape, 'msgname'),
+         (r'[^{}]+', String)
+      ]
+   }
+
+class FIMRuleLexer(RegexLexer):
+   name = 'FIMRule'
+   aliases = ['rule', 'fimrule', 'fimrules']
+   filenames = ['fim.rules.txt']
+
+   flags = re.MULTILINE | re.IGNORECASE
+   tokens = {
+      'root': [
+         (r'^\s*\[(existence|reading|listing)]\s*$', Keyword.Namespace),
+         (r'^(\s*clone)(\s*=\s*)(.*)$', bygroups(Keyword.Constant, Operator, Keyword.Namespace)),
+         (r'^\s*-?\d+', Number.Integer),
+         (r'^\s*(true|false)', Keyword.Constant),
+         (r'^\s*match', Keyword.Constant, 'matchfirst'),
+         (r'(=\s*c\s*)(.+)', bygroups(Operator, String)),
+         (r'(=\s*r\s*)(.+)', bygroups(Operator, String.Regex)),
+         (r'(=\s*e\s*)(.+)', bygroups(Operator, using(PhpLexer, startinline=True))),
+         (r'\s+', Text)
+      ],
+      'matchfirst': [
+         (r'(\s*=\s*r\s*)(.+)', bygroups(Operator, String.Regex), ('#pop', 'match')),
+         (r'(\s*=\s*e\s*)(.+)', bygroups(Operator, using(PhpLexer, startinline=True)), ('#pop', 'match')),
+      ],
+      'match': [
+         (r'^(?!\s)', Text, '#pop'),
+         (r'-?\d+', Number.Integer),
+         (r'true|false', Keyword.Constant),
+         (r'(=\s*)(.+)', bygroups(Operator, using(PhpLexer, startinline=True))),
+         (r'\s+', Text)
+      ]
+   }
+
+============== AT THE BEGINNING OF other.py ==============
+Include PhpLexer, which is in pygments.lexers.web
+Add the two strings 'ResourceLexer' and 'FIMRuleLexer' to the __all__ constant.
+
+After these modifications, check templates.py in the same directory. The most
+recent version of Pygments may already contain this bugfix, but older versions
+don't. Ensure that the 'smarty' entry in tokens, beginning in line 166 looks
+like this:
+
+============== templates.py, LINE 166ff. ==============
+        'smarty': [
+            (r'\s+', Text),
+            (r'{', Comment.Preproc, '#push'),
+            (r'}', Comment.Preproc, '#pop'),
+            (r'#[a-zA-Z_][a-zA-Z0-9_]*#', Name.Variable),
+            (r'\$[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)*', Name.Variable),
+            (r'[~!%^&*()+=|\[\]:;,.<>/?@-]', Operator),
+            (r'(true|false|null)\b', Keyword.Constant),
+            (r"[0-9](\.[0-9]*)?(eE[+-][0-9])?[flFLdD]?|"
+             r"0[xX][0-9a-fA-F]+[Ll]?", Number),
+            (r'"(\\\\|\\"|[^"])*"', String.Double),
+            (r"'(\\\\|\\'|[^'])*'", String.Single),
+            (r'[a-zA-Z_][a-zA-Z0-9_]*', Name.Attribute)
+        ]
+
+Now, run the python file _mapping.py, which will make the two new lexers
+available. Now the documentation should be ready to compile. Note that the first
+compiling will take very, very, very long, as minted has to run Pygments for
+every piece of source code. Thanks to caching, further runs will be much faster.
+
+Hint: The TeX file was created using TeXstudio, automatic line breaks on column
+90 enabled.
+As TeXstudio can't be told to recognize new inline verbatim environments, PHP
+inline code was set to be caused by the directive \lstinline, which TeXstudio
+knows. This does not mean that the documentation uses the listings package!

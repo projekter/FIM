@@ -2,6 +2,7 @@
 
 ![Status: Alpha](http://img.shields.io/badge/status-alpha-yellow.svg "Alpha")
 ![License: CC BY-NC-SA 4.0](http://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-red.svg "CC BY-NC-SA 4.0")
+![Requires: PHP 5.4](http://img.shields.io/badge/requires-PHP%205.4-orange.svg "PHP 5.4")
 
 Framework Improved is a fast and lightweight PHP framework. It makes use of
 brand new PHP technologies and thus requires PHP 5.4, recommending PHP 5.5.
@@ -65,13 +66,15 @@ productive use), I wanted to build a framework that based on a solid concept and
 was written in one piece. Big parts of the older framework were reused in FIM,
 but lots of things are new.
 
-### Why the restrictive license? ###
-Designing FIM was a lot of work. But a framework alone does not do anything
-without the application built on top of it. So if you are not intending to make
-profit with your application, you may use, modify or redistribute FIM (see the
-license for more information). If you however intend to make money out of your
-product built on FIM (which is more than 'please donate'), we will find an
-agreement.
+### How can I contribute? ###
+You may help developing FIM by [donate](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=J8369698KPE2W "donating with PayPal").
+If you wish to contribute directly in source code improvements, you can of
+course report bugs or propose improvements. If you speak multiple languages, it
+might be a good idea to localize FIM's internal locale files to unsupported
+languages. It is also possible, to contribute improvements to the manual. And
+you can of course fork the project and do your own job. But note that
+non-commercial usage terms will also apply on those forks. If you wish to use
+FIM commercially, you are free to contact me.
 
 ### Why the restrictive PHP version? ###
 FIM does not support PHP 5.3. Please keep in mind that PHP 5.3 was released in
@@ -91,3 +94,5 @@ messages, PHP 5.5 is highly recommended.
 You may have a look at the FIM minimal application. This application does the
 same as Zend Framework's Skeleton Application. If you compare the efforts, you
 should see what I meant with "superfluous code" in other frameworks.
+The manual also contains a reference, which will explain all public functions
+of FIM.

@@ -1,0 +1,2 @@
+[READING]
+false =E $file !== '.' && !\Session::get('authenticated')

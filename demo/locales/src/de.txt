@@ -1,0 +1,49 @@
+de:table {
+   base:table {
+      appName:string { "Meine Aufgabenliste" }
+      copyright:string { "Alle Rechte vorbehalten." }
+      switchLanguage:string { "Sprache ändern" }
+   }
+   global:table {
+      yes:string { "Ja" }
+      no:string { "Nein" }
+   }
+   tasks:table {
+      title:string { "Home" }
+
+      details:table {
+         task:string { "Aufgabe" }
+         title:string { "Titel" }
+         created:string { "Erstellt" }
+         completed:string { "Abgeschlossen?" }
+         delete:string { "Löschen" }
+         nameRequired:string { "Bitte geben Sie einen Aufgabennamen an." }
+      }
+
+      add:table {
+         submit:string { "Hinzufügen" }
+         title:string { "Eine neue Aufgabe hinzufügen" }
+      }
+
+      delete:table {
+         confirmation:string { "Wollen Sie die{0, select, 1 { abgeschlossene} other {}} Aufgabe »{1}« wirklich löschen?" }
+         title:string { "Aufgabe löschen" }
+      }
+
+      edit:table {
+         submit:string { "Änderungen speichern" }
+         title:string { "Aufgabe bearbeiten" }
+      }
+   }
+   error:table {
+      title:string { "Fehler {0,number} ({1})" }
+      message:string { "Es ist ein Fehler aufgetreten." }
+   }
+   login:table {
+      description:string { "Sie haben versucht, auf zugriffsbeschränkten Inhalt zuzugreifen. Bitte geben Sie Logininformation an." }
+      failed:string { "Das Passwort war falsch." }
+      password:string { "Passwort" }
+      submit:string { "Einloggen" }
+      title:string { "Login erforderlich" }
+   }
+}

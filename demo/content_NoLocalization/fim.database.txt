@@ -1,0 +1,6 @@
+driver=mysql
+host=localhost
+database=mytasklist
+user=fim
+password=123
+persistent=true
