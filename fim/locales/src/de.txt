@@ -150,6 +150,7 @@ de:table {
       field:table {
          invalid:string { "Dem Feld \"{0}\" der Tabelle \"{1}\" wurde ein ungültiger Wert zugewiesen." }
          readOnly:string { "Das Schlüsselfeld \"{0}\" der Tabelle \"{1}\" gestattet keinen Schreibzugriff." }
+         virtualToDB:string { "Es wurde versucht, die Referenz auf ein virtuelles PrimaryTable-Objekt im Feld \"{0}\" der Datenbanktabelle \"{1}\" zu speichern." }
       }
       translateFailed:string { "Der Funktion PrimaryTable::translateStatement wurde ein ungültiges Statement übergeben." }
       unserialize:string { "Es wurde versucht, ein ungültiges PrimaryTable-Objekt zu deserialisieren." }

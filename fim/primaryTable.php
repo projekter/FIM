@@ -210,7 +210,7 @@ namespace {
                         throw new PrimaryTableException(I18N::getInternalLocale()->get(['primaryTable',
                            'definitionInvalid'], [$name, $storage['tableName']]));
                      $dataHelpers[$name] = true;
-                  }elseif(!$rc->implementsInterface('fimSerializable'))
+                  }elseif(!$rc->implementsInterface('Autoboxable'))
                      throw new PrimaryTableException(I18N::getInternalLocale()->get(['primaryTable',
                         'definitionInvalid'], [$name, $storage['tableName']]));
                }catch(Exception $e) {
@@ -231,7 +231,7 @@ namespace {
          $data = static::getStaticStorage();
          if(!$this->virtual)
             Database::getActiveConnection()->simpleUpdate($data['tableName'],
-               array($name => $value),
+               [$name => $value],
                array_intersect_key($this->fields, $data['keys']));
          if($fieldValue === null)
             $fieldValue = $value;
@@ -283,8 +283,11 @@ namespace {
                            'field', 'invalid'], [$name, $data['tableName']]));
                      if(isset($data['dataHelpers'][$name]))
                         $this->update($name, $value->getStorageValue(), $value);
+                     elseif(!$this->virtual && ($value instanceof PrimaryTable) && ($value->virtual))
+                        throw new PrimaryTableException(I18N::getInternalLocale()->get(['primaryTable',
+                           'field', 'virtualToDB'], [$name, $data['tableName']]));
                      else
-                        $this->update($name, fimSerialize($value), $value);
+                        $this->update($name, (string)$value, $value);
                }
             $method = "notify$name";
             if(method_exists($this, $method))
@@ -442,9 +445,13 @@ namespace {
       /**
        * Turns the "virtual" table entry into one that really is represented in
        * the database. The id will change.
+       * @param bool $recursive Determines whether any virtual object that is
+       *    assigned to a field of this table will automatically be made real
        * @return static
+       * @throws PrimaryTableException if $recursive is false and there are
+       *    still virtual references
        */
-      protected function makeDBRepresentation() {
+      protected function makeDBRepresentation($recursive = false) {
          if(!$this->virtual)
             return $this;# Already non-virtual
          $data = static::getStaticStorage();
@@ -468,8 +475,16 @@ namespace {
                   default:
                      if($arg instanceof DataHelper)
                         $arg = $arg->getStorageValue();
-                     else
-                        $arg = fimSerialize($arg);
+                     else{
+                        if(($arg instanceof PrimaryTable) && ($arg->virtual))
+                           if($recursive)
+                              $arg->makeDBRepresentation(true);
+                           else
+                              throw new PrimaryTableException(I18N::getInternalLocale()->get(['primaryTable',
+                                 'field', 'virtualToDB'],
+                                 [$key, $data['tableName']]));
+                        $arg = (string)$arg;
+                     }
                }
          static::singleton($this->getSingletonKey(), null);
          $conn = Database::getActiveConnection();
@@ -555,8 +570,11 @@ namespace {
                      $fields[$key] = $val;
                      if(isset($data['dataHelpers'][$key]))
                         $arg = $val->getStorageValue();
+                     elseif(($val instanceof PrimaryTable) && ($val->virtual))
+                        throw new PrimaryTableException(I18N::getInternalLocale()->get(['primaryTable',
+                           'field', 'virtualToDB'], [$key, $data['tableName']]));
                      else
-                        $arg = fimSerialize($val);
+                        $arg = (string)$val;
                }
          }
          $noDBRep = (bool)array_pop($params);
@@ -620,7 +638,7 @@ namespace {
                            break;
                         default:
                            if(!isset($data['dataHelpers'][$key]))
-                              $obj->fields[$key] = unserialize($row[$key]);
+                              $obj->fields[$key] = $value::unbox($row[$key]);
                      }
                foreach($data['dataHelpers'] as $key => $true) {
                   $new = &$obj->fields[$key];
