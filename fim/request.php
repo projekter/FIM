@@ -131,7 +131,7 @@ abstract class Request {
     * @param int $matchFlag (default RegexIterator::MATCH) Set this flag if you
     *    want the RegexIterator that does the filtering to perform in a
     *    different operation mode.
-    * @return array
+    * @return array|Iterator
     */
    public static final function itemize($filter = null, $post = true,
       $iterator = false, $matchFlag = RegexIterator::MATCH) {
