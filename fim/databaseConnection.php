@@ -373,7 +373,9 @@ final class DatabaseConnection {
     * @param string $from
     * @param string $where String that will be assigned to the WHERE-clause.
     *    If you do not define this string, there will not be any WHERE
-    *    restriction.
+    *    restriction. Keep in mind that depending on your database driver it is
+    *    not possible to match NULL as bound parameter but only by using IS NULL
+    *    instead.
     * @param array $bind Numeric or associative array (depending on the
     *    WHERE-clause) that specifies all bindings that will be applied to the
     *    query. Mind the datatypes!
@@ -465,8 +467,12 @@ final class DatabaseConnection {
       $limit = null, $join = '', $force_statement = false) {
       $wheres = $bind = [];
       foreach($where as $name => $value) {
-         $wheres[] = $name = '"' . addcslashes($name, '"\\') . '" = ?';
-         $bind[] = $value;
+         if($value === null)
+            $wheres[] = '"' . addcslashes($name, '"\\') . '" IS NULL';
+         else{
+            $wheres[] = '"' . addcslashes($name, '"\\') . '" = ?';
+            $bind[] = $value;
+         }
       }
       $wheres = empty($wheres) ? null : implode(' AND ', $wheres);
       return $this->select($from, $wheres, $bind, $columns, $order_by,
