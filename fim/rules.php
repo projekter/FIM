@@ -95,35 +95,45 @@ namespace {
          #    the weightiest allowance cannot dominate - not even true.
          $val = 0;
          if(($checkFor & self::CHECK_EXISTENCE) !== 0)
-            if(($val = Autoboxing::callMethod($simpleInstance,
-                  'checkExistence', $params)) === false)
+            try {
+               if(($val = Autoboxing::callMethod($simpleInstance,
+                     'checkExistence', $params)) === false)
+                  return false;
+               elseif($val === null)
+                  $val = 0;
+            }catch(FIMErrorException $e) {
                return false;
-            elseif($val === null)
-               $val = 0;
-         if(($checkFor & self::CHECK_READING) !== 0) {
-            if(($newVal = Autoboxing::callMethod($simpleInstance,
-                  'checkReading', $params)) === false)
+            }
+         if(($checkFor & self::CHECK_READING) !== 0)
+            try {
+               if(($newVal = Autoboxing::callMethod($simpleInstance,
+                     'checkReading', $params)) === false)
+                  return false;
+               elseif($newVal != 0) # or null
+                  if($val === 0)
+                     $val = $newVal;
+                  elseif($newVal !== true && ($val === true || (int)$newVal < (int)$val))
+                     $val = $newVal;
+                  elseif($newVal === true && $val === 0)
+                     $val = true;
+            }catch(FIMErrorException $e) {
                return false;
-            elseif($newVal != 0) # or null
-               if($val === 0)
-                  $val = $newVal;
-               elseif($newVal !== true && ($val === true || (int)$newVal < (int)$val))
-                  $val = $newVal;
-               elseif($newVal === true && $val === 0)
-                  $val = true;
-         }
-         if(($checkFor & self::CHECK_LISTING) !== 0) {
-            if(($newVal = Autoboxing::callMethod($simpleInstance,
-                  'checkListing', $params)) === false)
+            }
+         if(($checkFor & self::CHECK_LISTING) !== 0)
+            try {
+               if(($newVal = Autoboxing::callMethod($simpleInstance,
+                     'checkListing', $params)) === false)
+                  return false;
+               elseif($newVal !== 0) # or null
+                  if($val === 0)
+                     $val = $newVal;
+                  elseif($newVal !== true && ($val === true || (int)$newVal < (int)$val))
+                     $val = $newVal;
+                  elseif($newVal === true && $val === 0)
+                     $val = true;
+            }catch(FIMErrorException $e) {
                return false;
-            elseif($newVal !== 0) # or null
-               if($val === 0)
-                  $val = $newVal;
-               elseif($newVal !== true && ($val === true || (int)$newVal < (int)$val))
-                  $val = $newVal;
-               elseif($newVal === true && $val === 0)
-                  $val = true;
-         }
+            }
          return $val;
       }
 
@@ -213,8 +223,12 @@ namespace {
          $chdir = new fim\chdirHelper(dirname($absObj));
          $previousConnection = Database::getActiveConnection(false);
          \Database::setActiveConnection('.');
-         $ret = Autoboxing::callMethod($obj, $functions[$checkFor],
-               ['fileName' => $fileName, 'fullName' => $fullName]);
+         try {
+            $ret = Autoboxing::callMethod($obj, $functions[$checkFor],
+                  ['fileName' => $fileName, 'fullName' => $fullName]);
+         }catch(FIMErrorException $e) {
+            $ret = false;
+         }
          Database::restoreConnection($previousConnection);
          return $ret;
       }
